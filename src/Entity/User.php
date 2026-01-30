@@ -8,6 +8,7 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
@@ -20,6 +21,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180)]
+    #[Assert\NotBlank(
+        message: 'Veuillez saisir un email',
+    )]
+    #[Assert\Email(
+        message: 'Veuillez saisir une adresse email valide',
+    )]
+    #[Assert\Length(
+        max: 180,
+        maxMessage: 'Votre adresse mail ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $email = null;
 
     /**
@@ -41,13 +52,31 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $adresses;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(
+        message: 'Veuillez rentrer votre prénom'
+    )]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Votre prénom ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $Firstname = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(
+        message: 'Veuillez rentrer votre nom'
+    )]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Votre nom ne peut pas dépasser {{ limit }} caractères'
+    )]
     private ?string $Lastname = null;
 
     #[ORM\Column(nullable: true)]
+//    #[Assert\LessThan('today')]
     private ?\DateTime $Birthday = null;
+
+    #[ORM\Column]
+    private ?bool $isActive = null;
 
     public function __construct()
     {
@@ -191,6 +220,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setBirthday(?\DateTime $Birthday): static
     {
         $this->Birthday = $Birthday;
+
+        return $this;
+    }
+
+    public function isActive(): ?bool
+    {
+        return $this->isActive;
+    }
+
+    public function setIsActive(bool $isActive): static
+    {
+        $this->isActive = $isActive;
 
         return $this;
     }

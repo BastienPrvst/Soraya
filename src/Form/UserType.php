@@ -13,6 +13,9 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\Length;
+use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 class UserType extends AbstractType
 {
@@ -26,6 +29,36 @@ class UserType extends AbstractType
                 'type' => PasswordType::class,
                 'first_options'  => ['label' => 'Mot de passe'],
                 'second_options' => ['label' => 'Confirmation mot de passe'],
+                'invalid_message' => 'Les mots de passe ne correspondent pas.',
+                'constraints' => [
+                    new NotBlank(
+                        message : 'Veuillez saisir un mot de passe.'
+                    ),
+                    new Length(
+                        min : 12,
+                        minMessage : 'Le mot de passe doit contenir au moins {{ limit }} caractères.'
+                    ),
+                    new Regex(
+                        pattern : '/[A-Z]/',
+                        message : 'Le mot de passe doit contenir au moins une majuscule.',
+                        match: true
+                    ),
+                    new Regex(
+                        pattern : '/[a-z]/',
+                        message : 'Le mot de passe doit contenir au moins une minuscule.',
+                        match: true
+                    ),
+                    new Regex(
+                        pattern : '/\d/',
+                        message : 'Le mot de passe doit contenir au moins un chiffre.',
+                        match: true
+                    ),
+                    new Regex(
+                        pattern : '/[#?!@$%^&*-]/',
+                        message : 'Le mot de passe doit contenir au moins un caractère spécial.',
+                        match: true
+                    ),
+                ]
             ])
             ->add('Firstname', TextType::class, [
                 'label' => 'Nom',

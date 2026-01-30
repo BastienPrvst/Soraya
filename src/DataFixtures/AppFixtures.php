@@ -44,7 +44,9 @@ class AppFixtures extends Fixture
                 ->setPassword($password)
                 ->setFirstname($faker->firstName())
                 ->setLastname($faker->lastName())
-                ->setBirthday($faker->dateTimeBetween('-40 years', '-18 years'));
+                ->setBirthday($faker->dateTimeBetween('-40 years', '-18 years'))
+                ->setIsActive(true)
+            ;
 
             $this->manager->persist($user);
 
@@ -56,7 +58,8 @@ class AppFixtures extends Fixture
             ->setPassword($this->passwordHasher->hashPassword($adminUser, 'password'))
             ->setFirstname('Bastien')
             ->setLastname('Admin')
-            ->setBirthday($faker->dateTimeBetween('-40 years', '-18 years'));
+            ->setBirthday($faker->dateTimeBetween('-40 years', '-18 years'))
+            ->setIsActive(true);
         $this->manager->persist($adminUser);
     }
 
