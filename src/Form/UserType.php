@@ -25,10 +25,18 @@ class UserType extends AbstractType
             ->add('email', EmailType::class, [
                 'label' => 'Email',
             ])
-            ->add('password', RepeatedType::class, [
+            ->add('plainPassword', RepeatedType::class, [
                 'type' => PasswordType::class,
-                'first_options'  => ['label' => 'Mot de passe'],
-                'second_options' => ['label' => 'Confirmation mot de passe'],
+                'mapped' => false,
+                'first_options'  => [
+                    'label' => 'Mot de passe',
+                    'mapped' => false,
+                    'help' => 'Le mot de passe doit contenir 12 caractères dont une majuscule, une minuscule, un chiffre et un caractère spécial.',
+                ],
+                'second_options' => [
+                    'label' => 'Confirmation mot de passe',
+                    'mapped' => false
+                    ],
                 'invalid_message' => 'Les mots de passe ne correspondent pas.',
                 'constraints' => [
                     new NotBlank(
@@ -68,6 +76,7 @@ class UserType extends AbstractType
             ])
             ->add('Birthday', BirthdayType::class, [
                 'label' => 'Date de naissance',
+                'widget' => 'single_text',
                 'required' => false,
             ])
             ->add('Submit', SubmitType::class, [
