@@ -12,7 +12,7 @@
     {% if shoppingCart is not empty %}
         {% for product in shoppingCart %}
 
-            <div>
+            <div id="cart_product_{{product.id }}">
                 <p>{{ product.name }}</p>
 
 
@@ -30,10 +30,19 @@
 
                 <span>Prix unitaire : {{ product.price }}€</span>
                 <span>Sous total {{ product.totalPrice }}€</span>
+
+                <form action="{{ path('app_shopping_cart_remove') }}" method="post">
+                    <input name="productId" type="hidden" value="{{ product.id }}">
+                    <input type="submit" value="X">
+                </form>
+
             </div>
 
 
         {% endfor %}
+
+        <span id="total_cart">Total : {{ totalCart }}€</span>
+
         <a href="{{ path('app_shopping_cart_empty') }}">vider le panier</a>
     {% else %}
         <div>Votre panier est vide</div>

@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\Request;
@@ -70,5 +71,33 @@ class ShoppingCartService extends AbstractType
         $session = $this->requestStack->getSession();
         $session->remove('shoppingCart');
         session_destroy();
+    }
+
+    public function getQuantity(string $id): int|null
+    {
+        $session = $this->requestStack->getSession();
+        $shoppingCart = $session->get('shoppingCart');
+        return $shoppingCart[$id] ?? null;
+    }
+
+    public function getCartTotalPrice(): float
+    {
+        $session = $this->requestStack->getSession();
+        $shoppingCart = $session->get('shoppingCart');
+
+        $totalKart = 0;
+
+        foreach ($shoppingCart as $id => $quantity) {
+            $product = $this->productRepository->find($id);
+
+            if ($product === null) {
+                continue;
+            }
+
+            $price = $product->getPrice();
+            $totalKart += $quantity * $price;
+        }
+
+        return $totalKart;
     }
 }
