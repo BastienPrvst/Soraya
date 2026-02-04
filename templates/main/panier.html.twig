@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+
+{% endblock %}
+
+{% block body %}
+
+    <h2>PANIER</h2>
+
+
+    {% if shoppingCart is not empty %}
+        {% for product in shoppingCart %}
+
+            <div>
+                <p>{{ product.name }}</p>
+
+
+                <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                    <input name="productId" type="hidden" value="{{ product.id }}">
+                    <input name="action" type="hidden" value="false">
+                    <input type="submit" value="-">
+                </form>
+                <span>x {{ product.quantity }}</span>
+                <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                    <input name="productId" type="hidden" value="{{ product.id }}">
+                    <input name="action" type="hidden" value="true">
+                    <input type="submit" value="+">
+                </form>
+
+                <span>Prix unitaire : {{ product.price }}€</span>
+                <span>Sous total {{ product.totalPrice }}€</span>
+            </div>
+
+
+        {% endfor %}
+        <a href="{{ path('app_shopping_cart_empty') }}">vider le panier</a>
+    {% else %}
+        <div>Votre panier est vide</div>
+    {% endif %}
+
+
+{% endblock %}
+

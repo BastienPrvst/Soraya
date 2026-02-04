@@ -33,6 +33,21 @@
                         <li>{{ product.price }}€</li>
                     </ul>
 
+                    <div>
+                        <form action="{{ path('app_shopping_cart_add') }}" method="post">
+                            <select name="quantity">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                            <input name="productId" type="hidden" value="{{ product.id }}">
+                            <input type="submit" value="Ajouter au panier">
+                        </form>
+                    </div>
+
                     {% for category in product.category %}
 
                         {{ category.name }}
