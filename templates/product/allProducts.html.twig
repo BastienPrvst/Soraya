@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+
+{% block title %}
+    Les produits
+{% endblock %}
+
+{% block body %}
+    <main>
+
+        <h1>Les Produits</h1>
+
+        <div data-controller="test">
+            Test Stimulus
+        </div>
+
+        <div data-controller="hello">
+            <input type="text">
+            <button>Greet</button>
+        </div>
+
+        <section>
+            {% for product in products %}
+
+                <div>
+                    <ul>
+                        <li>
+                            <a href="{{ path('app_product_details', { name: product.name }) }}">
+                                <strong>{{ product.name|capitalize }}</strong>
+                            </a>
+                        </li>
+                        <li>{{ product.description }}</li>
+                        <li>{{ product.price }}€</li>
+                    </ul>
+
+                    <div>
+                        <form action="{{ path('app_shopping_cart_add') }}" method="post">
+                            <select name="quantity">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select>
+                            <input name="productId" type="hidden" value="{{ product.id }}">
+                            <input type="submit" value="Ajouter au panier">
+                        </form>
+                    </div>
+
+                    {% for category in product.category %}
+
+                        {{ category.name }}
+
+                    {% endfor %}
+                </div>
+
+            {% endfor %}
+
+        </section>
+
+
+    </main>
+{% endblock %}
+
