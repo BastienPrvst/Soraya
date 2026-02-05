@@ -14,11 +14,6 @@
             Test Stimulus
         </div>
 
-        <div data-controller="hello">
-            <input type="text">
-            <button>Greet</button>
-        </div>
-
         <section>
             {% for product in products %}
 
@@ -34,7 +29,7 @@
                     </ul>
 
                     <div>
-                        <form action="{{ path('app_shopping_cart_add') }}" method="post">
+                        <form action="{{ path('app_shopping_cart_add', {pageId : product.id}) }}" method="post">
                             <select name="quantity">
                                 <option value="1">1</option>
                                 <option value="2">2</option>

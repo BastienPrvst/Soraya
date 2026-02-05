@@ -100,4 +100,15 @@ class ShoppingCartService extends AbstractType
 
         return $totalKart;
     }
+
+    public function getTotalQuantity(): int
+    {
+        $session = $this->requestStack->getSession();
+        if ($session->has('shoppingCart')) {
+            $shoppingCart = $session->get('shoppingCart');
+            return array_sum($shoppingCart);
+        }
+
+        return 0;
+    }
 }

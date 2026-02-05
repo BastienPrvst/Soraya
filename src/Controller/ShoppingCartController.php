@@ -19,17 +19,25 @@ final class ShoppingCartController extends AbstractController
     ) {
     }
 
-    #[Route('/shoppingCart/add', name: 'app_shopping_cart_add')]
-    public function addToCart(Request $request): Response
+    #[Route('/shoppingCart/add/{pageId}', name: 'app_shopping_cart_add')]
+    public function addToCart(Request $request, int $pageId): Response
     {
         $id = $request->request->get('productId');
         $quantity = $request->request->get('quantity');
         $this->shoppingCartService->add($id, $quantity);
-        $route = $request->headers->get('referer');
-        if ($route === null) {
-            return $this->redirectToRoute('app_main');
+
+        if ($request->getPreferredFormat() === TurboBundle::STREAM_FORMAT) {
+            $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
+            $totalQuantity = $this->shoppingCartService->getTotalQuantity();
+            return $this->render('shopping_cart/updateHeader.stream.html.twig', [
+                'productId' => $id,
+                'totalQuantityCart' => $totalQuantity,
+            ]);
         }
-        return $this->redirect($route);
+
+        return $this->render('product/productDetails.html.twig', [
+            'pageId' => $pageId,
+        ]);
     }
 
     #[Route(path: '/shoppingCart/update', name: 'app_shopping_cart_update')]
@@ -47,7 +55,6 @@ final class ShoppingCartController extends AbstractController
 
         if (!empty($shoppingCart) &&
             $request->getPreferredFormat() === TurboBundle::STREAM_FORMAT) {
-
             $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
 
             $product = $this->productRepository->find($id);
@@ -57,12 +64,14 @@ final class ShoppingCartController extends AbstractController
 
             $quantity = $this->shoppingCartService->getQuantity($id);
             $totalCart = $this->shoppingCartService->getCartTotalPrice();
+            $totalQuantityCart = $this->shoppingCartService->getTotalQuantity();
 
-            //Si plus de produit en particulier
+            //Si plus de produits
             if ($quantity === null) {
                 return $this->render('shopping_cart/remove.stream.html.twig', [
                     'productId' => $id,
                     'totalCart' => $totalCart,
+                    'totalQuantityCart' => $totalQuantityCart,
                 ]);
             }
 
@@ -80,6 +89,7 @@ final class ShoppingCartController extends AbstractController
                 'productId' => $id,
                 'product' => $productInfo,
                 'totalCart' => $totalCart,
+                'totalQuantityCart' => $totalQuantityCart,
             ]);
         }
 
@@ -92,12 +102,18 @@ final class ShoppingCartController extends AbstractController
         $id = $request->request->get('productId');
         $this->shoppingCartService->remove($id);
 
-        if ($request->getPreferredFormat() === TurboBundle::STREAM_FORMAT) {
+        $session = $request->getSession();
+        $shoppingCart = $session->get('shoppingCart', []);
+
+        if (!empty($shoppingCart) &&
+            $request->getPreferredFormat() === TurboBundle::STREAM_FORMAT) {
             $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
             $totalCart = $this->shoppingCartService->getCartTotalPrice();
+            $totalQuantityCart = $this->shoppingCartService->getTotalQuantity();
             return $this->render('shopping_cart/remove.stream.html.twig', [
                 'productId' => $id,
                 'totalCart' => $totalCart,
+                'totalQuantityCart' => $totalQuantityCart,
             ]);
         }
 
@@ -109,11 +125,7 @@ final class ShoppingCartController extends AbstractController
     public function empty(Request $request): Response
     {
         $this->shoppingCartService->emptyCart();
-        $route = $request->headers->get('referer');
-        if ($route === null) {
-            return $this->redirectToRoute('app_main');
-        }
-        return $this->redirect($route);
+        return $this->redirectToRoute('app_shopping_cart_view');
     }
 
     #[Route(path: '/panier', name: 'app_shopping_cart_view')]
@@ -148,6 +160,7 @@ final class ShoppingCartController extends AbstractController
         return $this->render('shopping_cart/shopping_cart.html.twig', [
             'shoppingCart' => $viewCart ?? null,
             'totalCart' => $totalCart ?? null,
+
         ]);
     }
 }

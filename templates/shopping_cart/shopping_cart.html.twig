@@ -11,39 +11,44 @@
 
     {% if shoppingCart is not empty %}
         {% for product in shoppingCart %}
+            <section id="cart_filled">
+                <div id="cart_product_{{product.id }}">
+                    <p>{{ product.name }}</p>
 
-            <div id="cart_product_{{product.id }}">
-                <p>{{ product.name }}</p>
 
+                    <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                        <input name="productId" type="hidden" value="{{ product.id }}">
+                        <input name="action" type="hidden" value="false">
+                        <input type="submit" value="-">
+                    </form>
+                    <span>x {{ product.quantity }}</span>
+                    <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                        <input name="productId" type="hidden" value="{{ product.id }}">
+                        <input name="action" type="hidden" value="true">
+                        <input type="submit" value="+">
+                    </form>
 
-                <form action="{{ path('app_shopping_cart_update') }}" method="post">
-                    <input name="productId" type="hidden" value="{{ product.id }}">
-                    <input name="action" type="hidden" value="false">
-                    <input type="submit" value="-">
-                </form>
-                <span>x {{ product.quantity }}</span>
-                <form action="{{ path('app_shopping_cart_update') }}" method="post">
-                    <input name="productId" type="hidden" value="{{ product.id }}">
-                    <input name="action" type="hidden" value="true">
-                    <input type="submit" value="+">
-                </form>
+                    <span>Prix unitaire : {{ product.price }}€</span>
+                    <span>Sous total {{ product.totalPrice }}€</span>
 
-                <span>Prix unitaire : {{ product.price }}€</span>
-                <span>Sous total {{ product.totalPrice }}€</span>
+                    <form action="{{ path('app_shopping_cart_remove') }}" method="post">
+                        <input name="productId" type="hidden" value="{{ product.id }}">
+                        <input type="submit" value="X">
+                    </form>
 
-                <form action="{{ path('app_shopping_cart_remove') }}" method="post">
-                    <input name="productId" type="hidden" value="{{ product.id }}">
-                    <input type="submit" value="X">
-                </form>
+                </div>
 
-            </div>
+            </section>
+
 
 
         {% endfor %}
-
+    <div>
         <span id="total_cart">Total : {{ totalCart }}€</span>
 
         <a href="{{ path('app_shopping_cart_empty') }}">vider le panier</a>
+    </div>
+
     {% else %}
         <div>Votre panier est vide</div>
     {% endif %}
