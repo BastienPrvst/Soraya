@@ -13,9 +13,7 @@
 <turbo-stream action="replace" target="cart_quantity">
 
     <template>
-        <li id="cart_quantity">
-            <a href="{{ path('app_shopping_cart_view') }}"><img src="{{ asset('icons/shopping_cart_24dp_3A3A3B_FILL0_wght400_GRAD0_opsz24.svg') }}" alt=""> {{ totalQuantityCart }} Mon panier</a>
-        </li>
+        <span id="cart_quantity">{{ totalQuantityCart }}</span>
     </template>
 
 </turbo-stream>

@@ -1,5 +1,5 @@
 
-<header>
+<header data-turbo-cache="false">
 
     <h1>Site Soraya</h1>
 
@@ -13,8 +13,8 @@
             <li><a href="{{ path('app_register') }}">S'inscrire</a></li>
             <li><a href="{{ path('app_login') }}">Se connecter</a></li>
         {% endif %}
-        <li id="cart_quantity">
-            <a href="{{ path('app_shopping_cart_view') }}"><img src="{{ asset('icons/shopping_cart_24dp_3A3A3B_FILL0_wght400_GRAD0_opsz24.svg') }}" alt=""> {{ totalQuantityCart }} Mon panier</a>
+        <li>
+            <a href="{{ path('app_shopping_cart_view') }}"><img src="{{ asset('icons/shopping_cart_24dp_3A3A3B_FILL0_wght400_GRAD0_opsz24.svg') }}" alt=""> <span id="cart_quantity">{{ totalQuantityCart }}</span> Mon panier</a>
         </li>
 
     </ul>
