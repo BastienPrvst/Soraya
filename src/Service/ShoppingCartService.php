@@ -111,4 +111,31 @@ class ShoppingCartService extends AbstractType
 
         return 0;
     }
+
+    public function getCartInformations(array $cart): array
+    {
+        $updatedCart = [];
+
+        $ids = array_keys($cart);
+
+        $products = $this->productRepository->findBy(['id' => $ids]);
+
+        foreach ($products as $product) {
+            if ($product === null) {
+                continue;
+            }
+            $id = $product->getId();
+            $quantity = $cart[$id];
+
+            $updatedCart[$id] = [
+                'id' => $id,
+                'name' => $product->getName(),
+                'quantity' => $cart[$id],
+                'price' => $product->getPrice(),
+                'totalPrice' => $product->getPrice() * $quantity,
+            ];
+        }
+
+        return $updatedCart;
+    }
 }

@@ -1,0 +1,26 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Paiement
+{% endblock %}
+
+{% block body %}
+    <h2>Paiement</h2>
+
+    <div id="checkout">
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://js.stripe.com/clover/stripe.js"></script>
+    <script src="{{ asset('js/checkout.js') }}" defer></script>
+    <script>
+        const checkoutPageUrl = '{{ url('app_stripe_checkout') }}';
+        const stripePublicKey = '{{ stripe_public_key }}'
+    </script>
+{% endblock %}
+
+
+
+

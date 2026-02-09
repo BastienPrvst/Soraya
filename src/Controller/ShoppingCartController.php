@@ -135,31 +135,15 @@ final class ShoppingCartController extends AbstractController
 
         if ($session->has('shoppingCart')) {
             $shoppingCart = $session->get('shoppingCart');
-
-            $viewCart = [];
-
-            foreach ($shoppingCart as $id => $quantity) {
-                $product = $this->productRepository->find($id);
-
-                if ($product === null) {
-                    continue;
-                }
-
-                $viewCart[$id] = [
-                    'id' => $id,
-                    'name' => $product->getName(),
-                    'quantity' => $quantity,
-                    'price' => $product->getPrice(),
-                    'totalPrice' => $product->getPrice() * $quantity,
-                ];
-            }
-
-            $totalCart = $this->shoppingCartService->getCartTotalPrice();
+            $viewCart = $this->shoppingCartService->getCartInformations($shoppingCart);
         }
+
+        $totalCart = $this->shoppingCartService->getCartTotalPrice();
+
 
         return $this->render('shopping_cart/shopping_cart.html.twig', [
             'shoppingCart' => $viewCart ?? null,
-            'totalCart' => $totalCart ?? null,
+            'totalCart' => $totalCart,
 
         ]);
     }
