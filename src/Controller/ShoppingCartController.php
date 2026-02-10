@@ -144,7 +144,6 @@ final class ShoppingCartController extends AbstractController
         return $this->render('shopping_cart/shopping_cart.html.twig', [
             'shoppingCart' => $viewCart ?? null,
             'totalCart' => $totalCart,
-
         ]);
     }
 }

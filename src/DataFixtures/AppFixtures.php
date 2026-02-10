@@ -96,7 +96,7 @@ class AppFixtures extends Fixture
             $category = array_rand($categories);
 
             $product
-                ->setName($faker->word)
+                ->setName('Produit' . $i)
                 ->setPrice($faker->randomFloat(2, 15, 150))
                 ->setDescription($faker->paragraph())
                 ->addCategory($categories[$category]);

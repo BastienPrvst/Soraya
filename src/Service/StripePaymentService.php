@@ -7,7 +7,6 @@ use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
 use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -61,7 +60,7 @@ class StripePaymentService extends AbstractController
                 ],
             ], $cart)),
             'mode' => 'payment',
-            'return_url' => $returnUrl,
+            'return_url' => $returnUrl . '?session_id={CHECKOUT_SESSION_ID}',
         ]);
 
         return $stripeSession->client_secret;

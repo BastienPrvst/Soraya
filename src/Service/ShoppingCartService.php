@@ -83,8 +83,12 @@ class ShoppingCartService extends AbstractType
     public function getCartTotalPrice(): float
     {
         $session = $this->requestStack->getSession();
-        $shoppingCart = $session->get('shoppingCart');
 
+        if (!$session->has('shoppingCart')) {
+            return 0;
+        }
+
+        $shoppingCart = $session->get('shoppingCart');
         $totalKart = 0;
 
         foreach ($shoppingCart as $id => $quantity) {
@@ -115,9 +119,7 @@ class ShoppingCartService extends AbstractType
     public function getCartInformations(array $cart): array
     {
         $updatedCart = [];
-
         $ids = array_keys($cart);
-
         $products = $this->productRepository->findBy(['id' => $ids]);
 
         foreach ($products as $product) {
@@ -133,6 +135,7 @@ class ShoppingCartService extends AbstractType
                 'quantity' => $cart[$id],
                 'price' => $product->getPrice(),
                 'totalPrice' => $product->getPrice() * $quantity,
+                'product' => $product
             ];
         }
 
