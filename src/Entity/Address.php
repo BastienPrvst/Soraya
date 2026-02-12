@@ -2,13 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\AdressRepository;
+use App\Repository\AddressRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: AdressRepository::class)]
-class Adress
+#[ORM\Entity(repositoryClass: AddressRepository::class)]
+class Address
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -38,6 +38,9 @@ class Adress
      */
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'deliveryAdress')]
     private Collection $orders;
+
+    #[ORM\Column(length: 255)]
+    private ?string $country = null;
 
     public function __construct()
     {
@@ -147,6 +150,18 @@ class Adress
                 $order->setDeliveryAdress(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(string $country): static
+    {
+        $this->country = $country;
 
         return $this;
     }

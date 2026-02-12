@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Service;
+
+use App\Entity\Order;
+use App\Entity\OrderItem;
+use App\Entity\User;
+use App\Enum\OrderStatus;
+use Doctrine\ORM\EntityManagerInterface;
+use Random\RandomException;
+use Symfony\Component\Form\AbstractType;
+
+class OrderService extends AbstractType
+{
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+    ) {
+    }
+
+    /**
+     * @throws RandomException
+     */
+    public function buildOrder(array $products, ?User $user): Order
+    {
+        $order = new Order();
+        $token = bin2hex(random_bytes(20));
+        $order
+            ->setToken($token)
+            ->setUser($user)
+            ->setStatus(OrderStatus::CREATED)
+            ->setCreationDate(new \DateTime())
+            ->setDelivery(true);
+
+        $cartTotal = 0;
+
+        foreach ($products as $product) {
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setProduct($product['product'])
+                ->setQuantity($product['quantity'])
+                ->setRelatedOrder($order)
+                ->setUnitPrice($product['price'])
+                ->setTotal($product['price'] * $product['quantity']);
+
+            $order->addOrderItem($orderItem);
+            $this->entityManager->persist($orderItem);
+
+            $cartTotal += $orderItem->getTotal();
+        }
+
+        $order->setTotal($cartTotal);
+        $this->entityManager->persist($order);
+        $this->entityManager->flush();
+
+        return $order;
+    }
+}

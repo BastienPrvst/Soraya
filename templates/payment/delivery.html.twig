@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Votre Commande
+{% endblock %}
+
+
+{% block body %}
+    <main class="container-fluid d-flex flex-row">
+        <div class="row w-100">
+            <section class="left ms-3 col-7">
+                <div class="h-75">
+                    <h2>1. Choix du mode de livraison</h2>
+                    <hr>
+
+                    <form
+                        action="{{ path('app_payment_delivery', { token:order.token }) }}"
+                        method="post"
+                        data-turbo-frame="delivery_info"
+                    >
+
+                        <button class="p-1 m-1" type="submit" name="delivery_mode" value="home">
+                            Livraison à domicile
+                        </button>
+
+                        <button class="p-1 m-1" type="submit" name="delivery_mode" value="relay">
+                            Livraison en point relais
+                        </button>
+                    </form>
+                </div>
+
+                <div>
+                    <h3>2. Informations de livraison</h3>
+                    <hr>
+                    <turbo-frame id="delivery_info">
+
+                    </turbo-frame>
+                </div>
+
+
+
+                <h4>3. Paiement</h4>
+                <hr>
+            </section>
+
+
+
+
+
+            <section id="order_details" class="col-4 ms-3">
+                <div>
+                    Total produit (TVA incluse) {{ order.total }}€
+                    <br>
+                    <span>
+                    Total {{ order.total + order.deliveryPrice }} €
+                </span>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+
+
+
+
+
+
+
+{% endblock %}
+
+

@@ -6,11 +6,11 @@ use Stripe\Checkout\Session;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
 use Stripe\StripeClient;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class StripePaymentService extends AbstractController
+class StripePaymentService extends AbstractType
 {
 
     public function __construct(
@@ -26,7 +26,7 @@ class StripePaymentService extends AbstractController
     public function createPayment(): ?string
     {
 
-        Stripe::setApiKey($this->getParameter('stripe.secret_key'));
+        Stripe::setApiKey($this->getParameter('payment.secret_key'));
         Stripe::setApiVersion('2025-08-27.basil');
 
         $session = $this->requestStack->getSession();

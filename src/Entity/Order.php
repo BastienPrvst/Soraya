@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\OrderStatus;
 use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -26,7 +27,7 @@ class Order
     private ?bool $delivery = null;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
-    private ?Adress $deliveryAdress = null;
+    private ?Address $deliveryAdress = null;
 
     /**
      * @var Collection<int, OrderItem>
@@ -41,6 +42,15 @@ class Order
 
     #[ORM\Column]
     private ?float $total = null;
+
+    #[ORM\Column(enumType: OrderStatus::class)]
+    private ?OrderStatus $status = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $token = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $delivery_price = null;
 
     public function __construct()
     {
@@ -88,12 +98,12 @@ class Order
         return $this;
     }
 
-    public function getDeliveryAdress(): ?Adress
+    public function getDeliveryAdress(): ?Address
     {
         return $this->deliveryAdress;
     }
 
-    public function setDeliveryAdress(?Adress $deliveryAdress): static
+    public function setDeliveryAdress(?Address $deliveryAdress): static
     {
         $this->deliveryAdress = $deliveryAdress;
 
@@ -138,6 +148,42 @@ class Order
     public function setTotal(float $total): static
     {
         $this->total = $total;
+
+        return $this;
+    }
+
+    public function getStatus(): ?OrderStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(OrderStatus $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(string $token): static
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function getDeliveryPrice(): ?float
+    {
+        return $this->delivery_price;
+    }
+
+    public function setDeliveryPrice(?float $delivery_price): static
+    {
+        $this->delivery_price = $delivery_price;
 
         return $this;
     }

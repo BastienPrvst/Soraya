@@ -46,9 +46,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     /**
-     * @var Collection<int, Adress>
+     * @var Collection<int, Address>
      */
-    #[ORM\OneToMany(targetEntity: Adress::class, mappedBy: 'User')]
+    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'User')]
     private Collection $adresses;
 
     #[ORM\Column(length: 255)]
@@ -166,14 +166,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Adress>
+     * @return Collection<int, Address>
      */
     public function getAdresses(): Collection
     {
         return $this->adresses;
     }
 
-    public function addAdress(Adress $adress): static
+    public function addAdress(Address $adress): static
     {
         if (!$this->adresses->contains($adress)) {
             $this->adresses->add($adress);
@@ -183,7 +183,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function removeAdress(Adress $adress): static
+    public function removeAdress(Address $adress): static
     {
         if ($this->adresses->removeElement($adress)) {
             // set the owning side to null (unless already changed)
