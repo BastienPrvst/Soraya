@@ -49,7 +49,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Address>
      */
     #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'User')]
-    private Collection $adresses;
+    private Collection $addresses;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(
@@ -86,7 +86,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->adresses = new ArrayCollection();
+        $this->addresses = new ArrayCollection();
         $this->orders = new ArrayCollection();
     }
 
@@ -168,27 +168,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, Address>
      */
-    public function getAdresses(): Collection
+    public function getAddresses(): Collection
     {
-        return $this->adresses;
+        return $this->addresses;
     }
 
-    public function addAdress(Address $adress): static
+    public function addAddress(Address $address): static
     {
-        if (!$this->adresses->contains($adress)) {
-            $this->adresses->add($adress);
-            $adress->setUser($this);
+        if (!$this->addresses->contains($address)) {
+            $this->addresses->add($address);
+            $address->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeAdress(Address $adress): static
+    public function removeAddress(Address $address): static
     {
-        if ($this->adresses->removeElement($adress)) {
+        if ($this->addresses->removeElement($address)) {
             // set the owning side to null (unless already changed)
-            if ($adress->getUser() === $this) {
-                $adress->setUser(null);
+            if ($address->getUser() === $this) {
+                $address->setUser(null);
             }
         }
 

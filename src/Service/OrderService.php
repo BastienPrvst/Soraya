@@ -27,9 +27,14 @@ class OrderService extends AbstractType
         $order
             ->setToken($token)
             ->setUser($user)
+            ->setFirstname($user?->getFirstname())
+            ->setLastname($user?->getLastname())
+            ->setPhoneNumber(null)
             ->setStatus(OrderStatus::CREATED)
             ->setCreationDate(new \DateTime())
-            ->setDelivery(true);
+            ->setDelivery(true)
+            ->setEmail($user?->getEmail())
+        ;
 
         $cartTotal = 0;
 
@@ -40,7 +45,8 @@ class OrderService extends AbstractType
                 ->setQuantity($product['quantity'])
                 ->setRelatedOrder($order)
                 ->setUnitPrice($product['price'])
-                ->setTotal($product['price'] * $product['quantity']);
+                ->setTotal($product['price'] * $product['quantity'])
+            ;
 
             $order->addOrderItem($orderItem);
             $this->entityManager->persist($orderItem);

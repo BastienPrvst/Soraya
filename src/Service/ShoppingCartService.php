@@ -2,8 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\Order;
 use App\Entity\Product;
+use App\Enum\OrderStatus;
 use App\Repository\ProductRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -13,7 +16,8 @@ class ShoppingCartService extends AbstractType
 
     public function __construct(
         private readonly ProductRepository $productRepository,
-        private readonly RequestStack      $requestStack
+        private readonly RequestStack      $requestStack,
+        private readonly EntityManagerInterface $entityManager
     ) {
     }
 
@@ -69,8 +73,20 @@ class ShoppingCartService extends AbstractType
     public function emptyCart(): void
     {
         $session = $this->requestStack->getSession();
+        if ($session->has('token')) {
+            $token = $session->get('token');
+            $order = $this->entityManager->getRepository(Order::class)->findOneBy([
+                'token' => $token,
+            ]);
+
+            if ($order !== null) {
+                $order->setStatus(OrderStatus::CANCELED);
+                $this->entityManager->persist($order);
+                $this->entityManager->flush();
+            }
+            $session->remove('token');
+        }
         $session->remove('shoppingCart');
-        session_destroy();
     }
 
     public function getQuantity(string $id): int|null

@@ -30,13 +30,13 @@ class Address
     #[ORM\Column]
     private ?bool $isActive = null;
 
-    #[ORM\ManyToOne(inversedBy: 'adresses')]
+    #[ORM\ManyToOne(inversedBy: 'addresses')]
     private ?User $User = null;
 
     /**
      * @var Collection<int, Order>
      */
-    #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'deliveryAdress')]
+    #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'deliveryAddress')]
     private Collection $orders;
 
     #[ORM\Column(length: 255)]
@@ -136,7 +136,7 @@ class Address
     {
         if (!$this->orders->contains($order)) {
             $this->orders->add($order);
-            $order->setDeliveryAdress($this);
+            $order->setDeliveryAddress($this);
         }
 
         return $this;
@@ -146,8 +146,8 @@ class Address
     {
         if ($this->orders->removeElement($order)) {
             // set the owning side to null (unless already changed)
-            if ($order->getDeliveryAdress() === $this) {
-                $order->setDeliveryAdress(null);
+            if ($order->getDeliveryAddress() === $this) {
+                $order->setDeliveryAddress(null);
             }
         }
 

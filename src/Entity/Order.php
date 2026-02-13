@@ -27,7 +27,7 @@ class Order
     private ?bool $delivery = null;
 
     #[ORM\ManyToOne(inversedBy: 'orders')]
-    private ?Address $deliveryAdress = null;
+    private ?Address $deliveryAddress = null;
 
     /**
      * @var Collection<int, OrderItem>
@@ -51,6 +51,18 @@ class Order
 
     #[ORM\Column(nullable: true)]
     private ?float $delivery_price = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $email = null;
+
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $phoneNumber = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $firstname = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $lastname = null;
 
     public function __construct()
     {
@@ -98,14 +110,14 @@ class Order
         return $this;
     }
 
-    public function getDeliveryAdress(): ?Address
+    public function getDeliveryAddress(): ?Address
     {
-        return $this->deliveryAdress;
+        return $this->deliveryAddress;
     }
 
-    public function setDeliveryAdress(?Address $deliveryAdress): static
+    public function setDeliveryAddress(?Address $deliveryAddress): static
     {
-        $this->deliveryAdress = $deliveryAdress;
+        $this->deliveryAddress = $deliveryAddress;
 
         return $this;
     }
@@ -184,6 +196,54 @@ class Order
     public function setDeliveryPrice(?float $delivery_price): static
     {
         $this->delivery_price = $delivery_price;
+
+        return $this;
+    }
+
+    public function getEmail(): ?string
+    {
+        return $this->email;
+    }
+
+    public function setEmail(?string $email): static
+    {
+        $this->email = $email;
+
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(?string $phoneNumber): static
+    {
+        $this->phoneNumber = $phoneNumber;
+
+        return $this;
+    }
+
+    public function getFirstname(): ?string
+    {
+        return $this->firstname;
+    }
+
+    public function setFirstname(?string $firstname): static
+    {
+        $this->firstname = $firstname;
+
+        return $this;
+    }
+
+    public function getLastname(): ?string
+    {
+        return $this->lastname;
+    }
+
+    public function setLastname(?string $lastname): static
+    {
+        $this->lastname = $lastname;
 
         return $this;
     }

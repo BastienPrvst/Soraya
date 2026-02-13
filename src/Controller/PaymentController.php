@@ -4,7 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Address;
 use App\Entity\Order;
-use App\Form\AdressType;
+use App\Form\AddressType;
+use App\Form\OrderType;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
 use App\Service\StripePaymentService;
@@ -46,7 +47,12 @@ final class PaymentController extends AbstractController
 
         if ($session->has('order_token')) {
             $token = $session->get('order_token');
-            $order = $this->entityManager->getRepository(Order::class)->findOneBy(['token' => $token]);
+            $order = $this->entityManager->getRepository(Order::class)->findOneBy(
+                [
+                    'token' => $token,
+                    'status' => 'created'
+                ]
+            );
 
             if ($order === null) {
                 $order = $this->orderService->buildOrder($products, $this->getUser());
@@ -58,7 +64,9 @@ final class PaymentController extends AbstractController
 
 
         if ($this->getUser()) {
-            return $this->render('payment/delivery.html.twig');
+            return $this->render('payment/delivery.html.twig', [
+                'order' => $order,
+            ]);
         }
 
         $this->saveTargetPath(
@@ -83,61 +91,42 @@ final class PaymentController extends AbstractController
         Request $request,
     ): Response {
 
-
-
-        $session = $request->getSession();
-
         if ($request->isMethod('POST')) {
-            $deliveryMode = $request->request->get('deliveryMode');
+            $deliveryMode = $request->request->get('delivery_mode');
 
-            if (in_array($deliveryMode, ['home', 'relay'], true)) {
-                $session->set('deliveryMode', $deliveryMode);
-            }
+            if ($deliveryMode === 'home') {
+                if ($this->getUser()) {
+                    $address = $this->entityManager->getRepository(Address::class)->findOneBy([
+                        'User' => $this->getUser(),
+                        'isActive' => true
+                    ]) ?? new Address();
+                } else {
+                    $address = new Address();
+                }
 
-            return $this->redirectToRoute('app_payment_delivery', [
-                'token' => $order->getToken(),
-            ]);
-        }
+                $form = $this->createForm(OrderType::class, $order);
 
-        $deliveryMode = $session->get('deliveryMode');
-
-        if ($deliveryMode === 'home') {
-            $session->set('deliveryMode', 'home');
-            if ($this->getUser()) {
-                $address = $this->entityManager->getRepository(Address::class)->findOneBy([
-                    'user' => $this->getUser(),
-                    'isActive' => true
-                ]);
-            } else {
-                $address = new Address();
-            }
-
-            $form = $this->createForm(AdressType::class, $address);
-            $form->handleRequest($request);
-
-            if ($request->getPreferredFormat() === TurboBundle::STREAM_FORMAT) {
-                $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
-
-                return $this->render('payment/delivery_form.stream.html.twig', [
-                    'form' => $form,
+                return $this->render('payment/_delivery_home.html.twig', [
+                    'form' => $form->createView(),
+                    'order' => $order,
                 ]);
             }
 
-            return $this->render('payment/delivery.html.twig', [
-                'order' => $order,
-                'form' => $form,
-            ]);
-        }
+            if ($deliveryMode === 'relay') {
+                return $this->render('payment/_delivery_relay.html.twig', [
+                    'order' => $order,
+                ]);
+            }
 
-
-        if ($deliveryMode === 'relay') {
-            $session->set('deliveryMode', 'relay');
+            return new Response('', 204);
         }
 
         return $this->render('payment/delivery.html.twig', [
             'order' => $order,
         ]);
     }
+
+
 
 
     /**
