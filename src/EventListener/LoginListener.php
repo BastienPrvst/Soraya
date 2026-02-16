@@ -4,6 +4,7 @@ namespace App\EventListener;
 
 use App\Entity\User;
 use App\Enum\OrderStatus;
+use App\Enum\SessionKey;
 use App\Repository\OrderRepository;
 use App\Service\ShoppingCartService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -65,19 +66,19 @@ final readonly class LoginListener
         $session = $this->requestStack->getSession();
         $oldOrder = $this->orderRepository->findOneBy(
             ['user' => $user, 'status' => OrderStatus::CREATED],
-            ['createdAt' => 'DESC']
+            ['creationDate' => 'DESC']
         );
 
 
-        if ($session->has('order_token')) {
-            $orderToken = $session->get('order_token');
+        if ($session->has(SessionKey::ORDER_TOKEN->value)) {
+            $orderToken = $session->get(SessionKey::ORDER_TOKEN->value);
 
             $order = $this->orderRepository->findOneBy(
                 [
                     'token' => $orderToken,
                     'status' => OrderStatus::CREATED,
                 ],
-                ['createdAt' => 'DESC']
+                ['creationDate' => 'DESC']
             );
 
             if ($order && $order->getUser() === null) {
@@ -89,8 +90,8 @@ final readonly class LoginListener
                 $this->entityManager->flush();
             }
         } elseif ($oldOrder) {
-            $session->remove('shopping_cart');
-            $session->set('order_token', $oldOrder->getToken());
+            $session->remove(SessionKey::SHOPPING_CART->value);
+            $session->set(SessionKey::ORDER_TOKEN->value, $oldOrder->getToken());
             $orderItems = $oldOrder->getOrderItems();
 
             foreach ($orderItems as $item) {

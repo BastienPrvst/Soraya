@@ -36,6 +36,24 @@ class OrderService extends AbstractType
             ->setEmail($user?->getEmail())
         ;
 
+        $this->createOrderItems($products, $order);
+
+        $this->entityManager->persist($order);
+        $this->entityManager->flush();
+
+        return $order;
+    }
+
+    public function updateOrder(Order $order, array $products): void
+    {
+        $order->removeAllOrderItems();
+        $this->createOrderItems($products, $order);
+        $this->entityManager->flush();
+    }
+
+
+    private function createOrderItems(array $products, Order $order): void
+    {
         $cartTotal = 0;
 
         foreach ($products as $product) {
@@ -55,9 +73,5 @@ class OrderService extends AbstractType
         }
 
         $order->setTotal($cartTotal);
-        $this->entityManager->persist($order);
-        $this->entityManager->flush();
-
-        return $order;
     }
 }

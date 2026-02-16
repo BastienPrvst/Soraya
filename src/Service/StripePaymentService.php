@@ -2,12 +2,11 @@
 
 namespace App\Service;
 
+use App\Enum\SessionKey;
 use Stripe\Checkout\Session;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
-use Stripe\StripeClient;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -31,11 +30,11 @@ class StripePaymentService extends AbstractController
         Stripe::setApiVersion('2025-08-27.basil');
 
         $session = $this->requestStack->getSession();
-        if (!$session->has('shoppingCart')) {
+        if (!$session->has(SessionKey::SHOPPING_CART->value)) {
             return null;
         }
 
-        $shoppingCart = $session->get('shoppingCart');
+        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
         $cart = $this->shoppingCartService->getCartInformations($shoppingCart);
 
         if (empty($cart)) {

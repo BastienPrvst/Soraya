@@ -152,6 +152,14 @@ class Order
         return $this;
     }
 
+    public function removeAllOrderItems(): static
+    {
+        foreach ($this->orderItems as $orderItem) {
+            $this->removeOrderItem($orderItem);
+        }
+        return $this;
+    }
+
     public function getTotal(): ?float
     {
         return $this->total;

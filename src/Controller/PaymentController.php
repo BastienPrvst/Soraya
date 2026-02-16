@@ -4,7 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Address;
 use App\Entity\Order;
-use App\Form\AddressType;
+use App\Entity\User;
+use App\Enum\SessionKey;
 use App\Form\OrderType;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
@@ -19,7 +20,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
-use Symfony\UX\Turbo\TurboBundle;
 
 final class PaymentController extends AbstractController
 {
@@ -42,11 +42,11 @@ final class PaymentController extends AbstractController
     public function paymentAuthentification(Request $request): Response
     {
         $session = $this->requestStack->getSession();
-        $cart = $session->get('shoppingCart', []);
+        $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
         $products = $this->shoppingCartService->getCartInformations($cart);
 
-        if ($session->has('order_token')) {
-            $token = $session->get('order_token');
+        if ($session->has(SessionKey::ORDER_TOKEN->value)) {
+            $token = $session->get(SessionKey::ORDER_TOKEN->value);
             $order = $this->entityManager->getRepository(Order::class)->findOneBy(
                 [
                     'token' => $token,
@@ -56,16 +56,18 @@ final class PaymentController extends AbstractController
 
             if ($order === null) {
                 $order = $this->orderService->buildOrder($products, $this->getUser());
+            } else {
+                $this->orderService->updateOrder($order, $products);
             }
         } else {
             $order = $this->orderService->buildOrder($products, $this->getUser());
-            $session->set('order_token', $order->getToken());
+            $session->set(SessionKey::ORDER_TOKEN->value, $order->getToken());
         }
 
 
         if ($this->getUser()) {
-            return $this->render('payment/delivery.html.twig', [
-                'order' => $order,
+            return $this->redirectToRoute('app_payment_delivery', [
+                'token' => $order->getToken(),
             ]);
         }
 
@@ -92,17 +94,31 @@ final class PaymentController extends AbstractController
     ): Response {
 
         if ($request->isMethod('POST')) {
-            $deliveryMode = $request->request->get('delivery_mode');
+            $deliveryMode = $request->request->get(SessionKey::DELIVERY_MODE->value);
 
             if ($deliveryMode === 'home') {
-                if ($this->getUser()) {
+                /* @var $user User */
+                $user = $this->getUser();
+
+                if ($user) {
                     $address = $this->entityManager->getRepository(Address::class)->findOneBy([
-                        'User' => $this->getUser(),
+                        'User' => $user,
                         'isActive' => true
                     ]) ?? new Address();
                 } else {
                     $address = new Address();
                 }
+
+
+                if ($user) {
+                    $order
+                        ->setFirstname($user->getFirstname())
+                        ->setLastname($user->getLastname())
+                        ->setEmail($user->getEmail())
+                        ->setDeliveryAddress($address)
+                    ;
+                }
+
 
                 $form = $this->createForm(OrderType::class, $order);
 
@@ -125,8 +141,6 @@ final class PaymentController extends AbstractController
             'order' => $order,
         ]);
     }
-
-
 
 
     /**

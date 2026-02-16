@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Enum\SessionKey;
 use App\Repository\ProductRepository;
 use App\Service\ShoppingCartService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -51,7 +52,7 @@ final class ShoppingCartController extends AbstractController
         $this->shoppingCartService->update($id, $action);
 
         $session = $request->getSession();
-        $shoppingCart = $session->get('shoppingCart', []);
+        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value, []);
 
         if (!empty($shoppingCart) &&
             $request->getPreferredFormat() === TurboBundle::STREAM_FORMAT) {
@@ -103,7 +104,7 @@ final class ShoppingCartController extends AbstractController
         $this->shoppingCartService->remove($id);
 
         $session = $request->getSession();
-        $shoppingCart = $session->get('shoppingCart', []);
+        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value, []);
 
         if (!empty($shoppingCart) &&
             $request->getPreferredFormat() === TurboBundle::STREAM_FORMAT) {
@@ -133,8 +134,8 @@ final class ShoppingCartController extends AbstractController
     {
         $session = $request->getSession();
 
-        if ($session->has('shoppingCart')) {
-            $shoppingCart = $session->get('shoppingCart');
+        if ($session->has(SessionKey::SHOPPING_CART->value)) {
+            $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
             $viewCart = $this->shoppingCartService->getCartInformations($shoppingCart);
         }
 
