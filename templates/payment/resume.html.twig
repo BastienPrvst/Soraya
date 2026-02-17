@@ -1,0 +1,56 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Recapitulatif de votre commande
+{% endblock %}
+
+{% block body %}
+
+
+    <main class="container-fluid d-flex flex-row">
+        <div class="row w-100">
+            <section class="left ms-3 col-7">
+                <div class="h-75">
+                    <h2>Recapitulatif de la commande</h2>
+                </div>
+
+                <div>
+                    <h3>Résumé</h3>
+
+                    <div>
+                        <span>{{ order.firstname }} {{ order.lastname }}</span><br>
+                        <span>{{ order.email }}</span><br>
+                        {% if order.phoneNumber %}
+                            <span>{{ order.phoneNumber }}</span>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+
+
+                <h4>3. Paiement</h4>
+
+                    <a href="{{ path('app_stripe_checkout', { token:order.token }) }}">Procéder au paiement</a>
+
+                <hr>
+            </section>
+
+            <section id="order_details" class="col-4 ms-3">
+                <div>
+                    Total produit (TVA incluse) {{ order.total }}€
+                    <br>
+                    <span>
+                    Total {{ order.total + order.deliveryPrice }} €
+                </span>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+
+
+{% endblock %}
+
+

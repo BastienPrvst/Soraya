@@ -21,15 +21,10 @@ class AddressType extends AbstractType
             ->add('Zipcode', IntegerType::class, ['label' => 'Code postal'])
             ->add('country', CountryType::class, [
                 'label' => 'Pays',
-                'choices' => [
-                    'Angleterre' => 'en',
-                    'France' => 'fr',
-                    'Belgique' => 'B',
-                    'Luxembourg' => 'L',
-                    'Monaco' => 'MO',
-                ],
                 'preferred_choices' => ['FR'],
-                'data' => 'FR',
+                'choice_filter' => static function (string $countryCode) {
+                    return in_array($countryCode, ['FR', 'BE', 'LU', 'MC', 'GB'], true);
+                },
             ]);
     }
 

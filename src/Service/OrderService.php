@@ -2,9 +2,11 @@
 
 namespace App\Service;
 
+use App\Entity\Address;
 use App\Entity\Order;
 use App\Entity\OrderItem;
 use App\Entity\User;
+use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
@@ -34,7 +36,19 @@ class OrderService extends AbstractType
             ->setCreationDate(new \DateTime())
             ->setDelivery(true)
             ->setEmail($user?->getEmail())
+            ->setDeliveryMode(DeliveryMode::HOME)
         ;
+
+        if ($user) {
+            $address = $this->entityManager->getRepository(Address::class)->findOneBy([
+                'User' => $user,
+                'isActive' => true
+            ]);
+
+            if ($address) {
+                $order->setDeliveryAddress($address);
+            }
+        }
 
         $this->createOrderItems($products, $order);
 

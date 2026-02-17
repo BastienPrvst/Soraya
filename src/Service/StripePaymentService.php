@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Enum\SessionKey;
+use App\Entity\Order;
 use Stripe\Checkout\Session;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
@@ -15,7 +15,6 @@ class StripePaymentService extends AbstractController
 
     public function __construct(
         protected RequestStack $requestStack,
-        private readonly ShoppingCartService $shoppingCartService
     ) {
     }
 
@@ -23,23 +22,12 @@ class StripePaymentService extends AbstractController
      * @throws ApiErrorException
      * @throws \JsonException
      */
-    public function createPayment(): ?string
+    public function createPayment(Order $order): ?string
     {
 
         Stripe::setApiKey($this->getParameter('payment.secret_key'));
         Stripe::setApiVersion('2025-08-27.basil');
-
-        $session = $this->requestStack->getSession();
-        if (!$session->has(SessionKey::SHOPPING_CART->value)) {
-            return null;
-        }
-
-        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
-        $cart = $this->shoppingCartService->getCartInformations($shoppingCart);
-
-        if (empty($cart)) {
-            return null;
-        }
+        $orderItems = $order->getOrderItems();
 
         $returnUrl = $this->generateUrl(
             'app_stripe_success',
@@ -49,7 +37,7 @@ class StripePaymentService extends AbstractController
 
         $stripeSession = Session::create([
             'ui_mode' => 'embedded',
-            'line_items' => array_values(array_map(static fn (array $product) => [
+            'line_items' => array_values(array_map(static fn ($product) => [
                 'quantity' => $product['quantity'],
                 'price_data' => [
                     'currency' => 'eur',
@@ -58,7 +46,7 @@ class StripePaymentService extends AbstractController
                     ],
                     'unit_amount' => (int) round($product['price'] * 100),
                 ],
-            ], $cart)),
+            ], (array)$orderItems)),
             'mode' => 'payment',
             'return_url' => $returnUrl . '?session_id={CHECKOUT_SESSION_ID}',
         ]);

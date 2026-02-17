@@ -5,6 +5,8 @@ namespace App\Controller;
 use App\Entity\Address;
 use App\Entity\Order;
 use App\Entity\User;
+use App\Enum\DeliveryMode;
+use App\Enum\OrderStatus;
 use App\Enum\SessionKey;
 use App\Form\OrderType;
 use App\Service\OrderService;
@@ -50,8 +52,9 @@ final class PaymentController extends AbstractController
             $order = $this->entityManager->getRepository(Order::class)->findOneBy(
                 [
                     'token' => $token,
-                    'status' => 'created'
-                ]
+                    'status' => OrderStatus::CREATED
+                ],
+                ['creationDate' => 'DESC']
             );
 
             if ($order === null) {
@@ -90,54 +93,69 @@ final class PaymentController extends AbstractController
     #[Route(path: '/paiement/livraison/{token}', name: 'app_payment_delivery')]
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): Response {
+
+        return $this->render('payment/delivery.html.twig', [
+            'order' => $order,
+        ]);
+    }
+
+    #[Route(path: '/paiement/livraison/home/{token}', name: 'app_payment_delivery_home')]
+    public function deliveryHome(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
     ): Response {
 
-        if ($request->isMethod('POST')) {
-            $deliveryMode = $request->request->get(SessionKey::DELIVERY_MODE->value);
+        $order->setDeliveryMode(DeliveryMode::HOME);
+        $form = $this->createForm(OrderType::class, $order);
+        $form->handleRequest($request);
 
-            if ($deliveryMode === 'home') {
-                /* @var $user User */
-                $user = $this->getUser();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
 
-                if ($user) {
-                    $address = $this->entityManager->getRepository(Address::class)->findOneBy([
-                        'User' => $user,
-                        'isActive' => true
-                    ]) ?? new Address();
-                } else {
-                    $address = new Address();
-                }
-
-
-                if ($user) {
-                    $order
-                        ->setFirstname($user->getFirstname())
-                        ->setLastname($user->getLastname())
-                        ->setEmail($user->getEmail())
-                        ->setDeliveryAddress($address)
-                    ;
-                }
-
-
-                $form = $this->createForm(OrderType::class, $order);
-
-                return $this->render('payment/_delivery_home.html.twig', [
-                    'form' => $form->createView(),
-                    'order' => $order,
-                ]);
-            }
-
-            if ($deliveryMode === 'relay') {
-                return $this->render('payment/_delivery_relay.html.twig', [
-                    'order' => $order,
-                ]);
-            }
-
-            return new Response('', 204);
+            return $this->redirectToRoute('app_payment_resume', [
+                'token' => $order->getToken()
+            ]);
         }
 
-        return $this->render('payment/delivery.html.twig', [
+        return $this->render('payment/delivery_home.html.twig', [
+            'order' => $order,
+            'form' => $form,
+        ]);
+    }
+
+    #[Route(path: '/paiement/livraison/relay/{token}', name: 'app_payment_delivery_relay')]
+    public function deliveryRelay(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        Request $request,
+    ): Response {
+
+        $order->setDeliveryMode(DeliveryMode::RELAY);
+        $form = $this->createForm(OrderType::class, $order);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->flush();
+
+            return $this->redirectToRoute('app_payment_resume', [
+                'token' => $order->getToken()
+            ]);
+        }
+
+        return $this->render('payment/delivery_relay.html.twig', [
+            'order' => $order,
+            'form' => $form,
+        ]);
+    }
+
+
+
+    #[Route(path: '/Recapitulatif-de-la-commande/{token}', name: 'app_payment_resume')]
+    public function paymentResume(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): Response {
+
+        return $this->render('payment/resume.html.twig', [
             'order' => $order,
         ]);
     }
@@ -147,10 +165,13 @@ final class PaymentController extends AbstractController
      * @throws ApiErrorException
      * @throws \JsonException
      */
-    #[Route(path: '/checkout', name: 'app_stripe_checkout')]
-    public function generateSession(): Response
-    {
-        $clientSecret = $this->stripePaymentService->createPayment();
+    #[Route(path: '/checkout/{token}', name: 'app_stripe_checkout')]
+    public function generateSession(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): Response {
+
+
+        $clientSecret = $this->stripePaymentService->createPayment($order);
 
         if (!$clientSecret) {
             return $this->json(['error' => 'Panier vide'], 400);

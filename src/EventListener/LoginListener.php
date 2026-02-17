@@ -23,41 +23,6 @@ final readonly class LoginListener
     ) {
     }
 
-
-    /**
-     * @param LoginSuccessEvent $event
-     * @return void
-     *
-
-     * -- Il a une order ACTIVE à son nom
-     *
-     * ---- Il est en train de commander
-     * Idée 2
-     * -> On passe l'ancienne commande en canceled et on integre la nouvelle avec le nouveau token
-     *
-     * ---- Il n'est pas en train de commander
-     *
-     * -> On ne fait rien
-     *
-     */
-
-    /** Logique:
-     *
-     * SI l'utilisateur se connecte/s'inscrit :
-     *
-     * -- Il n'a pas d'order ACTIVE a son nom
-     *
-     * ---- Il est en train de commander
-     *
-     * -> On rattache l'order en cours à son utilisateur, facile
-     *
-     *
-     * ---- Il n'est pas en train de commander
-     *
-     * On ne fait rien
-     */
-
-
     #[AsEventListener]
     public function onLoginSuccessEvent(LoginSuccessEvent $event): void
     {
@@ -65,11 +30,27 @@ final readonly class LoginListener
         $user = $event->getUser();
         $session = $this->requestStack->getSession();
         $oldOrder = $this->orderRepository->findOneBy(
-            ['user' => $user, 'status' => OrderStatus::CREATED],
+            [
+                'user' => $user,
+                'status' => OrderStatus::CREATED
+            ],
             ['creationDate' => 'DESC']
         );
+        /**
+         * Si l'utilisateur a commencé un panier sans faire d'order et se connecte,
+         * sa derniere order avec un statut en cours passe en canceled
+        */
+        if ($oldOrder
+            && !$session->has(SessionKey::ORDER_TOKEN->value)
+            && $session->has(SessionKey::SHOPPING_CART->value)) {
+                $oldOrder->setStatus(OrderStatus::CANCELED);
+                $this->entityManager->flush();
+                return;
+        }
 
-
+        /**
+         * Si la session possede un token d'order
+         */
         if ($session->has(SessionKey::ORDER_TOKEN->value)) {
             $orderToken = $session->get(SessionKey::ORDER_TOKEN->value);
 
@@ -81,6 +62,10 @@ final readonly class LoginListener
                 ['creationDate' => 'DESC']
             );
 
+            /**
+             * On rattache la personne anonyme qui a commencé une order puis s'est connecté et s'il y'en a une ancienne, on l'annule
+             */
+
             if ($order && $order->getUser() === null) {
                 if ($oldOrder) {
                     $oldOrder->setStatus(OrderStatus::CANCELED);
@@ -89,7 +74,12 @@ final readonly class LoginListener
                 $order->setUser($user);
                 $this->entityManager->flush();
             }
-        } elseif ($oldOrder) {
+
+            /**
+             * Sinon, on recupere la derniere order et on met à jour la session avec
+             */
+
+        } elseif ($oldOrder && $oldOrder->getOrderItems()->count() > 0) {
             $session->remove(SessionKey::SHOPPING_CART->value);
             $session->set(SessionKey::ORDER_TOKEN->value, $oldOrder->getToken());
             $orderItems = $oldOrder->getOrderItems();

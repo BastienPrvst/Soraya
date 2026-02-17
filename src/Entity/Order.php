@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -26,7 +27,7 @@ class Order
     #[ORM\Column]
     private ?bool $delivery = null;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'orders')]
     private ?Address $deliveryAddress = null;
 
     /**
@@ -63,6 +64,9 @@ class Order
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $lastname = null;
+
+    #[ORM\Column(enumType: DeliveryMode::class)]
+    private ?DeliveryMode $deliveryMode = null;
 
     public function __construct()
     {
@@ -252,6 +256,18 @@ class Order
     public function setLastname(?string $lastname): static
     {
         $this->lastname = $lastname;
+
+        return $this;
+    }
+
+    public function getDeliveryMode(): ?DeliveryMode
+    {
+        return $this->deliveryMode;
+    }
+
+    public function setDeliveryMode(DeliveryMode $deliveryMode): static
+    {
+        $this->deliveryMode = $deliveryMode;
 
         return $this;
     }

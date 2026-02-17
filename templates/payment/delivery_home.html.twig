@@ -1,29 +1,20 @@
 {% extends 'base.html.twig' %}
-
 {% block title %}
-    Votre Commande
+    Livraison à domicile
 {% endblock %}
 
-
 {% block body %}
+
+
     <main class="container-fluid d-flex flex-row">
+
+        <a href="{{ path('app_payment_delivery', { token:order.token }) }}">Retour</a>
+
         <div class="row w-100">
             <section class="left ms-3 col-7">
                 <div class="h-75">
-                    <h2>1. Choix du mode de livraison</h2>
-                    <hr>
 
-                    <button>
-                        <a href="{{ path('app_payment_delivery_home', { token:order.token }) }}">
-                            A mon domicile
-                        </a>
-                    </button>
-
-                    <button>
-                        <a href="{{ path('app_payment_delivery_relay', { token:order.token }) }}">
-                            En point relai
-                        </a>
-                    </button>
+                    {{ form(form) }}
 
                 </div>
             </section>
@@ -44,13 +35,6 @@
 
         </div>
     </main>
-
-
-
-
-
-
-
 
 {% endblock %}
 
