@@ -14,13 +14,13 @@
                     <hr>
 
                     <button>
-                        <a href="{{ path('app_payment_delivery_home', { token:order.token }) }}">
+                        <a href="{{ path('app_payment_delivery_choice', { type:'home', token:order.token }) }}">
                             A mon domicile
                         </a>
                     </button>
 
                     <button>
-                        <a href="{{ path('app_payment_delivery_relay', { token:order.token }) }}">
+                        <a href="{{ path('app_payment_delivery_choice', { type:'relay', token:order.token }) }}">
                             En point relai
                         </a>
                     </button>

@@ -32,7 +32,6 @@ class OrderService extends AbstractType
             ->setFirstname($user?->getFirstname())
             ->setLastname($user?->getLastname())
             ->setPhoneNumber(null)
-            ->setStatus(OrderStatus::CREATED)
             ->setCreationDate(new \DateTime())
             ->setDelivery(true)
             ->setEmail($user?->getEmail())
@@ -87,5 +86,28 @@ class OrderService extends AbstractType
         }
 
         $order->setTotal($cartTotal);
+    }
+
+    public function isOrderMatchingCart(Order $order, array $shoppingCart): bool
+    {
+        $orderItems = $order->getOrderItems();
+
+        if (count($shoppingCart) !== count($orderItems)) {
+            return false;
+        }
+
+        foreach ($orderItems as $item) {
+            $id = (string) $item->getProduct()?->getId();
+
+            if (!isset($shoppingCart[$id])) {
+                return false;
+            }
+
+            if ((int)$shoppingCart[$id] !== $item->getQuantity()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

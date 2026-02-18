@@ -5,10 +5,67 @@
 {% endblock %}
 
 {% block body %}
-    <h2>Paiement</h2>
 
-    <div id="checkout">
-    </div>
+    <main class="container-fluid d-flex flex-row">
+        <div class="row w-100">
+            <section class="d-flex flex-row">
+                <div class="left ms-3 col-7">
+                    <h2>Recapitulatif de la commande</h2>
+                    <div>
+                        <h3>Résumé</h3>
+
+
+                        <div class="user-info d-flex align-items-center justify-content-center flex-column">
+                            <div>
+                                <span>{{ order.firstname }} {{ order.lastname }}</span><br>
+                                <span>{{ order.email }}</span><br>
+                                {% if order.phoneNumber %}
+                                    <span>{{ order.phoneNumber }}</span>
+                                {% endif %}
+                            </div>
+
+                            <div>
+
+                                <span>{{ order.deliveryAddress.street1 }}</span>
+                                {% if order.deliveryAddress.street2 %}
+                                    <br>
+                                    <span>{{ order.deliveryAddress.street2 }}</span>
+                                {% endif %}
+                                <br>
+                                <span>{{ order.deliveryAddress.zipcode }} {{ order.deliveryAddress.city }}</span>
+                                <br>
+                                <span>{{ order.deliveryAddress.country }}</span>
+
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="col-5">
+                    Total produit (TVA incluse) {{ order.total }}€
+                    <br>
+                    <span>
+                    Total {{ order.total + order.deliveryPrice }} €
+                </span>
+                </div>
+            </section>
+
+
+            <section class="mt-5">
+                <h2>Paiement</h2>
+
+                <div id="checkout" class="col-12">
+                </div>
+            </section>
+
+
+        </div>
+
+    </main>
 
 {% endblock %}
 
@@ -16,7 +73,7 @@
     <script src="https://js.stripe.com/clover/stripe.js"></script>
     <script src="{{ asset('js/checkout.js') }}" defer></script>
     <script>
-        const checkoutPageUrl = '{{ url('app_stripe_checkout') }}';
+        const checkoutPageUrl = '{{ url('app_stripe_checkout', { token:order.token }) }}';
         const stripePublicKey = '{{ stripe_public_key }}'
     </script>
 {% endblock %}

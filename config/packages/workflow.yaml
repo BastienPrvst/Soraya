@@ -1,0 +1,38 @@
+framework:
+    workflows:
+        order_completing:
+            type: 'state_machine'
+            marking_store:
+                type: 'method'
+                property: 'status'
+            supports:
+                - App\Entity\Order
+            initial_marking: created
+            places:
+                - created
+                - delivery_choice
+                - pending_payment
+                - paid
+                - shipped
+                - delivered
+                - returned
+                - canceled
+            transitions:
+                to_delivery_choice:
+                    from: created
+                    to: delivery_choice
+                to_pending_payment:
+                    from: delivery_choice
+                    to: pending_payment
+                pay:
+                    from: pending_payment
+                    to: paid
+                ship:
+                    from: paid
+                    to: shipped
+                deliver:
+                    from: shipped
+                    to: delivered
+                cancel:
+                    from: [created, delivery_choice, pending_payment]
+                    to: canceled

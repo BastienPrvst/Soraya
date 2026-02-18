@@ -45,7 +45,7 @@ class Order
     private ?float $total = null;
 
     #[ORM\Column(enumType: OrderStatus::class)]
-    private ?OrderStatus $status = null;
+    private ?OrderStatus $status = OrderStatus::CREATED;
 
     #[ORM\Column(length: 255)]
     private ?string $token = null;

@@ -9,6 +9,7 @@ use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Workflow\Registry;
 
 class ShoppingCartService extends AbstractType
 {
@@ -16,7 +17,8 @@ class ShoppingCartService extends AbstractType
     public function __construct(
         private readonly ProductRepository $productRepository,
         private readonly RequestStack      $requestStack,
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly Registry $registry
     ) {
     }
 
@@ -80,10 +82,13 @@ class ShoppingCartService extends AbstractType
             ]);
 
             if ($order !== null) {
-                $order->setStatus(OrderStatus::CANCELED);
-                $this->entityManager->persist($order);
-                $this->entityManager->flush();
+                $workflow = $this->registry->get($order, 'order_completing');
+
+                if ($workflow->can($order, 'cancel')) {
+                    $workflow->apply($order, 'cancel');
+                }
             }
+
             $session->remove(SessionKey::ORDER_TOKEN->value);
         }
         $session->remove(SessionKey::SHOPPING_CART->value);

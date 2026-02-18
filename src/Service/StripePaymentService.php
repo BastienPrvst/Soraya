@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Order;
+use App\Entity\OrderItem;
 use Stripe\Checkout\Session;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
@@ -25,28 +26,30 @@ class StripePaymentService extends AbstractController
     public function createPayment(Order $order): ?string
     {
 
-        Stripe::setApiKey($this->getParameter('payment.secret_key'));
+        Stripe::setApiKey($this->getParameter('stripe.secret_key'));
         Stripe::setApiVersion('2025-08-27.basil');
         $orderItems = $order->getOrderItems();
 
         $returnUrl = $this->generateUrl(
             'app_stripe_success',
-            [],
+            ['token' => $order->getToken()],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
         $stripeSession = Session::create([
             'ui_mode' => 'embedded',
-            'line_items' => array_values(array_map(static fn ($product) => [
-                'quantity' => $product['quantity'],
-                'price_data' => [
-                    'currency' => 'eur',
-                    'product_data' => [
-                        'name' => $product['name'],
+            'line_items' => $orderItems
+                ->map(static fn (OrderItem $item) => [
+                    'quantity' => $item->getQuantity(),
+                    'price_data' => [
+                        'currency' => 'eur',
+                        'product_data' => [
+                            'name' => $item->getProduct()?->getName(),
+                        ],
+                        'unit_amount' => (int) round($item->getUnitPrice() * 100),
                     ],
-                    'unit_amount' => (int) round($product['price'] * 100),
-                ],
-            ], (array)$orderItems)),
+                ])
+                ->toArray(),
             'mode' => 'payment',
             'return_url' => $returnUrl . '?session_id={CHECKOUT_SESSION_ID}',
         ]);
