@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Votre Commande
+{% endblock %}
+
+
+{% block body %}
+    <main class="container-fluid d-flex flex-row">
+        <div class="row w-100">
+            <section class="left ms-3 col-7">
+                <div class="h-75">
+
+                    {% if app.user is null %}
+                        <a href="{{ path('app_payment_back', { token:order.token }) }}">Retour</a>
+                    {% endif %}
+
+
+                    <h2>1. Choix du mode de livraison</h2>
+                    <hr>
+
+                    <button>
+                        <a href="{{ path('app_payment_delivery_choice', { type:'home', token:order.token }) }}">
+                            A mon domicile
+                        </a>
+                    </button>
+
+                    <button>
+                        <a href="{{ path('app_payment_delivery_choice', { type:'relay', token:order.token }) }}">
+                            En point relai
+                        </a>
+                    </button>
+
+                </div>
+            </section>
+
+
+
+
+
+            <section id="order_details" class="col-4 ms-3">
+                <div>
+                    Total produit (TVA incluse) {{ order.total }}€
+                    <br>
+                    <span>
+                    Total {{ order.total + order.deliveryPrice }} €
+                </span>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+
+
+
+
+
+
+
+{% endblock %}
+
+

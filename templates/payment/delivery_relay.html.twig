@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Livraison en point relais
+{% endblock %}
+
+{% block body %}
+
+
+    <main class="container-fluid d-flex flex-row">
+
+        <div class="row w-100">
+            <section class="left ms-3 col-7">
+                <div class="h-75">
+
+                    {{ form(form) }}
+
+                </div>
+            </section>
+
+
+
+
+
+            <section id="order_details" class="col-4 ms-3">
+                <div>
+                    Total produit (TVA incluse) {{ order.total }}€
+                    <br>
+                    <span>
+                    Total {{ order.total + order.deliveryPrice }} €
+                </span>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+{% endblock %}
+

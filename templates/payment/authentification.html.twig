@@ -1,0 +1,22 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Connectez vous ou continuez en mode invité
+{% endblock %}
+
+{% block body %}
+
+
+    <div>
+
+        <a href="{{ path('app_login') }}">Continuer en se connectant</a>
+
+        <a href="{{ path('app_payment_delivery', {token: order.token}) }}">Continuer en tant qu'invité</a>
+
+
+    </div>
+
+
+{% endblock %}
+
+

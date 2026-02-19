@@ -46,10 +46,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     /**
-     * @var Collection<int, Adress>
+     * @var Collection<int, Address>
      */
-    #[ORM\OneToMany(targetEntity: Adress::class, mappedBy: 'User')]
-    private Collection $adresses;
+    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'User')]
+    private Collection $addresses;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(
@@ -78,9 +78,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $isActive = false;
 
+    /**
+     * @var Collection<int, Order>
+     */
+    #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'user')]
+    private Collection $orders;
+
     public function __construct()
     {
-        $this->adresses = new ArrayCollection();
+        $this->addresses = new ArrayCollection();
+        $this->orders = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -159,29 +166,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Adress>
+     * @return Collection<int, Address>
      */
-    public function getAdresses(): Collection
+    public function getAddresses(): Collection
     {
-        return $this->adresses;
+        return $this->addresses;
     }
 
-    public function addAdress(Adress $adress): static
+    public function addAddress(Address $address): static
     {
-        if (!$this->adresses->contains($adress)) {
-            $this->adresses->add($adress);
-            $adress->setUser($this);
+        if (!$this->addresses->contains($address)) {
+            $this->addresses->add($address);
+            $address->setUser($this);
         }
 
         return $this;
     }
 
-    public function removeAdress(Adress $adress): static
+    public function removeAddress(Address $address): static
     {
-        if ($this->adresses->removeElement($adress)) {
+        if ($this->addresses->removeElement($address)) {
             // set the owning side to null (unless already changed)
-            if ($adress->getUser() === $this) {
-                $adress->setUser(null);
+            if ($address->getUser() === $this) {
+                $address->setUser(null);
             }
         }
 
@@ -232,6 +239,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsActive(bool $isActive): static
     {
         $this->isActive = $isActive;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Order>
+     */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Order $order): static
+    {
+        if (!$this->orders->contains($order)) {
+            $this->orders->add($order);
+            $order->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrder(Order $order): static
+    {
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getUser() === $this) {
+                $order->setUser(null);
+            }
+        }
 
         return $this;
     }

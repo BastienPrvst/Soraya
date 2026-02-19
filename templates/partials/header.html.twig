@@ -1,5 +1,5 @@
 
-<header>
+<header data-turbo-temporary>
 
     <h1>Site Soraya</h1>
 
@@ -7,15 +7,15 @@
         <li><a href="{{ path('app_main') }}">Accueil</a></li>
         <li><a href="{{ path('app_products') }}">Les Produits</a></li>
         {% if app.user %}
-            <li><a href="{{ path('') }}"></a></li>
+            <li><a href="#"></a></li>
             <li><a href="{{ path('app_logout') }}">Se déconnecter</a></li>
         {% else %}
             <li><a href="{{ path('app_register') }}">S'inscrire</a></li>
             <li><a href="{{ path('app_login') }}">Se connecter</a></li>
         {% endif %}
-        <li><a href="{{ path('app_shopping_cart_view') }}">Mon panier</a></li>
-
-
+        <li>
+            <a href="{{ path('app_shopping_cart_view') }}"><img src="{{ asset('icons/shopping_cart_24dp_3A3A3B_FILL0_wght400_GRAD0_opsz24.svg') }}" alt=""> <span id="cart_quantity">{{ totalQuantityCart }}</span> Mon panier</a>
+        </li>
 
     </ul>
 

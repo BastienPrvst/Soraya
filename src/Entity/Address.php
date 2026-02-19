@@ -2,11 +2,13 @@
 
 namespace App\Entity;
 
-use App\Repository\AdressRepository;
+use App\Repository\AddressRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: AdressRepository::class)]
-class Adress
+#[ORM\Entity(repositoryClass: AddressRepository::class)]
+class Address
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -25,11 +27,25 @@ class Adress
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $Street2 = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?bool $isActive = null;
 
-    #[ORM\ManyToOne(inversedBy: 'adresses')]
+    #[ORM\ManyToOne(inversedBy: 'addresses')]
     private ?User $User = null;
+
+    /**
+     * @var Collection<int, Order>
+     */
+    #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'deliveryAddress')]
+    private Collection $orders;
+
+    #[ORM\Column(length: 255)]
+    private ?string $country = null;
+
+    public function __construct()
+    {
+        $this->orders = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -104,6 +120,48 @@ class Adress
     public function setUser(?User $User): static
     {
         $this->User = $User;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Order>
+     */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Order $order): static
+    {
+        if (!$this->orders->contains($order)) {
+            $this->orders->add($order);
+            $order->setDeliveryAddress($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrder(Order $order): static
+    {
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getDeliveryAddress() === $this) {
+                $order->setDeliveryAddress(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getCountry(): ?string
+    {
+        return $this->country;
+    }
+
+    public function setCountry(string $country): static
+    {
+        $this->country = $country;
 
         return $this;
     }
