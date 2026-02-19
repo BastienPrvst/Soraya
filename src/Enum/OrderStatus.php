@@ -10,7 +10,8 @@ enum OrderStatus: string
     case PAID = 'paid';
     case SHIPPED = 'shipped';
     case DELIVERED = 'delivered';
-    case RETURNED = 'returned';
+    case REFUND_PENDING = 'refund_pending';
+    case REFUND = 'refund';
     case CANCELED = 'canceled';
 
     public function label(): string
@@ -22,7 +23,8 @@ enum OrderStatus: string
             self::PAID => 'Payée',
             self::SHIPPED => 'En cours de livraison',
             self::DELIVERED => 'Livrée',
-            self::RETURNED => 'Retournée',
+            self::REFUND_PENDING => 'En attente de remboursement',
+            self::REFUND => 'Remboursée',
             self::CANCELED => 'Annulée'
         };
     }

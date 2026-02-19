@@ -22,7 +22,7 @@ class AddressType extends AbstractType
             ->add('country', CountryType::class, [
                 'label' => 'Pays',
                 'preferred_choices' => ['FR'],
-                'choice_filter' => static function (string $countryCode) {
+                'choice_filter' => static function (?string $countryCode): bool {
                     return in_array($countryCode, ['FR', 'BE', 'LU', 'MC', 'GB'], true);
                 },
             ]);

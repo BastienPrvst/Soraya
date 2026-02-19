@@ -10,6 +10,12 @@
         <div class="row w-100">
             <section class="left ms-3 col-7">
                 <div class="h-75">
+
+                    {% if app.user is null %}
+                        <a href="{{ path('app_payment_back', { token:order.token }) }}">Retour</a>
+                    {% endif %}
+
+
                     <h2>1. Choix du mode de livraison</h2>
                     <hr>
 

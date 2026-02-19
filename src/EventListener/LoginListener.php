@@ -2,6 +2,7 @@
 
 namespace App\EventListener;
 
+use App\Entity\Address;
 use App\Entity\User;
 use App\Enum\OrderStatus;
 use App\Enum\SessionKey;
@@ -32,7 +33,11 @@ final readonly class LoginListener
         $oldOrder = $this->orderRepository->findOneBy(
             [
                 'user' => $user,
-                'status' => OrderStatus::CREATED
+                'status' => [
+                    OrderStatus::CREATED,
+                    OrderStatus::DELIVERY_CHOICE,
+                    OrderStatus::PENDING_PAYMENT
+                ]
             ],
             ['creationDate' => 'DESC']
         );
@@ -63,7 +68,8 @@ final readonly class LoginListener
             );
 
             /**
-             * On rattache la personne anonyme qui a commencé une order puis s'est connecté et s'il y'en a une ancienne, on l'annule
+             * On rattache la personne anonyme qui a commencé une order
+             * puis s'est connecté et s'il y'en a une ancienne, on l'annule
              */
 
             if ($order && $order->getUser() === null) {
@@ -71,7 +77,19 @@ final readonly class LoginListener
                     $oldOrder->setStatus(OrderStatus::CANCELED);
                 }
 
-                $order->setUser($user);
+                $order
+                    ->setFirstname($user->getFirstname())
+                    ->setLastname($user->getLastname())
+                    ->setEmail($user->getEmail())
+                    ->setUser($user);
+
+                $address = $this->entityManager->getRepository(Address::class)->findOneBy([
+                    'User' => $user,
+                    'isActive' => true
+                ]);
+                if ($address) {
+                    $order->setDeliveryAddress($address);
+                }
                 $this->entityManager->flush();
             }
 

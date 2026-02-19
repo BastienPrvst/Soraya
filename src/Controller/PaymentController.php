@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Enum\SessionKey;
@@ -36,7 +37,6 @@ final class PaymentController extends AbstractController
     ) {
     }
 
-
     /**
      * @throws RandomException
      */
@@ -46,33 +46,28 @@ final class PaymentController extends AbstractController
         $session = $this->requestStack->getSession();
         $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
         $products = $this->shoppingCartService->getCartInformations($cart);
+        /* @var User $user */
+        $user = $this->getUser();
 
         if ($session->has(SessionKey::ORDER_TOKEN->value)) {
             $token = $session->get(SessionKey::ORDER_TOKEN->value);
-            $order = $this->entityManager->getRepository(Order::class)->findOneBy(
-                [
-                    'token' => $token,
-                    'status' => OrderStatus::CREATED
-                ],
-                ['creationDate' => 'DESC']
-            );
-
-            if ($order === null) {
-                $order = $this->orderService->buildOrder($products, $this->getUser());
-            } else {
-                $this->orderService->updateOrder($order, $products);
-            }
+            $order = $this->orderService->findLatestOrderOrCreateOne($token, $products, $user);
         } else {
-            $order = $this->orderService->buildOrder($products, $this->getUser());
-            $session->set(SessionKey::ORDER_TOKEN->value, $order->getToken());
+            $order = $this->orderService->buildOrder($products, $user);
         }
 
-//        $workflowState = $this->canTransition($order, 'to_delivery_choice');
-//
-//        if (!$workflowState) {
-//            throw $this->createAccessDeniedException();
-//        }
+        if ($order->getStatus() === OrderStatus::DELIVERY_CHOICE) {
+            return $this->redirectToRoute(
+                'app_payment_delivery',
+                ['token' => $order->getToken()]
+            );
+        }
 
+        if (!$this->canTransition($order, 'to_delivery_choice')) {
+            return  $this->redirectToRoute('app_main');
+        }
+
+        $this->applyTransition($order, 'to_delivery_choice');
 
         if ($this->getUser()) {
             return $this->redirectToRoute('app_payment_delivery', [
@@ -102,12 +97,7 @@ final class PaymentController extends AbstractController
     ): Response {
 
         $this->verifyOrderIntegrity($order);
-
-//        if ($this->canTransition($order, 'to_delivery_choice')) {
-//            $this->applyTransition($order, 'to_delivery_choice');
-//        }
-
-        return $this->render('payment/delivery.html.twig', [
+        return $this->render('payment/delivery_choice.html.twig', [
             'order' => $order,
         ]);
     }
@@ -121,25 +111,36 @@ final class PaymentController extends AbstractController
 
         $this->verifyOrderIntegrity($order);
 
-        $workflowState = $this->canTransition($order, 'to_pending_payment');
-
-        if (!$workflowState) {
-            throw $this->createAccessDeniedException();
+        if (!$this->canTransition($order, 'to_pending_payment')) {
+            return  $this->redirectToRoute('app_main');
         }
 
-
         $order->setDeliveryMode($type);
-        $form = $this->createForm(OrderType::class, $order);
-        $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->flush();
+        if ($type === DeliveryMode::HOME) {
+            $form = $this->createForm(OrderType::class, $order);
+            $form->handleRequest($request);
 
-            $this->applyTransition($order, 'to_pending_payment');
+            if ($form->isSubmitted() && $form->isValid()) {
+                $this->applyTransition($order, 'to_pending_payment');
+                $this->entityManager->flush();
+                return $this->redirectToRoute('app_payment_resume', [
+                    'token' => $order->getToken()
+                ]);
+            }
+        } elseif ($type === DeliveryMode::RELAY) {
+            $form = $this->createForm(OrderType::class, $order);
+            $form->handleRequest($request);
 
-            return $this->redirectToRoute('app_payment_resume', [
-                'token' => $order->getToken()
-            ]);
+            if ($form->isSubmitted() && $form->isValid()) {
+                $this->applyTransition($order, 'to_pending_payment');
+                $this->entityManager->flush();
+                return $this->redirectToRoute('app_payment_resume', [
+                    'token' => $order->getToken()
+                ]);
+            }
+        } else {
+            return $this->redirectToRoute('app_main');
         }
 
         return $this->render('payment/delivery_home.html.twig', [
@@ -154,9 +155,8 @@ final class PaymentController extends AbstractController
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
         $this->verifyOrderIntegrity($order);
-
         if (!$this->canTransition($order, 'pay')) {
-            throw $this->createAccessDeniedException();
+            return  $this->redirectToRoute('app_main');
         }
 
         return $this->render('payment/checkout.html.twig', [
@@ -192,20 +192,37 @@ final class PaymentController extends AbstractController
     ): Response {
 
         $this->verifyOrderIntegrity($order);
-
-        $workflowState = $this->canTransition($order, 'pay');
-
-        if (!$workflowState) {
-            throw $this->createAccessDeniedException();
+        if ($this->canTransition($order, 'pay')) {
+            $this->applyTransition($order, 'pay');
+        } else {
+            return $this->redirectToRoute('app_main');
         }
-
-        $this->applyTransition($order, 'pay');
-
         $this->shoppingCartService->emptyCart();
 
         return $this->render('payment/success.html.twig', []);
     }
 
+        #[Route('/paiement/back/{token}', name: 'app_payment_back')]
+    public function back(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): Response {
+
+            if ($this->canTransition($order, 'back_to_delivery_choice')) {
+                $this->applyTransition($order, 'back_to_delivery_choice');
+
+                return $this->redirectToRoute('app_payment_delivery', [
+                'token' => $order->getToken(),
+                ]);
+            }
+
+            if ($this->canTransition($order, 'back_to_created')) {
+                $this->applyTransition($order, 'back_to_created');
+
+                return $this->redirectToRoute('app_payment_auth');
+            }
+
+            throw $this->createAccessDeniedException();
+    }
 
     private function verifyOrderIntegrity(Order $order): void
     {
@@ -233,8 +250,6 @@ final class PaymentController extends AbstractController
         $session = $this->requestStack->getSession();
         $token = $session->get(SessionKey::ORDER_TOKEN->value);
 
-        dd($order->getToken(), $token);
-
         if ($token !== $order->getToken()) {
             throw $this->createAccessDeniedException();
         }
@@ -247,6 +262,11 @@ final class PaymentController extends AbstractController
             ->can($order, $transition);
     }
 
+    private function hasTransition(Order $order, string $transition): bool
+    {
+        return $this->registry->has($order, $transition);
+    }
+
     private function applyTransition(Order $order, string $transition): void
     {
         $workflow = $this->registry->get($order, 'order_completing');
@@ -256,6 +276,6 @@ final class PaymentController extends AbstractController
         }
 
         $workflow->apply($order, $transition);
+        $this->entityManager->flush();
     }
-
 }

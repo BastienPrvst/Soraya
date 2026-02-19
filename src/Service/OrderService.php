@@ -8,14 +8,17 @@ use App\Entity\OrderItem;
 use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
+use App\Enum\SessionKey;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class OrderService extends AbstractType
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
+        private readonly RequestStack $requestStack
     ) {
     }
 
@@ -54,8 +57,39 @@ class OrderService extends AbstractType
         $this->entityManager->persist($order);
         $this->entityManager->flush();
 
+        $session = $this->requestStack->getSession();
+        $session->set(SessionKey::ORDER_TOKEN->value, $order->getToken());
+
         return $order;
     }
+
+    /**
+     * @throws RandomException
+     */
+    public function findLatestOrderOrCreateOne(string $token, array $products, ?User $user): ?Order
+    {
+
+        $order = $this->entityManager->getRepository(Order::class)->findOneBy(
+            [
+                'token' => $token,
+                'status' => [
+                    OrderStatus::CREATED,
+                    OrderStatus::DELIVERY_CHOICE,
+                    OrderStatus::PENDING_PAYMENT
+                ]
+            ],
+            ['creationDate' => 'DESC']
+        );
+
+        if ($order === null) {
+            $order = $this->buildOrder($products, $user);
+        } else {
+            $this->updateOrder($order, $products);
+        }
+
+        return $order;
+    }
+
 
     public function updateOrder(Order $order, array $products): void
     {

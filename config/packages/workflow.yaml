@@ -1,3 +1,4 @@
+# config/packages/workflow.yaml
 framework:
     workflows:
         order_completing:
@@ -7,7 +8,9 @@ framework:
                 property: 'status'
             supports:
                 - App\Entity\Order
+
             initial_marking: created
+
             places:
                 - created
                 - delivery_choice
@@ -15,24 +18,47 @@ framework:
                 - paid
                 - shipped
                 - delivered
-                - returned
+                - refund_pending
+                - refund
                 - canceled
+
             transitions:
                 to_delivery_choice:
                     from: created
                     to: delivery_choice
+
                 to_pending_payment:
                     from: delivery_choice
                     to: pending_payment
+
                 pay:
                     from: pending_payment
                     to: paid
+
                 ship:
                     from: paid
                     to: shipped
+
                 deliver:
                     from: shipped
                     to: delivered
+
                 cancel:
                     from: [created, delivery_choice, pending_payment]
                     to: canceled
+
+                back_to_delivery_choice:
+                    from: pending_payment
+                    to: delivery_choice
+
+                back_to_created:
+                    from: [delivery_choice, pending_payment]
+                    to: created
+
+                to_refund_pending:
+                    from: delivered
+                    to: refund_pending
+
+                to_refund:
+                    from: refund_pending
+                    to: refund

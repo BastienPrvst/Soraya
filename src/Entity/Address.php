@@ -27,7 +27,7 @@ class Address
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $Street2 = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?bool $isActive = null;
 
     #[ORM\ManyToOne(inversedBy: 'addresses')]
