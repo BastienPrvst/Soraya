@@ -1,0 +1,11 @@
+
+<turbo-frame id="delivery_infos">
+    {{ form_start(form, {
+        action: path('checkout_delivery', { token: order.token }),
+        method: 'POST'
+    }) }}
+
+    {{ form_widget(form) }}
+
+    {{ form_end(form) }}
+</turbo-frame>

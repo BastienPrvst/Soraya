@@ -123,7 +123,7 @@ final class ShoppingCartController extends AbstractController
 
 
     #[Route(path: '/shoppingCart/empty', name: 'app_shopping_cart_empty')]
-    public function empty(Request $request): Response
+    public function empty(): Response
     {
         $this->shoppingCartService->emptyCart();
         return $this->redirectToRoute('app_shopping_cart_view');

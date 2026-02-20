@@ -66,25 +66,28 @@ class OrderService extends AbstractType
     /**
      * @throws RandomException
      */
-    public function findLatestOrderOrCreateOne(string $token, array $products, ?User $user): ?Order
+    public function findLatestOrderOrCreateOne(?string $token, array $products, ?User $user): ?Order
     {
+        if ($token !== null) {
+            $order = $this->entityManager->getRepository(Order::class)->findOneBy(
+                [
+                    'token' => $token,
+                    'status' => [
+                        OrderStatus::CREATED,
+                        OrderStatus::DELIVERY_CHOICE,
+                        OrderStatus::PENDING_PAYMENT
+                    ]
+                ],
+                ['creationDate' => 'DESC']
+            );
 
-        $order = $this->entityManager->getRepository(Order::class)->findOneBy(
-            [
-                'token' => $token,
-                'status' => [
-                    OrderStatus::CREATED,
-                    OrderStatus::DELIVERY_CHOICE,
-                    OrderStatus::PENDING_PAYMENT
-                ]
-            ],
-            ['creationDate' => 'DESC']
-        );
-
-        if ($order === null) {
-            $order = $this->buildOrder($products, $user);
+            if ($order === null) {
+                $order = $this->buildOrder($products, $user);
+            } else {
+                $this->updateOrder($order, $products);
+            }
         } else {
-            $this->updateOrder($order, $products);
+            $order = $this->buildOrder($products, $user);
         }
 
         return $order;

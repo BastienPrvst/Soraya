@@ -16,12 +16,15 @@ use Random\RandomException;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 use Symfony\Component\Workflow\Registry;
+use Symfony\UX\Turbo\TurboBundle;
 
 final class PaymentController extends AbstractController
 {
@@ -38,127 +41,146 @@ final class PaymentController extends AbstractController
     }
 
     /**
+     * @param Order $order
+     * @return Response
+     * Route de redirection
+     */
+    #[Route('/checkout/next/{token}', name: 'checkout_next')]
+    public function next(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): Response {
+        return match ($order->getStatus()) {
+            OrderStatus::CREATED => $this->redirectToRoute('checkout_auth'),
+            OrderStatus::DELIVERY_CHOICE => $this->redirectToRoute('checkout_delivery'),
+            OrderStatus::PENDING_PAYMENT => $this->redirectToRoute('checkout_summary'),
+            OrderStatus::PAID => $this->redirectToRoute('checkout_success'),
+            default => $this->redirectToRoute('app_main'),
+        };
+    }
+
+    /**
      * @throws RandomException
      */
-    #[Route(path: '/paiement/auth', name: 'app_payment_auth')]
-    public function paymentAuthentification(Request $request): Response
+    #[Route(path: '/paiement/auth', name: 'checkout_auth')]
+    public function paymentAuthentification(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         $session = $this->requestStack->getSession();
         $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
+        $token = $session->get(SessionKey::ORDER_TOKEN->value);
         $products = $this->shoppingCartService->getCartInformations($cart);
         /* @var User $user */
         $user = $this->getUser();
 
-        if ($session->has(SessionKey::ORDER_TOKEN->value)) {
-            $token = $session->get(SessionKey::ORDER_TOKEN->value);
-            $order = $this->orderService->findLatestOrderOrCreateOne($token, $products, $user);
-        } else {
-            $order = $this->orderService->buildOrder($products, $user);
-        }
-
-        if ($order->getStatus() === OrderStatus::DELIVERY_CHOICE) {
-            return $this->redirectToRoute(
-                'app_payment_delivery',
-                ['token' => $order->getToken()]
-            );
-        }
-
-        if (!$this->canTransition($order, 'to_delivery_choice')) {
-            return  $this->redirectToRoute('app_main');
-        }
-
-        $this->applyTransition($order, 'to_delivery_choice');
+        /* @var Order $order */
+        $order = $this->orderService->findLatestOrderOrCreateOne($token, $products, $user);
 
         if ($this->getUser()) {
-            return $this->redirectToRoute('app_payment_delivery', [
+            if ($this->canTransition($order, 'to_delivery_choice')) {
+                $this->applyTransition($order, 'to_delivery_choice');
+            }
+            return $this->redirectToRoute('checkout_delivery', [
                 'token' => $order->getToken(),
             ]);
         }
-
         $this->saveTargetPath(
             $request->getSession(),
             'main',
             $this->generateUrl(
-                'app_payment_delivery',
+                'checkout_delivery',
                 [
-                'token' => $order->getToken(),
+                    'token' => $order->getToken(),
                 ]
             )
         );
 
+        $error = $authenticationUtils->getLastAuthenticationError();
+        $lastUsername = $authenticationUtils->getLastUsername();
+
         return $this->render('payment/authentification.html.twig', [
             'order' => $order,
+            'error' => $error,
+            'last_username' => $lastUsername,
         ]);
     }
 
-    #[Route(path: '/paiement/livraison/{token}', name: 'app_payment_delivery')]
+    #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-    ): Response {
-
-        $this->verifyOrderIntegrity($order);
-        return $this->render('payment/delivery_choice.html.twig', [
-            'order' => $order,
-        ]);
-    }
-
-    #[Route(path: '/paiement/livraison/{type}/{token}', name: 'app_payment_delivery_choice')]
-    public function deliveryHome(
-        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
-        DeliveryMode $type,
     ): Response {
+
+        $form = $this->createForm(OrderType::class, $order);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            return $this->redirectToRoute('checkout_summary', [
+                'token' => $order->getToken(),
+            ]);
+        }
 
         $this->verifyOrderIntegrity($order);
 
-        if (!$this->canTransition($order, 'to_pending_payment')) {
-            return  $this->redirectToRoute('app_main');
+        if ($request->headers->has('Turbo-Frame')) {
+            return $this->render('payment/delivery.frame.html.twig', [
+                'order' => $order,
+                'form' => $form->createView(),
+            ]);
         }
 
-        $order->setDeliveryMode($type);
-
-        if ($type === DeliveryMode::HOME) {
-            $form = $this->createForm(OrderType::class, $order);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                $this->applyTransition($order, 'to_pending_payment');
-                $this->entityManager->flush();
-                return $this->redirectToRoute('app_payment_resume', [
-                    'token' => $order->getToken()
-                ]);
-            }
-        } elseif ($type === DeliveryMode::RELAY) {
-            $form = $this->createForm(OrderType::class, $order);
-            $form->handleRequest($request);
-
-            if ($form->isSubmitted() && $form->isValid()) {
-                $this->applyTransition($order, 'to_pending_payment');
-                $this->entityManager->flush();
-                return $this->redirectToRoute('app_payment_resume', [
-                    'token' => $order->getToken()
-                ]);
-            }
-        } else {
-            return $this->redirectToRoute('app_main');
-        }
-
-        return $this->render('payment/delivery_home.html.twig', [
+        return $this->render('payment/delivery_choice.html.twig', [
             'order' => $order,
             'form' => $form->createView(),
         ]);
     }
 
+    #[Route(path: '/paiement/livraison/formulaire/{token}', name: 'checkout_delivery_home')]
+    public function paymentDeliveryForm(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        Request $request,
+    ): Response {
 
-    #[Route(path: 'paiement/recapitulatif-de-la-commande/{token}', name: 'app_payment_resume')]
+        $order->setDeliveryMode(DeliveryMode::HOME);
+        $this->entityManager->flush();
+
+        $form = $this->createForm(OrderType::class, $order);
+        if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
+            return $this->render('payment/delivery.frame.html.twig', [
+                'form' => $form->createView(),
+                'order' => $order,
+            ]);
+        }
+
+        return $this->render('payment/delivery_fallback.html.twig', [
+            'form' => $form->createView(),
+            'order' => $order,
+        ]);
+    }
+
+    #[Route(path: '/paiement/livraison/relay/{token}', name: 'checkout_delivery_relay')]
+    public function paymentRelayForm(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        Request $request,
+    ): Response {
+
+        $order->setDeliveryMode(DeliveryMode::RELAY);
+        $this->entityManager->flush();
+
+        if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
+            return $this->render('payment/relay.frame.html.twig', [
+                'order' => $order,
+            ]);
+        }
+        return $this->render('payment/relay_fallback.html.twig', [
+            'order' => $order,
+        ]);
+    }
+
+
+    #[Route(path: 'paiement/recapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
     public function paymentResume(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
         $this->verifyOrderIntegrity($order);
-        if (!$this->canTransition($order, 'pay')) {
-            return  $this->redirectToRoute('app_main');
-        }
-
         return $this->render('payment/checkout.html.twig', [
             'order' => $order,
         ]);
@@ -169,7 +191,7 @@ final class PaymentController extends AbstractController
      * @throws ApiErrorException
      * @throws \JsonException
      */
-    #[Route(path: '/checkout/{token}', name: 'app_stripe_checkout')]
+    #[Route(path: '/checkout/pay/{token}', name: 'checkout_stripe')]
     public function generateSession(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
@@ -186,40 +208,34 @@ final class PaymentController extends AbstractController
     }
 
 
-    #[Route('/confirmation-de-paiement/{token}', name: 'app_stripe_success')]
+    #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
     public function index(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
 
         $this->verifyOrderIntegrity($order);
-        if ($this->canTransition($order, 'pay')) {
-            $this->applyTransition($order, 'pay');
-        } else {
-            return $this->redirectToRoute('app_main');
-        }
         $this->shoppingCartService->emptyCart();
-
         return $this->render('payment/success.html.twig', []);
     }
 
-        #[Route('/paiement/back/{token}', name: 'app_payment_back')]
+    #[Route('/paiement/back/{token}', name: 'checkout_back')]
     public function back(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
 
-            if ($this->canTransition($order, 'back_to_delivery_choice')) {
-                $this->applyTransition($order, 'back_to_delivery_choice');
+        if ($this->canTransition($order, 'back_to_delivery_choice')) {
+            $this->applyTransition($order, 'back_to_delivery_choice');
 
-                return $this->redirectToRoute('app_payment_delivery', [
-                'token' => $order->getToken(),
-                ]);
-            }
+            return $this->redirectToRoute('app_payment_delivery', [
+            'token' => $order->getToken(),
+            ]);
+        }
 
-            if ($this->canTransition($order, 'back_to_created')) {
-                $this->applyTransition($order, 'back_to_created');
+        if ($this->canTransition($order, 'back_to_created')) {
+            $this->applyTransition($order, 'back_to_created');
 
-                return $this->redirectToRoute('app_payment_auth');
-            }
+            return $this->redirectToRoute('app_payment_auth');
+        }
 
             throw $this->createAccessDeniedException();
     }
@@ -255,16 +271,20 @@ final class PaymentController extends AbstractController
         }
     }
 
+    private function redirectToCorrectRoute(Order $order, OrderStatus $status): RedirectResponse|null
+    {
+        if ($order->getStatus() !== $status) {
+            return $this->redirectToRoute('checkout_next', ['token' => $order->getToken()]);
+        }
+
+        return null;
+    }
+
     private function canTransition(Order $order, string $transition): bool
     {
         return $this->registry
             ->get($order, 'order_completing')
             ->can($order, $transition);
-    }
-
-    private function hasTransition(Order $order, string $transition): bool
-    {
-        return $this->registry->has($order, $transition);
     }
 
     private function applyTransition(Order $order, string $transition): void
