@@ -16,7 +16,6 @@ use Random\RandomException;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -78,7 +77,7 @@ final class PaymentController extends AbstractController
             if ($this->canTransition($order, 'to_delivery_choice')) {
                 $this->applyTransition($order, 'to_delivery_choice');
             }
-            return $this->redirectToRoute('checkout_delivery', [
+            return $this->redirectToRoute('order_redirect', [
                 'token' => $order->getToken(),
             ]);
         }
@@ -113,9 +112,14 @@ final class PaymentController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            return $this->redirectToRoute('checkout_summary', [
-                'token' => $order->getToken(),
-            ]);
+            $this->entityManager->persist($order);
+            $this->entityManager->flush();
+            if ($this->canTransition($order, 'to_pending_payment')) {
+                $this->applyTransition($order, 'to_pending_payment');
+                return  $this->redirectToRoute('checkout_summary', [
+                    'token' => $order->getToken(),
+                ]);
+            }
         }
 
         $this->verifyOrderIntegrity($order);
@@ -181,9 +185,15 @@ final class PaymentController extends AbstractController
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
         $this->verifyOrderIntegrity($order);
-        return $this->render('payment/checkout.html.twig', [
+        $response = $this->render('payment/checkout.html.twig', [
             'order' => $order,
         ]);
+
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
+        $response->headers->set('Expires', '0');
+
+        return $response;
     }
 
 
@@ -226,30 +236,56 @@ final class PaymentController extends AbstractController
         if ($this->canTransition($order, 'back_to_delivery_choice')) {
             $this->applyTransition($order, 'back_to_delivery_choice');
 
-            return $this->redirectToRoute('app_payment_delivery', [
-            'token' => $order->getToken(),
+            return $this->redirectToRoute('order_redirect', [
+                'token' => $order->getToken(),
             ]);
         }
 
         if ($this->canTransition($order, 'back_to_created')) {
             $this->applyTransition($order, 'back_to_created');
 
-            return $this->redirectToRoute('app_payment_auth');
+            return $this->redirectToRoute('order_redirect');
         }
 
-            throw $this->createAccessDeniedException();
+        throw $this->createAccessDeniedException();
     }
+
+    #[Route(path: '/redirect/order/{token}', name: 'order_redirect')]
+    public function redirectOrder(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): Response {
+        $this->verifyOrderIntegrity($order);
+
+        return match ($order->getStatus()) {
+            OrderStatus::CREATED => $this->redirectToRoute('checkout_auth'),
+            OrderStatus::DELIVERY_CHOICE => $this->redirectToRoute('checkout_delivery', [
+                'token' => $order->getToken(),
+            ]),
+            OrderStatus::PENDING_PAYMENT => $this->redirectToRoute('checkout_summary', [
+                'token' => $order->getToken(),
+            ]),
+            OrderStatus::PAID => $this->redirectToRoute('checkout_success', [
+                'token' => $order->getToken(),
+            ]),
+            OrderStatus::CANCELED => $this->redirectToRoute('app_shopping_cart_view'),
+
+            default => $this->redirectToRoute('app_main')
+        };
+    }
+
+
 
     private function verifyOrderIntegrity(Order $order): void
     {
         $this->verifyOrderOwnership($order);
         $session = $this->requestStack->getSession();
         $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value, []);
+        $products = $this->shoppingCartService->getCartInformations($shoppingCart);
 
-        $isOrderMatchingCart = $this->orderService->isOrderMatchingCart($order, $shoppingCart);
+        $isOrderMatchingCart = $this->orderService->isOrderMatchingCart($order, $products);
 
         if (!$isOrderMatchingCart) {
-            $this->orderService->updateOrder($order, $shoppingCart);
+            $this->orderService->updateOrder($order, $products);
         }
     }
 
@@ -269,15 +305,6 @@ final class PaymentController extends AbstractController
         if ($token !== $order->getToken()) {
             throw $this->createAccessDeniedException();
         }
-    }
-
-    private function redirectToCorrectRoute(Order $order, OrderStatus $status): RedirectResponse|null
-    {
-        if ($order->getStatus() !== $status) {
-            return $this->redirectToRoute('checkout_next', ['token' => $order->getToken()]);
-        }
-
-        return null;
     }
 
     private function canTransition(Order $order, string $transition): bool

@@ -105,21 +105,22 @@ class OrderService extends AbstractType
     private function createOrderItems(array $products, Order $order): void
     {
         $cartTotal = 0;
-
         foreach ($products as $product) {
             $orderItem = new OrderItem();
-            $orderItem
-                ->setProduct($product['product'])
-                ->setQuantity($product['quantity'])
-                ->setRelatedOrder($order)
-                ->setUnitPrice($product['price'])
-                ->setTotal($product['price'] * $product['quantity'])
-            ;
+            if (!empty($product)) {
+                $orderItem
+                    ->setProduct($product['product'])
+                    ->setQuantity($product['quantity'])
+                    ->setRelatedOrder($order)
+                    ->setUnitPrice($product['price'])
+                    ->setTotal($product['price'] * $product['quantity'])
+                ;
 
-            $order->addOrderItem($orderItem);
-            $this->entityManager->persist($orderItem);
+                $order->addOrderItem($orderItem);
+                $this->entityManager->persist($orderItem);
 
-            $cartTotal += $orderItem->getTotal();
+                $cartTotal += $orderItem->getTotal();
+            }
         }
 
         $order->setTotal($cartTotal);

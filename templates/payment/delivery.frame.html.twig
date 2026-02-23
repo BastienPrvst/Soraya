@@ -2,7 +2,10 @@
 <turbo-frame id="delivery_infos">
     {{ form_start(form, {
         action: path('checkout_delivery', { token: order.token }),
-        method: 'POST'
+        method: 'POST',
+        attr: {
+            'data-turbo': 'false'
+        }
     }) }}
 
     {{ form_widget(form) }}
