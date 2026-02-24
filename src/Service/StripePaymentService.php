@@ -57,4 +57,11 @@ class StripePaymentService extends AbstractController
 
         return $stripeSession->client_secret;
     }
+
+    public function handleEvent(Order $order)
+    {
+        Stripe::setApiKey($this->getParameter('stripe.secret_key'));
+        Stripe::setApiVersion('2025-08-27.basil');
+
+    }
 }

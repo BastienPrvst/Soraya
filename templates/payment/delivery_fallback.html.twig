@@ -12,7 +12,7 @@
                 <div class="h-75">
 
                     {% if app.user is null %}
-                        <a href="{{ path('checkout_back', { token:order.token }) }}">Retour</a>
+                        <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
                     {% endif %}
 
 

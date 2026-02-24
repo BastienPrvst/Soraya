@@ -10,49 +10,48 @@
 
 
     {% if shoppingCart is not empty %}
+        <section id="cart_filled" class="d-flex flex-column align-items-center">
         {% for product in shoppingCart %}
-            <section id="cart_filled">
-                <div id="cart_product_{{product.id }}">
+
+                <div id="cart_product_{{product.id }}" class="w-50 bg-light rounded-5 my-2 p-3">
                     <p>{{ product.name }}</p>
 
+                    <div class="d-flex flex-row">
+                        <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                            <input name="productId" type="hidden" value="{{ product.id }}">
+                            <input name="action" type="hidden" value="false">
+                            <input type="submit" value="-">
+                        </form>
+                        <span class="px-3">x {{ product.quantity }}</span>
+                        <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                            <input name="productId" type="hidden" value="{{ product.id }}">
+                            <input name="action" type="hidden" value="true">
+                            <input type="submit" value="+">
+                        </form>
+                    </div>
 
-                    <form action="{{ path('app_shopping_cart_update') }}" method="post">
-                        <input name="productId" type="hidden" value="{{ product.id }}">
-                        <input name="action" type="hidden" value="false">
-                        <input type="submit" value="-">
-                    </form>
-                    <span>x {{ product.quantity }}</span>
-                    <form action="{{ path('app_shopping_cart_update') }}" method="post">
-                        <input name="productId" type="hidden" value="{{ product.id }}">
-                        <input name="action" type="hidden" value="true">
-                        <input type="submit" value="+">
-                    </form>
 
                     <span>Prix unitaire : {{ product.price }}€</span>
                     <span>Sous total {{ product.totalPrice }}€</span>
 
                     <form action="{{ path('app_shopping_cart_remove') }}" method="post">
                         <input name="productId" type="hidden" value="{{ product.id }}">
-                        <input type="submit" value="X">
+                        <input type="submit" value="Supprimer" class="bg-danger">
                     </form>
 
                 </div>
-
-            </section>
-
-
-
         {% endfor %}
-    <div>
+        </section>
+    <div class="d-flex flex-row py-5 mx-5">
         <span id="total_cart">Total : {{ totalCart }}€</span>
 
-        <a href="{{ path('checkout_auth') }}">Valider mon panier</a>
+        <a class="px-5" href="{{ path('checkout_auth') }}">Valider mon panier</a>
 
-        <a href="{{ path('app_shopping_cart_empty') }}">vider le panier</a>
+        <a href="{{ path('app_shopping_cart_empty') }}">Vider le panier</a>
     </div>
 
     {% else %}
-        <div>Votre panier est vide</div>
+        <div class="d-flex w-100 align-items-center py-5">Votre panier est vide</div>
     {% endif %}
 
 

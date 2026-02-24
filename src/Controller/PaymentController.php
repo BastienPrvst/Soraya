@@ -39,22 +39,26 @@ final class PaymentController extends AbstractController
     ) {
     }
 
-    /**
-     * @param Order $order
-     * @return Response
-     * Route de redirection
-     */
-    #[Route('/checkout/next/{token}', name: 'checkout_next')]
-    public function next(
+    #[Route('/paiement/back/{token}', name: 'checkout_previous')]
+    public function back(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
-        return match ($order->getStatus()) {
-            OrderStatus::CREATED => $this->redirectToRoute('checkout_auth'),
-            OrderStatus::DELIVERY_CHOICE => $this->redirectToRoute('checkout_delivery'),
-            OrderStatus::PENDING_PAYMENT => $this->redirectToRoute('checkout_summary'),
-            OrderStatus::PAID => $this->redirectToRoute('checkout_success'),
-            default => $this->redirectToRoute('app_main'),
-        };
+
+        if ($this->canTransition($order, 'back_to_delivery_choice')) {
+            $this->applyTransition($order, 'back_to_delivery_choice');
+
+            return $this->redirectToRoute('checkout_delivery', [
+                'token' => $order->getToken(),
+            ]);
+        }
+
+        if ($this->canTransition($order, 'back_to_created')) {
+            $this->applyTransition($order, 'back_to_created');
+
+            return $this->redirectToRoute('checkout_auth');
+        }
+
+        throw $this->createAccessDeniedException();
     }
 
     /**
@@ -66,6 +70,9 @@ final class PaymentController extends AbstractController
         $session = $this->requestStack->getSession();
         $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
         $token = $session->get(SessionKey::ORDER_TOKEN->value);
+        if (empty($cart)) {
+            return $this->redirectToRoute('app_shopping_cart_view');
+        }
         $products = $this->shoppingCartService->getCartInformations($cart);
         /* @var User $user */
         $user = $this->getUser();
@@ -74,10 +81,7 @@ final class PaymentController extends AbstractController
         $order = $this->orderService->findLatestOrderOrCreateOne($token, $products, $user);
 
         if ($this->getUser()) {
-            if ($this->canTransition($order, 'to_delivery_choice')) {
-                $this->applyTransition($order, 'to_delivery_choice');
-            }
-            return $this->redirectToRoute('order_redirect', [
+            return $this->redirectToRoute('checkout_delivery', [
                 'token' => $order->getToken(),
             ]);
         }
@@ -95,10 +99,14 @@ final class PaymentController extends AbstractController
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
 
+        if ($error !== null && $this->canTransition($order, 'to_delivery_choice')) {
+            $this->applyTransition($order, 'to_delivery_choice');
+        }
+
         return $this->render('payment/authentification.html.twig', [
-            'order' => $order,
             'error' => $error,
             'last_username' => $lastUsername,
+            'order' => $order,
         ]);
     }
 
@@ -107,6 +115,9 @@ final class PaymentController extends AbstractController
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
     ): Response {
+        if ($this->canTransition($order, 'to_delivery_choice')) {
+            $this->applyTransition($order, 'to_delivery_choice');
+        }
 
         $form = $this->createForm(OrderType::class, $order);
         $form->handleRequest($request);
@@ -137,7 +148,7 @@ final class PaymentController extends AbstractController
         ]);
     }
 
-    #[Route(path: '/paiement/livraison/formulaire/{token}', name: 'checkout_delivery_home')]
+    #[Route(path: '/paiement/livraison/home/{token}', name: 'checkout_delivery_home')]
     public function paymentDeliveryForm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
@@ -223,57 +234,16 @@ final class PaymentController extends AbstractController
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
 
+        if ($this->canTransition($order, 'pay')) {
+            $this->applyTransition($order, 'pay');
+        } else {
+            throw $this->createAccessDeniedException();
+        }
+
         $this->verifyOrderIntegrity($order);
         $this->shoppingCartService->emptyCart();
         return $this->render('payment/success.html.twig', []);
     }
-
-    #[Route('/paiement/back/{token}', name: 'checkout_back')]
-    public function back(
-        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-    ): Response {
-
-        if ($this->canTransition($order, 'back_to_delivery_choice')) {
-            $this->applyTransition($order, 'back_to_delivery_choice');
-
-            return $this->redirectToRoute('order_redirect', [
-                'token' => $order->getToken(),
-            ]);
-        }
-
-        if ($this->canTransition($order, 'back_to_created')) {
-            $this->applyTransition($order, 'back_to_created');
-
-            return $this->redirectToRoute('order_redirect');
-        }
-
-        throw $this->createAccessDeniedException();
-    }
-
-    #[Route(path: '/redirect/order/{token}', name: 'order_redirect')]
-    public function redirectOrder(
-        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-    ): Response {
-        $this->verifyOrderIntegrity($order);
-
-        return match ($order->getStatus()) {
-            OrderStatus::CREATED => $this->redirectToRoute('checkout_auth'),
-            OrderStatus::DELIVERY_CHOICE => $this->redirectToRoute('checkout_delivery', [
-                'token' => $order->getToken(),
-            ]),
-            OrderStatus::PENDING_PAYMENT => $this->redirectToRoute('checkout_summary', [
-                'token' => $order->getToken(),
-            ]),
-            OrderStatus::PAID => $this->redirectToRoute('checkout_success', [
-                'token' => $order->getToken(),
-            ]),
-            OrderStatus::CANCELED => $this->redirectToRoute('app_shopping_cart_view'),
-
-            default => $this->redirectToRoute('app_main')
-        };
-    }
-
-
 
     private function verifyOrderIntegrity(Order $order): void
     {

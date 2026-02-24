@@ -86,6 +86,7 @@ class ShoppingCartService extends AbstractType
 
                 if ($workflow->can($order, 'cancel')) {
                     $workflow->apply($order, 'cancel');
+                    $this->entityManager->flush();
                 }
             }
 
