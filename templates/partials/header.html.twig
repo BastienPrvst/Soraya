@@ -7,7 +7,7 @@
         <li><a href="{{ path('app_main') }}">Accueil</a></li>
         <li><a href="{{ path('app_products') }}">Les Produits</a></li>
         {% if app.user %}
-            <li><a href="#"></a></li>
+            <li><a href="#">Mon profil</a></li>
             <li><a href="{{ path('app_logout') }}">Se déconnecter</a></li>
         {% else %}
             <li><a href="{{ path('app_register') }}">S'inscrire</a></li>
