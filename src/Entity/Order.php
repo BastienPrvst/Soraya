@@ -68,6 +68,9 @@ class Order
     #[ORM\Column(enumType: DeliveryMode::class)]
     private ?DeliveryMode $deliveryMode = null;
 
+    #[ORM\OneToOne(mappedBy: 'RelatedOrder', cascade: ['persist', 'remove'])]
+    private ?Payment $payment = null;
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -270,5 +273,15 @@ class Order
         $this->deliveryMode = $deliveryMode;
 
         return $this;
+    }
+
+    public function getPayment(): ?Payment
+    {
+        return $this->payment;
+    }
+
+    public function setPayment(?Payment $payment): void
+    {
+        $this->payment = $payment;
     }
 }

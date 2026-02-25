@@ -4,47 +4,51 @@ namespace App\Service;
 
 use App\Entity\Order;
 use App\Entity\OrderItem;
+use App\Entity\Payment;
 use App\Enum\OrderStatus;
+use App\Enum\PaymentProvider;
+use App\Enum\PaymentStatus;
 use App\Repository\OrderRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Stripe\Checkout\Session;
 use Stripe\Event;
 use Stripe\Exception\ApiErrorException;
-use Stripe\Exception\SignatureVerificationException;
 use Stripe\Stripe;
-use Stripe\Webhook;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Workflow\Registry;
-use Symfony\Component\Workflow\Workflow;
 
-class StripePaymentService extends AbstractController
+readonly class StripePaymentService
 {
 
     public function __construct(
-        protected RequestStack $requestStack,
-        protected LoggerInterface $logger,
-        protected OrderRepository $orderRepository,
-        protected EntityManagerInterface $entityManager,
-        protected Registry $workflowRegistry,
+        private string                 $stripeSecretKey,
+        private LoggerInterface        $logger,
+        private OrderRepository        $orderRepository,
+        private EntityManagerInterface $entityManager,
+        private Registry               $workflowRegistry,
+        private UrlGeneratorInterface  $urlGenerator,
+        private ShoppingCartService $shoppingCartService,
     ) {
     }
 
     /**
      * @throws ApiErrorException
-     * @throws \JsonException
      */
     public function createPayment(Order $order): ?string
     {
-
-        Stripe::setApiKey($this->getParameter('stripe.secret_key'));
+        Stripe::setApiKey($this->stripeSecretKey);
         Stripe::setApiVersion('2025-08-27.basil');
+
+        if ($order->getPayment() && $order->getPayment()->getProviderId() !== null) {
+            $stripeSession = Session::retrieve($order->getPayment()->getProviderId());
+            return $stripeSession->client_secret;
+        }
+
+
         $orderItems = $order->getOrderItems();
 
-        $returnUrl = $this->generateUrl(
+        $returnUrl = $this->urlGenerator->generate(
             'checkout_success',
             ['token' => $order->getToken()],
             UrlGeneratorInterface::ABSOLUTE_URL
@@ -60,6 +64,8 @@ class StripePaymentService extends AbstractController
             ],
         ], $orderItems->toArray()));
 
+
+
         $stripeSession = Session::create([
             'ui_mode' => 'embedded',
             'customer_email' => $order->getEmail(),
@@ -69,8 +75,20 @@ class StripePaymentService extends AbstractController
             'return_url' => $returnUrl . '?session_id={CHECKOUT_SESSION_ID}',
             'metadata' => [
                 'order_token' => $order->getToken(),
-            ]
+            ],
         ]);
+
+        $payment = new Payment();
+        $payment
+            ->setRelatedOrder($order)
+            ->setProvider(PaymentProvider::STRIPE)
+            ->setProviderId($stripeSession->id)
+            ->setAmount($order->getTotal())
+            ->setStatus(PaymentStatus::PENDING)
+        ;
+
+        $this->entityManager->persist($payment);
+        $this->entityManager->flush();
 
         return $stripeSession->client_secret;
     }
@@ -102,8 +120,11 @@ class StripePaymentService extends AbstractController
         $workflow = $this->workflowRegistry->get($order, 'order_completing');
 
         if ($workflow->can($order, 'pay')) {
+            $order->getPayment()?->setStatus(PaymentStatus::SUCCESS);
             $workflow->apply($order, 'pay');
             $this->entityManager->flush();
         }
+
+        $this->shoppingCartService->emptyCart();
     }
 }

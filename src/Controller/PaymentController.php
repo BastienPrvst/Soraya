@@ -217,15 +217,20 @@ final class PaymentController extends AbstractController
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
         $this->verifyOrderIntegrity($order);
-        $clientSecret = $this->stripePaymentService->createPayment($order);
 
-        if (!$clientSecret) {
-            return $this->json(['error' => 'Panier vide'], 400);
+        if ($order->getStatus() === OrderStatus::PENDING_PAYMENT) {
+            $clientSecret = $this->stripePaymentService->createPayment($order);
+
+            if (!$clientSecret) {
+                return $this->json(['error' => 'Panier vide'], 400);
+            }
+
+            return $this->json([
+                'clientSecret' => $clientSecret,
+            ]);
         }
 
-        return $this->json([
-            'clientSecret' => $clientSecret,
-        ]);
+        return $this->json(['error' => 'Commande invalide'], 400);
     }
 
 
@@ -233,12 +238,10 @@ final class PaymentController extends AbstractController
     public function index(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
-        if ($order->getStatus() !== OrderStatus::PAID) {
-            return $this->json(['error' => 'Paiement non valide'], 400);
-        }
-        $this->verifyOrderIntegrity($order);
-        $this->shoppingCartService->emptyCart();
-        return $this->render('payment/success.html.twig', []);
+        $this->verifyOrderOwnership($order);
+        return $this->render('payment/success.html.twig', [
+            'order' => $order
+        ]);
     }
 
     private function verifyOrderIntegrity(Order $order): void
