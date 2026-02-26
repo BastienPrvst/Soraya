@@ -75,7 +75,7 @@ class AppFixtures extends Fixture
             'Soin visage',
             'Shampoing',
             'Creme de jour',
-            'Masquara'
+            'Mascara'
         ];
 
         foreach ($categoriesName as $iValue) {

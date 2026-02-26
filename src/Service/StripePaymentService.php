@@ -40,12 +40,6 @@ readonly class StripePaymentService
         Stripe::setApiKey($this->stripeSecretKey);
         Stripe::setApiVersion('2025-08-27.basil');
 
-        if ($order->getPayment() && $order->getPayment()->getProviderId() !== null) {
-            $stripeSession = Session::retrieve($order->getPayment()->getProviderId());
-            return $stripeSession->client_secret;
-        }
-
-
         $orderItems = $order->getOrderItems();
 
         $returnUrl = $this->urlGenerator->generate(
@@ -53,6 +47,7 @@ readonly class StripePaymentService
             ['token' => $order->getToken()],
             UrlGeneratorInterface::ABSOLUTE_URL
         );
+
         $lineItems = array_values(array_map(static fn(OrderItem $item) => [
             'quantity' => $item->getQuantity(),
             'price_data' => [
@@ -64,11 +59,37 @@ readonly class StripePaymentService
             ],
         ], $orderItems->toArray()));
 
+        if ($order->getDeliveryPrice() > 0) {
+            $lineItems[] = [
+                'quantity' => 1,
+                'price_data' => [
+                    'currency' => 'eur',
+                    'product_data' => [
+                        'name' => 'Frais de livraison',
+                    ],
+                    'unit_amount' => (int) round($order->getDeliveryPrice() * 100),
+                ],
+            ];
+        }
+
+        if ($order->getPayment() && $order->getPayment()->getProviderId() !== null) {
+            $stripeSession = Session::retrieve($order->getPayment()->getProviderId());
+
+//            $updatedStripeSession = Session::update($order->getPayment()->getProviderId(), [
+//                'line_items' => [
+//                    'adjustable_quantity' => true
+//
+//                ]
+//            ]);
+
+            return $stripeSession->client_secret;
+        }
 
 
         $stripeSession = Session::create([
             'ui_mode' => 'embedded',
             'customer_email' => $order->getEmail(),
+            'customer_creation' => 'always',
             'line_items' => $lineItems,
             'allow_promotion_codes' => true,
             'mode' => 'payment',

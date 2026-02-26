@@ -68,7 +68,7 @@ class Order
     #[ORM\Column(enumType: DeliveryMode::class)]
     private ?DeliveryMode $deliveryMode = null;
 
-    #[ORM\OneToOne(mappedBy: 'RelatedOrder', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'RelatedOrder', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Payment $payment = null;
 
     public function __construct()
