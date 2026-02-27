@@ -62,7 +62,7 @@ final readonly class LoginListener
             $order = $this->orderRepository->findOneBy(
                 [
                     'token' => $orderToken,
-                    'status' => OrderStatus::CREATED,
+                    'status' => [OrderStatus::CREATED, OrderStatus::DELIVERY_CHOICE, OrderStatus::PENDING_PAYMENT],
                 ],
                 ['creationDate' => 'DESC']
             );
