@@ -38,7 +38,23 @@ readonly class StripePaymentService
     public function createPayment(Order $order): ?string
     {
         Stripe::setApiKey($this->stripeSecretKey);
-        Stripe::setApiVersion('2025-08-27.basil');
+        Stripe::setApiVersion('2026-02-25.clover');
+
+        if ($order->getPayment() &&
+            $order->getPayment()->getStatus() === PaymentStatus::SUCCESS
+        ) {
+            throw new \LogicException('Paiement déjà effectué.');
+        }
+
+        if ($order->getPayment() && $order->getPayment()->getProviderId() !== null) {
+            $retrievedStripeSession = Session::retrieve($order->getPayment()->getProviderId());
+            if ($retrievedStripeSession && $retrievedStripeSession->status === 'open') {
+                $retrievedStripeSession->expire();
+            }
+            $payment = $order->getPayment();
+        } else {
+            $payment = new Payment();
+        }
 
         $orderItems = $order->getOrderItems();
 
@@ -72,18 +88,6 @@ readonly class StripePaymentService
             ];
         }
 
-        if ($order->getPayment() && $order->getPayment()->getProviderId() !== null) {
-            $stripeSession = Session::retrieve($order->getPayment()->getProviderId());
-
-//            $updatedStripeSession = Session::update($order->getPayment()->getProviderId(), [
-//                'line_items' => [
-//                    'adjustable_quantity' => true
-//
-//                ]
-//            ]);
-
-            return $stripeSession->client_secret;
-        }
 
 
         $stripeSession = Session::create([
@@ -99,7 +103,6 @@ readonly class StripePaymentService
             ],
         ]);
 
-        $payment = new Payment();
         $payment
             ->setRelatedOrder($order)
             ->setProvider(PaymentProvider::STRIPE)
@@ -116,6 +119,7 @@ readonly class StripePaymentService
 
     public function handleEvent(Event $event): void
     {
+        $this->logger->critical($event);
         if ($event->type !== 'checkout.session.completed') {
             return;
         }
@@ -139,13 +143,17 @@ readonly class StripePaymentService
         }
 
         $workflow = $this->workflowRegistry->get($order, 'order_completing');
+        try {
+            if ($workflow->can($order, 'pay')) {
+                $order->getPayment()?->setStatus(PaymentStatus::SUCCESS);
+                $workflow->apply($order, 'pay');
+                $this->entityManager->flush();
+            }
 
-        if ($workflow->can($order, 'pay')) {
-            $order->getPayment()?->setStatus(PaymentStatus::SUCCESS);
-            $workflow->apply($order, 'pay');
-            $this->entityManager->flush();
+            $this->shoppingCartService->emptyCart();
+        } catch (\Exception $exception) {
+            $this->logger->error($exception->getMessage());
+            return;
         }
-
-        $this->shoppingCartService->emptyCart();
     }
 }
