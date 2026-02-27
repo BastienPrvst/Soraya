@@ -79,6 +79,7 @@ class ShoppingCartService extends AbstractType
             $token = $session->get(SessionKey::ORDER_TOKEN->value);
             $order = $this->entityManager->getRepository(Order::class)->findOneBy([
                 'token' => $token,
+                'status' => [OrderStatus::CREATED, OrderStatus::DELIVERY_CHOICE, OrderStatus::PENDING_PAYMENT]
             ]);
 
             if ($order !== null) {

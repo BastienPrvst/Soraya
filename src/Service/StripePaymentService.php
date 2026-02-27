@@ -149,8 +149,6 @@ readonly class StripePaymentService
                 $workflow->apply($order, 'pay');
                 $this->entityManager->flush();
             }
-
-            $this->shoppingCartService->emptyCart();
         } catch (\Exception $exception) {
             $this->logger->error($exception->getMessage());
             return;

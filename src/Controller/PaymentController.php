@@ -67,7 +67,7 @@ final class PaymentController extends AbstractController
     #[Route(path: '/paiement/auth', name: 'checkout_auth')]
     public function paymentAuthentification(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
-        $session = $this->requestStack->getSession();
+        $session = $request->getSession();
         $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
         $token = $session->get(SessionKey::ORDER_TOKEN->value);
         if (empty($cart)) {
@@ -237,7 +237,14 @@ final class PaymentController extends AbstractController
     #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
     public function index(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        Request $request,
     ): Response {
+        $session = $request->getSession();
+        if ($session->has(SessionKey::ORDER_TOKEN->value)
+            && $session->get(SessionKey::ORDER_TOKEN->value) === $order->getToken()
+        ) {
+            $this->shoppingCartService->emptyCart();
+        }
         $this->verifyOrderOwnership($order);
         return $this->render('payment/success.html.twig', [
             'order' => $order
