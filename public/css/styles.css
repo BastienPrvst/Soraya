@@ -1,0 +1,42 @@
+/* Augmenter la taille de la carte */
+#Zone_Widget .leaflet-container {
+    height: 400px !important;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+/* Boutons du widget */
+#Zone_Widget button {
+    background-color: white;
+    color: black;
+    font-family: "JetBrains Mono", sans-serif;
+    /*border-radius: 4px;*/
+    /*padding: 0.4rem 0.8rem;*/
+}
+
+/* Liste des points relais */
+#Zone_Widget ul {
+    max-height: 250px;
+    overflow-y: auto;
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 0.9rem;
+}
+
+#Zone_Widget div {
+    font-family: "JetBrains Mono", sans-serif;
+    color: black;
+}
+
+/*#Zone_Widget input {*/
+/*    border-radius: 0 !important;*/
+/*    background-color: white !important;*/
+/*    box-shadow: none !important;*/
+/*}*/
+
+.PR-List-Item:hover{
+    background-color: white !important;
+}
+
+.PR-List-Item:active{
+    background-color: white !important;
+}

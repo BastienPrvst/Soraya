@@ -1,5 +1,9 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+{% endblock %}
+
 {% block title %}
     Votre Commande
 {% endblock %}
@@ -50,5 +54,29 @@
         </div>
     </main>
 
+{% endblock %}
+
+{% block javascripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}"></script>
+    <script src="https://widget.mondialrelay.com/parcelshop-picker/jquery.plugin.mondialrelay.parcelshoppicker.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Loading the Parcelshop picker widget into the <div> with id "Zone_Widget" with such settings:
+            $("#Zone_Widget").MR_ParcelShopPicker({
+                Target: "#Target_Widget",
+                Brand: "BDTEST",
+                Country: "FR",
+                PostCode: "75001",
+                ColLivMod: "24R",
+                NbResults: "7",
+                Responsive: true,
+                ShowResultsOnMap: true,
+                EnableGmap: true
+            });
+
+        });
+    </script>
 {% endblock %}
 

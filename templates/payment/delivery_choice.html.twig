@@ -1,5 +1,11 @@
 {% extends 'base.html.twig' %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+    <link rel="stylesheet" href="https://widget.mondialrelay.com/parcelshop-picker/jquery.plugin.mondialrelay.parcelshoppicker.min.css">
+{% endblock %}
+
 {% block title %}
     Votre Commande
 {% endblock %}
@@ -45,6 +51,12 @@
 
             <section id="delivery-content">
                 <turbo-frame id="delivery_infos">
+                    <form action="{{ path('checkout_delivery', { token : order.token }) }}" method="post">
+                        <div id="Zone_Widget"></div>
+                        <input name="relay_id" type="hidden" id="Target_Widget" />
+                        <input type="submit" value="Valider">
+                    </form>
+
 
                 </turbo-frame>
             </section>
@@ -53,5 +65,31 @@
     </main>
 
 {% endblock %}
+
+{% block javascripts %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}"></script>
+    <script src="https://widget.mondialrelay.com/parcelshop-picker/jquery.plugin.mondialrelay.parcelshoppicker.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            // Loading the Parcelshop picker widget into the <div> with id "Zone_Widget" with such settings:
+            $("#Zone_Widget").MR_ParcelShopPicker({
+                Target: "#Target_Widget",
+                Brand: "BDTEST",
+                Country: "FR",
+                AllowedCountries: "FR, BE, LU, ES",
+                PostCode: "75001",
+                ColLivMod: "24R",
+                NbResults: "7",
+                Responsive: true,
+                ShowResultsOnMap: true,
+                EnableGmap: true
+            });
+
+        });
+    </script>
+{% endblock %}
+
 
 

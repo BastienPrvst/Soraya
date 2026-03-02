@@ -118,6 +118,9 @@ final class PaymentController extends AbstractController
         if ($this->canTransition($order, 'to_delivery_choice')) {
             $this->applyTransition($order, 'to_delivery_choice');
         }
+        echo '<pre>';
+        print_r($request->request->get('relay_id'));
+        echo '</pre>';
 
         $form = $this->createForm(OrderType::class, $order);
         $form->handleRequest($request);
