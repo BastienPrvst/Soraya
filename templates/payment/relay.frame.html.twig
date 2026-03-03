@@ -1,5 +1,8 @@
 <turbo-frame id="delivery_infos">
-    <div id="Zone_Widget"></div>
-    <input type="hidden" id="Target_Widget" />
+    <form action="{{ path('checkout_delivery', { token : order.token }) }}" method="post">
+        <div id="Zone_Widget"></div>
+        <input name="relay_id" type="hidden" id="Target_Widget" />
+        <input type="submit" value="Valider">
+    </form>
 </turbo-frame>
 

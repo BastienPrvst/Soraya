@@ -29,14 +29,12 @@
                         A domicile
                     </a>
 
-                    <a href="{{ path('checkout_delivery_relay', { token : order.token }) }}" data-turbo-frame="delivery_infos">En point relais</a>
+                    <a href="{{ path('checkout_delivery_relay', { token: order.token, _t: 'now'|date('U') }) }}" data-turbo-frame="delivery_infos">
+                        En point relais
+                    </a>
 
                 </div>
             </section>
-
-
-
-
 
             <section id="order_details" class="col-4 ms-3">
                 <div>
@@ -51,12 +49,6 @@
 
             <section id="delivery-content">
                 <turbo-frame id="delivery_infos">
-                    <form action="{{ path('checkout_delivery', { token : order.token }) }}" method="post">
-                        <div id="Zone_Widget"></div>
-                        <input name="relay_id" type="hidden" id="Target_Widget" />
-                        <input type="submit" value="Valider">
-                    </form>
-
 
                 </turbo-frame>
             </section>
@@ -67,26 +59,42 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
+
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}"></script>
     <script src="https://widget.mondialrelay.com/parcelshop-picker/jquery.plugin.mondialrelay.parcelshoppicker.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            // Loading the Parcelshop picker widget into the <div> with id "Zone_Widget" with such settings:
-            $("#Zone_Widget").MR_ParcelShopPicker({
+        const frame = document.getElementById("delivery_infos");
+
+        document.addEventListener('turbo:frame-load', function (event) {
+
+            if (event.target.id !== "delivery_infos") return;
+
+            const loader = document.getElementById("delivery_loader");
+            if (loader) loader.classList.add("d-none");
+
+            const zone = event.target.querySelector("#Zone_Widget");
+            const target = event.target.querySelector("#Target_Widget");
+
+            if (!zone || !target) return;
+            if (zone.dataset.initialized === "true") return;
+
+            $(zone).MR_ParcelShopPicker({
                 Target: "#Target_Widget",
                 Brand: "BDTEST",
                 Country: "FR",
-                AllowedCountries: "FR, BE, LU, ES",
+                AllowedCountries: "FR,BE,LU,ES",
                 PostCode: "75001",
                 ColLivMod: "24R",
-                NbResults: "7",
+                NbResults: "10",
                 Responsive: true,
                 ShowResultsOnMap: true,
                 EnableGmap: true
             });
 
+            zone.dataset.initialized = "true";
         });
     </script>
 {% endblock %}

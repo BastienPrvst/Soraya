@@ -8,6 +8,7 @@ use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Enum\SessionKey;
 use App\Form\OrderType;
+use App\Service\MondialRelayService;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
 use App\Service\StripePaymentService;
@@ -16,6 +17,7 @@ use Random\RandomException;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpClient\CurlHttpClient;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +37,7 @@ final class PaymentController extends AbstractController
         private readonly RequestStack      $requestStack,
         private readonly ShoppingCartService $shoppingCartService,
         private readonly OrderService $orderService,
-        private readonly Registry $registry
+        private readonly Registry $registry,
     ) {
     }
 
@@ -118,9 +120,6 @@ final class PaymentController extends AbstractController
         if ($this->canTransition($order, 'to_delivery_choice')) {
             $this->applyTransition($order, 'to_delivery_choice');
         }
-        echo '<pre>';
-        print_r($request->request->get('relay_id'));
-        echo '</pre>';
 
         $form = $this->createForm(OrderType::class, $order);
         $form->handleRequest($request);
@@ -183,7 +182,8 @@ final class PaymentController extends AbstractController
         $order->setDeliveryMode(DeliveryMode::RELAY);
         $this->entityManager->flush();
 
-        if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
+        $turboFrame = $request->headers->get('Turbo-Frame') ?: $request->query->get('turbo_frame');
+        if ($turboFrame === 'delivery_infos') {
             return $this->render('payment/relay.frame.html.twig', [
                 'order' => $order,
             ]);
