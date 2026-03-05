@@ -20,91 +20,41 @@ final readonly class LoginListener
         private OrderRepository        $orderRepository,
         private RequestStack           $requestStack,
         private EntityManagerInterface $entityManager,
-        private ShoppingCartService $shoppingCartService
     ) {
     }
 
     #[AsEventListener]
     public function onLoginSuccessEvent(LoginSuccessEvent $event): void
     {
-        /* @var $user User */
+        /** @var User $user */
         $user = $event->getUser();
         $session = $this->requestStack->getSession();
-        $oldOrder = $this->orderRepository->findOneBy(
-            [
-                'user' => $user,
-                'status' => [
-                    OrderStatus::CREATED,
-                    OrderStatus::DELIVERY_CHOICE,
-                    OrderStatus::PENDING_PAYMENT
-                ]
+
+        $token = $session->get(SessionKey::ORDER_TOKEN->value);
+
+        if (!$token) {
+            return;
+        }
+
+        $order = $this->orderRepository->findOneBy([
+            'token' => $token,
+            'status' => [
+                OrderStatus::CREATED,
+                OrderStatus::DELIVERY_CHOICE,
+                OrderStatus::PENDING_PAYMENT
             ],
-            ['creationDate' => 'DESC']
-        );
-        /**
-         * Si l'utilisateur a commencé un panier sans faire d'order et se connecte,
-         * sa derniere order avec un statut en cours passe en canceled
-        */
-        if ($oldOrder
-            && !$session->has(SessionKey::ORDER_TOKEN->value)
-            && $session->has(SessionKey::SHOPPING_CART->value)) {
-                $oldOrder->setStatus(OrderStatus::CANCELED);
-                $this->entityManager->flush();
-                return;
+        ]);
+
+        if (!$order || $order->getUser() !== null) {
+            return;
         }
 
-        /**
-         * Si la session possede un token d'order
-         */
-        if ($session->has(SessionKey::ORDER_TOKEN->value)) {
-            $orderToken = $session->get(SessionKey::ORDER_TOKEN->value);
+        $order
+            ->setUser($user)
+            ->setFirstname($user->getFirstname())
+            ->setLastname($user->getLastname())
+            ->setEmail($user->getEmail());
 
-            $order = $this->orderRepository->findOneBy(
-                [
-                    'token' => $orderToken,
-                    'status' => [OrderStatus::CREATED, OrderStatus::DELIVERY_CHOICE, OrderStatus::PENDING_PAYMENT],
-                ],
-                ['creationDate' => 'DESC']
-            );
-
-            /**
-             * On rattache la personne anonyme qui a commencé une order
-             * puis s'est connecté et s'il y'en a une ancienne, on l'annule
-             */
-
-            if ($order && $order->getUser() === null) {
-                if ($oldOrder) {
-                    $oldOrder->setStatus(OrderStatus::CANCELED);
-                }
-
-                $order
-                    ->setFirstname($user->getFirstname())
-                    ->setLastname($user->getLastname())
-                    ->setEmail($user->getEmail())
-                    ->setUser($user);
-
-                $address = $this->entityManager->getRepository(Address::class)->findOneBy([
-                    'User' => $user,
-                    'isActive' => true
-                ]);
-                if ($address) {
-                    $order->setDeliveryAddress($address);
-                }
-                $this->entityManager->flush();
-            }
-
-            /**
-             * Sinon, on recupere la derniere order et on met à jour la session avec
-             */
-
-        } elseif ($oldOrder && $oldOrder->getOrderItems()->count() > 0) {
-            $session->remove(SessionKey::SHOPPING_CART->value);
-            $session->set(SessionKey::ORDER_TOKEN->value, $oldOrder->getToken());
-            $orderItems = $oldOrder->getOrderItems();
-
-            foreach ($orderItems as $item) {
-                $this->shoppingCartService->add((string)$item->getProduct()?->getId(), $item->getQuantity());
-            }
-        }
+        $this->entityManager->flush();
     }
 }

@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Component\Workflow\Registry;
 use Symfony\UX\Turbo\TurboBundle;
 
@@ -115,33 +116,39 @@ final class PaymentController extends AbstractController
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        Request $request,
+        Request $request
     ): Response {
         if ($this->canTransition($order, 'to_delivery_choice')) {
             $this->applyTransition($order, 'to_delivery_choice');
         }
 
-        $form = $this->createForm(OrderType::class, $order);
+        $this->verifyOrderIntegrity($order);
+
+        $form = $this->createForm(OrderType::class, $order, [
+            'delivery_mode' => $order->getDeliveryMode()->value ?? DeliveryMode::HOME->value,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->persist($order);
-            $this->entityManager->flush();
-            if ($this->canTransition($order, 'to_pending_payment')) {
-                $this->applyTransition($order, 'to_pending_payment');
-                return  $this->redirectToRoute('checkout_summary', [
-                    'token' => $order->getToken(),
-                ]);
+            $deliveryMode = $form->get('delivery_mode')->getData();
+
+            if ($deliveryMode === 'home') {
+                $this->entityManager->persist($order);
+                $this->entityManager->flush();
+
+                if ($this->canTransition($order, 'to_pending_payment')) {
+                    $this->applyTransition($order, 'to_pending_payment');
+                    return $this->redirectToRoute('checkout_summary', [
+                        'token' => $order->getToken(),
+                    ]);
+                }
+            } elseif ($deliveryMode === 'relay') {
+                $relayId = $form->get('relay_id')->getData();
+                if ($relayId === null) {
+                    $this->addFlash('error', 'Veuillez selectionner un point relais');
+                    //Gestion api pour verifier que le point relais existe
+                }
             }
-        }
-
-        $this->verifyOrderIntegrity($order);
-
-        if ($request->headers->has('Turbo-Frame')) {
-            return $this->render('payment/delivery.frame.html.twig', [
-                'order' => $order,
-                'form' => $form->createView(),
-            ]);
         }
 
         return $this->render('payment/delivery_choice.html.twig', [
@@ -179,17 +186,20 @@ final class PaymentController extends AbstractController
         Request $request,
     ): Response {
 
+        $form = $this->createForm(OrderType::class, $order, [
+            'delivery_mode' => 'relay'
+        ]);
         $order->setDeliveryMode(DeliveryMode::RELAY);
         $this->entityManager->flush();
 
-        $turboFrame = $request->headers->get('Turbo-Frame') ?: $request->query->get('turbo_frame');
-        if ($turboFrame === 'delivery_infos') {
+        if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
             return $this->render('payment/relay.frame.html.twig', [
                 'order' => $order,
             ]);
         }
         return $this->render('payment/relay_fallback.html.twig', [
             'order' => $order,
+            'form' => $form->createView(),
         ]);
     }
 
@@ -270,19 +280,12 @@ final class PaymentController extends AbstractController
 
     private function verifyOrderOwnership(Order $order): void
     {
-        if ($order->getUser()) {
-            if ($order->getUser() !== $this->getUser()) {
+        $user = $this->getUser();
+
+        if ($order->getUser() !== null) {
+            if (!$user || $order->getUser() !== $user) {
                 throw $this->createAccessDeniedException();
             }
-            return;
-        }
-
-
-        $session = $this->requestStack->getSession();
-        $token = $session->get(SessionKey::ORDER_TOKEN->value);
-
-        if ($token !== $order->getToken()) {
-            throw $this->createAccessDeniedException();
         }
     }
 

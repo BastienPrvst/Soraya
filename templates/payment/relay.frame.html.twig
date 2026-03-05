@@ -1,8 +1,46 @@
 <turbo-frame id="delivery_infos">
-    <form action="{{ path('checkout_delivery', { token : order.token }) }}" method="post">
-        <div id="Zone_Widget"></div>
-        <input name="relay_id" type="hidden" id="Target_Widget" />
-        <input type="submit" value="Valider">
-    </form>
-</turbo-frame>
 
+    <div class="w-100">
+
+        {% for message in app.flashes('error') %}
+            <div class="text-danger">
+                {{ message }}
+            </div>
+
+        {% endfor %}
+
+        {{ form_start(form, {
+            action: path('checkout_delivery', { token: order.token }),
+            method: 'POST',
+            attr: {
+                'data-turbo': 'false'
+            }
+        }) }}
+
+        <div>
+            {{ form_row(form.relay_id, {'id': 'Target_Widget'}) }}
+        </div>
+        <div>
+            {{ form_row(form.firstname) }}
+        </div>
+
+        <div>
+            {{ form_row(form.lastname) }}
+        </div>
+
+        <div>
+            {{ form_row(form.email) }}
+        </div>
+
+        <div>
+            {{ form_row(form.phoneNumber) }}
+        </div>
+
+        <div id="Zone_Widget"></div>
+
+        {{ form_row(form.submit_relay) }}
+        {{ form_end(form) }}
+
+
+    </div>
+</turbo-frame>

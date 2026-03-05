@@ -1,14 +1,13 @@
 
 <turbo-frame id="delivery_infos">
-    {{ form_start(form, {
-        action: path('checkout_delivery', { token: order.token }),
-        method: 'POST',
-        attr: {
-            'data-turbo': 'false'
-        }
-    }) }}
+    <div class="w-50 mx-auto">
+        {{ form(form, {
+            action: path('checkout_delivery', { token: order.token }),
+            method: 'POST',
+            attr: {
+                'data-turbo': 'false'
+            }
+        }) }}
 
-    {{ form_widget(form) }}
-
-    {{ form_end(form) }}
+    </div>
 </turbo-frame>

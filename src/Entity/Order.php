@@ -8,6 +8,7 @@ use App\Repository\OrderRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: OrderRepository::class)]
 #[ORM\Table(name: '`order`')]
@@ -28,6 +29,7 @@ class Order
     private ?bool $delivery = null;
 
     #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'orders')]
+    #[Assert\Valid]
     private ?Address $deliveryAddress = null;
 
     /**
@@ -47,22 +49,28 @@ class Order
     #[ORM\Column(enumType: OrderStatus::class)]
     private ?OrderStatus $status = OrderStatus::CREATED;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 40, unique: true)]
     private ?string $token = null;
 
     #[ORM\Column(nullable: true)]
     private ?float $delivery_price = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Veuillez saisir une adresse mail')]
+    #[Assert\Email(message: 'Veuillez saisir une adresse mail valide')]
     private ?string $email = null;
 
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Veuillez saisir votre prénom')]
+    #[Assert\Length(min: 1, max: 255, maxMessage: 'Votre prénom ne peut pas excéder 255 caractères')]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 255, nullable: true)]
+    #[Assert\NotBlank(message: 'Veuillez saisir votre nom')]
+    #[Assert\Length(min: 1, max: 255, maxMessage: 'Votre nom ne peut pas excéder 255 caractères')]
     private ?string $lastname = null;
 
     #[ORM\Column(enumType: DeliveryMode::class)]

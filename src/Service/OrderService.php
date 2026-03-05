@@ -43,7 +43,7 @@ class OrderService extends AbstractType
 
         if ($user) {
             $address = $this->entityManager->getRepository(Address::class)->findOneBy([
-                'User' => $user,
+                'user' => $user,
                 'isActive' => true
             ]);
 

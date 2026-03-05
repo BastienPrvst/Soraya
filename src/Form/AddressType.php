@@ -15,15 +15,15 @@ class AddressType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('Street1', TextType::class, ['label' => 'Rue'])
-            ->add('Street2', TextType::class, ['label' => 'Rue 2', 'required' => false])
-            ->add('City', TextType::class, ['label' => 'Ville'])
-            ->add('Zipcode', IntegerType::class, ['label' => 'Code postal'])
+            ->add('street1', TextType::class, ['label' => 'Rue *'])
+            ->add('street2', TextType::class, ['label' => 'Rue 2', 'required' => false])
+            ->add('city', TextType::class, ['label' => 'Ville *'])
+            ->add('zipcode', TextType::class, ['label' => 'Code postal *'])
             ->add('country', CountryType::class, [
                 'label' => 'Pays',
                 'preferred_choices' => ['FR'],
                 'choice_filter' => static function (?string $countryCode): bool {
-                    return in_array($countryCode, ['FR', 'BE', 'LU', 'MC', 'GB'], true);
+                    return in_array($countryCode, ['FR', 'BE', 'LU', 'MC'], true);
                 },
             ]);
     }

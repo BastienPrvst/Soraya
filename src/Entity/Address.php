@@ -6,6 +6,7 @@ use App\Repository\AddressRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: AddressRepository::class)]
 class Address
@@ -16,22 +17,30 @@ class Address
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $City = null;
+    private ?string $city = null;
 
-    #[ORM\Column]
-    private ?int $Zipcode = null;
+    #[ORM\Column(length: 10)]
+    #[Assert\NotBlank(message: 'Veuillez remplir le code postal')]
+    #[Assert\Regex(
+        pattern: '/^(?:\d{4}|\d{5}|(?:FR|BE|LU|L|MC)[- ]?\d{4,5})$/',
+        message: 'Code postal invalide.'
+    )]
+    private ?string $zipcode = null;
 
     #[ORM\Column(length: 500)]
-    private ?string $Street1 = null;
+    #[Assert\NotBlank(message: "Veuillez définir votre adresse")]
+    #[Assert\Length(max: 500, maxMessage: 'Votre adresse ne peut pas contenir plus de 500 caractères')]
+    private ?string $street1 = null;
 
     #[ORM\Column(length: 500, nullable: true)]
-    private ?string $Street2 = null;
+    #[Assert\Length(max: 500, maxMessage: 'Votre adresse ne peut pas contenir plus de 500 caractères')]
+    private ?string $street2 = null;
 
     #[ORM\Column(nullable: true)]
     private ?bool $isActive = null;
 
     #[ORM\ManyToOne(inversedBy: 'addresses')]
-    private ?User $User = null;
+    private ?User $user = null;
 
     /**
      * @var Collection<int, Order>
@@ -54,48 +63,48 @@ class Address
 
     public function getCity(): ?string
     {
-        return $this->City;
+        return $this->city;
     }
 
-    public function setCity(string $City): static
+    public function setCity(string $city): static
     {
-        $this->City = $City;
+        $this->city = $city;
 
         return $this;
     }
 
-    public function getZipcode(): ?int
+    public function getZipcode(): ?string
     {
-        return $this->Zipcode;
+        return $this->zipcode;
     }
 
-    public function setZipcode(int $Zipcode): static
+    public function setZipcode(string $zipcode): static
     {
-        $this->Zipcode = $Zipcode;
+        $this->zipcode = $zipcode;
 
         return $this;
     }
 
     public function getStreet1(): ?string
     {
-        return $this->Street1;
+        return $this->street1;
     }
 
-    public function setStreet1(string $Street1): static
+    public function setStreet1(string $street1): static
     {
-        $this->Street1 = $Street1;
+        $this->street1 = $street1;
 
         return $this;
     }
 
     public function getStreet2(): ?string
     {
-        return $this->Street2;
+        return $this->street2;
     }
 
-    public function setStreet2(?string $Street2): static
+    public function setStreet2(?string $street2): static
     {
-        $this->Street2 = $Street2;
+        $this->street2 = $street2;
 
         return $this;
     }
@@ -114,12 +123,12 @@ class Address
 
     public function getUser(): ?User
     {
-        return $this->User;
+        return $this->user;
     }
 
-    public function setUser(?User $User): static
+    public function setUser(?User $user): static
     {
-        $this->User = $User;
+        $this->user = $user;
 
         return $this;
     }
