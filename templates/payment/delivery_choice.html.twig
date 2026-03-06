@@ -34,13 +34,11 @@
                         </a>
                     </div>
 
-                    <turbo-frame id="delivery_infos">
                         {% if order.deliveryMode and order.deliveryMode.value == 'relay' %}
                             {{ include('payment/relay.frame.html.twig') }}
                         {% else %}
                             {{ include('payment/delivery.frame.html.twig') }}
                         {% endif %}
-                    </turbo-frame>
 
                 </div>
             </section>
@@ -99,9 +97,7 @@
             zone.dataset.initialized = "true";
         }
 
-
-        /* Chargement classique (refresh page) */
-        document.addEventListener("DOMContentLoaded", function () {
+        document.addEventListener("turbo:load", function () {
 
             const frame = document.getElementById("delivery_infos");
 
@@ -111,8 +107,6 @@
 
         });
 
-
-        /* Chargement via Turbo */
         document.addEventListener("turbo:frame-load", function (event) {
 
             if (event.target.id !== "delivery_infos") return;

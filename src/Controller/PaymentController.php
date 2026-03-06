@@ -116,7 +116,8 @@ final class PaymentController extends AbstractController
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        Request $request
+        Request $request,
+        MondialRelayService $mondialRelayService,
     ): Response {
         if ($this->canTransition($order, 'to_delivery_choice')) {
             $this->applyTransition($order, 'to_delivery_choice');
@@ -132,6 +133,7 @@ final class PaymentController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $deliveryMode = $form->get('delivery_mode')->getData();
 
+
             if ($deliveryMode === 'home') {
                 $this->entityManager->persist($order);
                 $this->entityManager->flush();
@@ -144,9 +146,11 @@ final class PaymentController extends AbstractController
                 }
             } elseif ($deliveryMode === 'relay') {
                 $relayId = $form->get('relay_id')->getData();
-                if ($relayId === null) {
+                if ($relayId !== null) {
                     $this->addFlash('error', 'Veuillez selectionner un point relais');
                     //Gestion api pour verifier que le point relais existe
+                    $address = $mondialRelayService->getRelayAddress($relayId);
+                    dd($address);
                 }
             }
         }
@@ -204,7 +208,7 @@ final class PaymentController extends AbstractController
     }
 
 
-    #[Route(path: 'paiement/recapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
+    #[Route(path: 'paiement/récapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
     public function paymentResume(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
