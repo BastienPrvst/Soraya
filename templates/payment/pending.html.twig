@@ -1,0 +1,35 @@
+{% extends 'base.html.twig' %}
+{% block title %}
+    Validation du paiement
+{% endblock %}
+
+{% block body %}
+
+    <div class="w-100 mx-auto h-100 d-flex align-items-center justify-content-center">
+        <h2>Paiement en cours...</h2>
+    </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        async function checkStatus() {
+            const response = await fetch('{{ pollUrl }}');
+            const data = await response.json();
+
+            console.log(data)
+
+            if (data.status === 'paid') {
+                window.location.reload();
+            } else {
+                setTimeout(checkStatus, 1500);
+            }
+        }
+
+        checkStatus();
+    </script>
+{% endblock %}
+
+
+

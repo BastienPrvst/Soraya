@@ -30,7 +30,6 @@ final readonly class CheckoutRedirectListener
         $orderRoutes = [
             'checkout_delivery',
             'checkout_summary',
-            'checkout_success'
         ];
 
         if (!in_array($request->attributes->get('_route'), $orderRoutes, true)) {

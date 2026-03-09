@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Address;
 use App\Entity\Order;
 use App\Entity\User;
 use App\Enum\DeliveryMode;
@@ -14,10 +15,12 @@ use App\Service\ShoppingCartService;
 use App\Service\StripePaymentService;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
+use SoapFault;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpClient\CurlHttpClient;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
@@ -113,6 +116,9 @@ final class PaymentController extends AbstractController
         ]);
     }
 
+    /**
+     * @throws SoapFault
+     */
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -135,6 +141,8 @@ final class PaymentController extends AbstractController
 
 
             if ($deliveryMode === 'home') {
+                //Gestion Livraison
+
                 $this->entityManager->persist($order);
                 $this->entityManager->flush();
 
@@ -145,12 +153,37 @@ final class PaymentController extends AbstractController
                     ]);
                 }
             } elseif ($deliveryMode === 'relay') {
+                //Gestion Relay
+
                 $relayId = $form->get('relay_id')->getData();
                 if ($relayId !== null) {
                     $this->addFlash('error', 'Veuillez selectionner un point relais');
-                    //Gestion api pour verifier que le point relais existe
                     $address = $mondialRelayService->getRelayAddress($relayId);
-                    dd($address);
+                    if (empty($address)) {
+                        $this->addFlash('error', 'Veuillez selectionner un point relais valide');
+                        return $this->redirectToRoute('checkout_delivery', [
+                            'token' => $order->getToken(),
+                        ]);
+                    }
+
+                    $orderAdress = new Address();
+                    $orderAdress
+                        ->setCity($address['City'])
+                        ->setStreet1($address['Street'])
+                        ->setCountry($address['Country'])
+                        ->setZipcode($address['ZipCode']);
+                    $this->entityManager->persist($orderAdress);
+
+                    $order->setDeliveryAddress($orderAdress);
+
+                    $this->entityManager->flush();
+
+                    if ($this->canTransition($order, 'to_pending_payment')) {
+                        $this->applyTransition($order, 'to_pending_payment');
+                        return $this->redirectToRoute('checkout_summary', [
+                            'token' => $order->getToken(),
+                        ]);
+                    }
                 }
             }
         }
@@ -253,20 +286,44 @@ final class PaymentController extends AbstractController
 
     #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
     public function index(
-        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        #[MapEntity(mapping: ['token' => 'token'])] ?Order $order,
         Request $request,
     ): Response {
+
+        if (!$order) {
+            throw $this->createNotFoundException('Commande introuvable');
+        }
+
+        if ($order->getStatus() !== OrderStatus::PAID) {
+            return $this->render('payment/pending.html.twig', [
+                'order' => $order,
+                'pollUrl' => $this->generateUrl('check_payment_status', ['token' => $order->getToken()])
+            ]);
+        }
+
         $session = $request->getSession();
         if ($session->has(SessionKey::ORDER_TOKEN->value)
             && $session->get(SessionKey::ORDER_TOKEN->value) === $order->getToken()
         ) {
             $this->shoppingCartService->emptyCart();
         }
+
         $this->verifyOrderOwnership($order);
+
         return $this->render('payment/success.html.twig', [
             'order' => $order
         ]);
     }
+
+    #[Route(path: '/check-payment-status/{token}', name: 'check_payment_status')]
+    public function paymentStatus(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): JsonResponse {
+        return $this->json([
+            'status' => $order->getStatus()
+        ]);
+    }
+
 
     private function verifyOrderIntegrity(Order $order): void
     {
