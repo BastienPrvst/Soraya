@@ -173,9 +173,7 @@ final class PaymentController extends AbstractController
                         ->setCountry($address['Country'])
                         ->setZipcode($address['ZipCode']);
                     $this->entityManager->persist($orderAdress);
-
                     $order->setDeliveryAddress($orderAdress);
-
                     $this->entityManager->flush();
 
                     if ($this->canTransition($order, 'to_pending_payment')) {

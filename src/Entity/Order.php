@@ -28,7 +28,10 @@ class Order
     #[ORM\Column]
     private ?bool $delivery = null;
 
-    #[ORM\ManyToOne(cascade: ['persist'], inversedBy: 'orders')]
+    #[ORM\ManyToOne(
+        cascade: ['persist'],
+        inversedBy: 'orders'
+    )]
     #[Assert\Valid]
     private ?Address $deliveryAddress = null;
 
