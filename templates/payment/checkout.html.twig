@@ -20,15 +20,19 @@
 
 
                         <div class="user-info d-flex align-items-center justify-content-center flex-column">
+
                             <div>
                                 <span>{{ order.firstname }} {{ order.lastname }}</span><br>
                                 <span>{{ order.email }}</span><br>
                                 {% if order.phoneNumber %}
                                     <span>{{ order.phoneNumber }}</span>
                                 {% endif %}
-                            </div>
-
-                            <div>
+                                {% set countries = {
+                                    'FR': 'France',
+                                    'BE': 'Belgique',
+                                    'LU': 'Luxembourg',
+                                    'MO': 'Monaco'
+                                } %}
 
                                 <span>{{ order.deliveryAddress.street1 }}</span>
                                 {% if order.deliveryAddress.street2 %}
@@ -38,7 +42,7 @@
                                 <br>
                                 <span>{{ order.deliveryAddress.zipcode }} {{ order.deliveryAddress.city }}</span>
                                 <br>
-                                <span>{{ order.deliveryAddress.country }}</span>
+                                <span>{{ countries[order.deliveryAddress.country] }}</span>
 
                             </div>
                         </div>

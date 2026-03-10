@@ -15,6 +15,8 @@ use Stripe\Checkout\Session;
 use Stripe\Event;
 use Stripe\Exception\ApiErrorException;
 use Stripe\Stripe;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Workflow\Registry;
 
@@ -29,6 +31,7 @@ readonly class StripePaymentService
         private Registry               $workflowRegistry,
         private UrlGeneratorInterface  $urlGenerator,
         private ShoppingCartService $shoppingCartService,
+        private MailerService $mailerService,
     ) {
     }
 
@@ -148,8 +151,10 @@ readonly class StripePaymentService
                 $order->getPayment()?->setStatus(PaymentStatus::SUCCESS);
                 $workflow->apply($order, 'pay');
                 $this->entityManager->flush();
+                $this->shoppingCartService->emptyCart();
+                $this->mailerService->sendConfirmationEmail($order);
             }
-        } catch (\Exception $exception) {
+        } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
             return;
         }

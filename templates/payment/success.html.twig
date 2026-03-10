@@ -6,7 +6,30 @@
 
 {% block body %}
 
-    <h2>Commande confirmée mon loulou</h2>
+    <main class="w-100 h-100 p-5">
+        <h2 class="text-center">Votre commande #{{ "%05d"|format(order.id) }} est confirmée !</h2>
+
+        <section class="p-5 text-center">
+
+            <div>
+                <p>
+                    Nous vous avons envoyé un mail récapitulatif de votre commande à l'adresse mail <strong>{{ order.email }}</strong>.
+
+                    <br>
+                    {% if order.user %}
+                        Vous pouvez également retrouver votre commande dans la section <a href="#">Mon Profil</a>.
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+        </section>
+
+        <a href="{{ path('renvoi-mail', { token : order.token }) }}">Renvoyer le mail</a>
+    </main>
+
+
 
 {% endblock %}
 

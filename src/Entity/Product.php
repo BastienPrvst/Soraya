@@ -43,6 +43,9 @@ class Product
     #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'product')]
     private Collection $images;
 
+    #[ORM\Column]
+    private ?float $weight = null;
+
     public function __construct()
     {
         $this->category = new ArrayCollection();
@@ -171,6 +174,18 @@ class Product
                 $image->setProduct(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getWeight(): ?float
+    {
+        return $this->weight;
+    }
+
+    public function setWeight(float $weight): static
+    {
+        $this->weight = $weight;
 
         return $this;
     }

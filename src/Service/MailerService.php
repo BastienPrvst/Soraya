@@ -6,6 +6,7 @@ use App\Entity\Order;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
@@ -15,7 +16,7 @@ class MailerService
 
     public function __construct(
         private MailerInterface $mailer,
-        private MessageBusInterface $messageBus
+
     ) {
     }
 
@@ -34,6 +35,7 @@ class MailerService
             ->to($order->getEmail())
             ->subject('Confirmation de votre commande')
             ->text('Votre commande à été validée!');
-        $this->messageBus->dispatch($email);
+
+        $this->mailer->send($email);
     }
 }

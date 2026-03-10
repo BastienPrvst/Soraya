@@ -17,8 +17,7 @@ class AppFixtures extends Fixture
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly EntityManagerInterface $manager
-    )
-    {
+    ) {
     }
 
     public function load(ObjectManager $manager): void
@@ -49,7 +48,6 @@ class AppFixtures extends Fixture
             ;
 
             $this->manager->persist($user);
-
         }
 
         $adminUser = new User();
@@ -96,6 +94,7 @@ class AppFixtures extends Fixture
             $category = array_rand($categories);
 
             $product
+                ->setWeight((random_int(1, 200) / 100))
                 ->setName('Produit' . $i)
                 ->setPrice($faker->randomFloat(2, 15, 150))
                 ->setDescription($faker->paragraph())

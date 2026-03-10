@@ -17,10 +17,11 @@ class Address
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Veuillez renseigner une ville')]
     private ?string $city = null;
 
     #[ORM\Column(length: 10)]
-    #[Assert\NotBlank(message: 'Veuillez remplir le code postal')]
+    #[Assert\NotBlank(message: 'Veuillez renseigner un code postal')]
     #[Assert\Regex(
         pattern: '/^(?:\d{4}|\d{5}|(?:FR|BE|LU|L|MC)[- ]?\d{4,5})$/',
         message: 'Code postal invalide.'
@@ -49,6 +50,11 @@ class Address
     private Collection $orders;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Veuillez renseigner un pays')]
+    #[Assert\Choice(
+        choices: ['FR', 'BE', 'LU', 'MC'],
+        message: 'Pays invalide.'
+    )]
     private ?string $country = null;
 
     public function __construct()

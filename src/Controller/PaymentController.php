@@ -9,6 +9,7 @@ use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Enum\SessionKey;
 use App\Form\OrderType;
+use App\Service\MailerService;
 use App\Service\MondialRelayService;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
@@ -319,6 +320,17 @@ final class PaymentController extends AbstractController
     ): JsonResponse {
         return $this->json([
             'status' => $order->getStatus()
+        ]);
+    }
+
+    #[Route(path: '/renvoie-mail/{token}', name: 'renvoi-mail')]
+    public function renvoiMail(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        MailerService $mailerService
+    ): Response {
+        $mailerService->sendConfirmationEmail($order);
+        return $this->render('payment/success.html.twig', [
+            'order' => $order
         ]);
     }
 
