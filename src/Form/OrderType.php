@@ -57,7 +57,6 @@ class OrderType extends AbstractType
                 ->add('relay_id', HiddenType::class, [
                     'required' => 'true',
                     "empty_data" => '',
-                    'mapped' => false,
                 ])
                 ->add('submit_relay', SubmitType::class, [
                     'label' => 'Valider',

@@ -36,7 +36,30 @@
             {{ form_row(form.phoneNumber) }}
         </div>
 
-        <div id="Zone_Widget"></div>
+        {% if order.relayId is null %}
+            <div id="Zone_Widget"></div>
+        {% else %}
+
+            <div id="relay_info" class="bg-light p-2 mb-3 rounded-2">
+
+                <p>{{ order.deliveryAddress.street1 }}
+                    <br>
+                    {% if order.deliveryAddress.street2 %}
+                        {{ order.deliveryAddress.street2 }}
+                        <br>
+                    {% endif %}
+                    {{ order.deliveryAddress.city }} {{ order.deliveryAddress.zipcode }}
+                    <br>
+                    {{ order.deliveryAddress.country }}
+                </p>
+
+                <button class="btn-primary btn">Modifier</button>
+
+            </div>
+
+        {% endif %}
+
+
 
         {{ form_row(form.submit_relay) }}
         {{ form_end(form) }}

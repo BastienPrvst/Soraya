@@ -34,14 +34,15 @@
                         </a>
                     </div>
 
-                        {% if order.deliveryMode and order.deliveryMode.value == 'relay' %}
-                            {{ include('payment/relay.frame.html.twig') }}
-                        {% elseif order.deliveryMode and order.deliveryMode == 'home' %}
-                            {{ include('payment/delivery.frame.html.twig') }}
-                        {% else %}
-                            <turbo-frame id="delivery_infos">
-                            </turbo-frame>
-                        {% endif %}
+                    {% set mode = order.deliveryMode is not null ? order.deliveryMode.value : 'home' %}
+
+                    {% if mode == 'home' %}
+                        {{ include('payment/delivery.frame.html.twig') }}
+                    {% elseif mode == 'relay' %}
+                        {{ include('payment/relay.frame.html.twig') }}
+                    {% else %}
+                        <turbo-frame id="delivery_infos"></turbo-frame>
+                    {% endif %}
 
                 </div>
             </section>

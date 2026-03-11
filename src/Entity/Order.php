@@ -83,6 +83,9 @@ class Order
     #[ORM\OneToOne(mappedBy: 'RelatedOrder', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private ?Payment $payment = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $relay_id = null;
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -295,5 +298,17 @@ class Order
     public function setPayment(?Payment $payment): void
     {
         $this->payment = $payment;
+    }
+
+    public function getRelayId(): ?string
+    {
+        return $this->relay_id;
+    }
+
+    public function setRelayId(?string $relay_id): static
+    {
+        $this->relay_id = $relay_id;
+
+        return $this;
     }
 }

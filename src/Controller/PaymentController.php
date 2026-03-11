@@ -9,6 +9,8 @@ use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Enum\SessionKey;
 use App\Form\OrderType;
+use App\Repository\AddressRepository;
+use App\Service\DeliveryService;
 use App\Service\MailerService;
 use App\Service\MondialRelayService;
 use App\Service\OrderService;
@@ -133,7 +135,7 @@ final class PaymentController extends AbstractController
         $this->verifyOrderIntegrity($order);
 
         $form = $this->createForm(OrderType::class, $order, [
-            'delivery_mode' => $order->getDeliveryMode()->value ?? DeliveryMode::HOME->value,
+            'delivery_mode' => $order->getDeliveryMode()->value,
         ]);
         $form->handleRequest($request);
 
@@ -158,7 +160,6 @@ final class PaymentController extends AbstractController
 
                 $relayId = $form->get('relay_id')->getData();
                 if ($relayId !== null) {
-                    $this->addFlash('error', 'Veuillez selectionner un point relais');
                     $address = $mondialRelayService->getRelayAddress($relayId);
                     if (empty($address)) {
                         $this->addFlash('error', 'Veuillez selectionner un point relais valide');
@@ -167,12 +168,15 @@ final class PaymentController extends AbstractController
                         ]);
                     }
 
+                    $order->setRelayId($relayId);
+
                     $orderAdress = new Address();
                     $orderAdress
                         ->setCity($address['City'])
                         ->setStreet1($address['Street'])
                         ->setCountry($address['Country'])
-                        ->setZipcode($address['ZipCode']);
+                        ->setZipcode($address['ZipCode'])
+                    ;
                     $this->entityManager->persist($orderAdress);
                     $order->setDeliveryAddress($orderAdress);
                     $this->entityManager->flush();
@@ -197,12 +201,15 @@ final class PaymentController extends AbstractController
     public function paymentDeliveryForm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
+        DeliveryService $deliveryService,
     ): Response {
 
         $order->setDeliveryMode(DeliveryMode::HOME);
-        $this->entityManager->flush();
+        $deliveryService->prepareHomeDelivery($order, $this->getUser());
 
-        $form = $this->createForm(OrderType::class, $order);
+        $form = $this->createForm(OrderType::class, $order, [
+            'delivery_mode' => 'home'
+        ]);
         if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
             return $this->render('payment/delivery.frame.html.twig', [
                 'form' => $form->createView(),
