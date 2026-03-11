@@ -36,8 +36,11 @@
 
                         {% if order.deliveryMode and order.deliveryMode.value == 'relay' %}
                             {{ include('payment/relay.frame.html.twig') }}
-                        {% else %}
+                        {% elseif order.deliveryMode and order.deliveryMode == 'home' %}
                             {{ include('payment/delivery.frame.html.twig') }}
+                        {% else %}
+                            <turbo-frame id="delivery_infos">
+                            </turbo-frame>
                         {% endif %}
 
                 </div>

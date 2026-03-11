@@ -30,8 +30,7 @@ class OrderType extends AbstractType
                 'label' => 'Nom *',
             ])
             ->add('phoneNumber', TelType::class, [
-                'label' => 'Téléphone',
-                'required' => false,
+                'label' => 'Téléphone *',
             ])
             ->add('delivery_mode', HiddenType::class, [
                 'mapped' => false,

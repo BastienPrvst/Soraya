@@ -64,6 +64,7 @@ class Order
     private ?string $email = null;
 
     #[ORM\Column(length: 20, nullable: true)]
+    #[Assert\NotBlank(message: 'Veuillez saisir un numéro de telephone')]
     private ?string $phoneNumber = null;
 
     #[ORM\Column(length: 255, nullable: true)]

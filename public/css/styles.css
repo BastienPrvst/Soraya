@@ -40,3 +40,7 @@
 .PR-List-Item:active{
     background-color: white !important;
 }
+
+form > div > div{
+    margin-bottom: 3px !important;
+}
