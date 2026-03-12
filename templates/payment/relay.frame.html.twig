@@ -42,15 +42,15 @@
 
             <div id="relay_info" class="bg-light p-2 mb-3 rounded-2">
 
-                <p>{{ order.deliveryAddress.street1 }}
+                <p>{{ order.relayAddress.street1 }}
                     <br>
-                    {% if order.deliveryAddress.street2 %}
-                        {{ order.deliveryAddress.street2 }}
+                    {% if order.relayAddress.street2 %}
+                        {{ order.relayAddress.street2 }}
                         <br>
                     {% endif %}
-                    {{ order.deliveryAddress.city }} {{ order.deliveryAddress.zipcode }}
+                    {{ order.relayAddress.city }} {{ order.relayAddress.zipcode }}
                     <br>
-                    {{ order.deliveryAddress.country }}
+                    {{ order.relayAddress.country }}
                 </p>
 
                 <button class="btn-primary btn">Modifier</button>

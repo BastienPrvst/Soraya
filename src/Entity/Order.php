@@ -86,6 +86,11 @@ class Order
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $relay_id = null;
 
+    #[ORM\ManyToOne]
+    private ?Address $relay_address = null;
+
+    private ?Address $active_address = null;
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -128,18 +133,6 @@ class Order
     public function setDelivery(bool $delivery): static
     {
         $this->delivery = $delivery;
-
-        return $this;
-    }
-
-    public function getDeliveryAddress(): ?Address
-    {
-        return $this->deliveryAddress;
-    }
-
-    public function setDeliveryAddress(?Address $deliveryAddress): static
-    {
-        $this->deliveryAddress = $deliveryAddress;
 
         return $this;
     }
@@ -278,6 +271,16 @@ class Order
         return $this;
     }
 
+    public function getPayment(): ?Payment
+    {
+        return $this->payment;
+    }
+
+    public function setPayment(?Payment $payment): void
+    {
+        $this->payment = $payment;
+    }
+
     public function getDeliveryMode(): ?DeliveryMode
     {
         return $this->deliveryMode;
@@ -290,14 +293,16 @@ class Order
         return $this;
     }
 
-    public function getPayment(): ?Payment
+    public function getDeliveryAddress(): ?Address
     {
-        return $this->payment;
+        return $this->deliveryAddress;
     }
 
-    public function setPayment(?Payment $payment): void
+    public function setDeliveryAddress(?Address $deliveryAddress): static
     {
-        $this->payment = $payment;
+        $this->deliveryAddress = $deliveryAddress;
+
+        return $this;
     }
 
     public function getRelayId(): ?string
@@ -310,5 +315,35 @@ class Order
         $this->relay_id = $relay_id;
 
         return $this;
+    }
+
+    public function getRelayAddress(): ?Address
+    {
+        return $this->relay_address;
+    }
+
+    public function setRelayAddress(?Address $relay_address): static
+    {
+        $this->relay_address = $relay_address;
+
+        return $this;
+    }
+
+    public function getActiveAddress(): ?Address
+    {
+        if ($this->getDeliveryMode() === DeliveryMode::RELAY) {
+            return $this->getRelayAddress();
+        }
+
+        return $this->getDeliveryAddress();
+    }
+
+    public function setActiveAddress(Address $address): void
+    {
+        if ($this->getDeliveryMode() === DeliveryMode::RELAY) {
+            $this->setRelayAddress($address);
+        } else {
+            $this->setDeliveryAddress($address);
+        }
     }
 }

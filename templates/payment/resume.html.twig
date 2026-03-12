@@ -10,13 +10,11 @@
         <div class="row w-100">
             <section class="d-flex flex-row">
                 <div class="left ms-3 col-7">
-                    <h2>Paiement</h2>
+                    <h2>Résumé de votre commande</h2>
                     <div>
-                        <h3>Résumé</h3>
-
                         <br>
 
-                        <a href="{{ path('checkout_summary', { token:order.token }) }}">Retour</a>
+                        <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
 
 
                         <div class="user-info d-flex align-items-center justify-content-center flex-column">
@@ -43,11 +41,11 @@
                                 <span>{{ order.activeAddress.zipcode }} {{ order.activeAddress.city }}</span>
                                 <br>
                                 <span>{{ countries[order.activeAddress.country] }}</span>
+                                <br>
+                                <span>Livraison : {{ order.deliveryMode.value == 'relay' ? 'Point relais' : ' Domicile'}}</span>
 
                             </div>
                         </div>
-
-
                     </div>
                 </div>
 
@@ -62,15 +60,9 @@
                 </div>
             </section>
 
-
-            <section class="mt-5">
-                <h2>Paiement</h2>
-
-                <div id="checkout" class="col-12">
-                </div>
+            <section class="w-100">
+                <a class="btn btn-primary" href="{{ path('checkout_pay', { token: order.token }) }}">Procéder au paiement</a>
             </section>
-
-
         </div>
 
     </main>
@@ -78,12 +70,6 @@
 {% endblock %}
 
 {% block javascripts %}
-    <script src="https://js.stripe.com/clover/stripe.js"></script>
-    <script src="{{ asset('js/checkout.js') }}" defer></script>
-    <script>
-        const checkoutPageUrl = '{{ url('checkout_stripe', { token:order.token }) }}';
-        const stripePublicKey = '{{ stripe_public_key }}'
-    </script>
 {% endblock %}
 
 

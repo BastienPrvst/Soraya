@@ -2,8 +2,10 @@
 
 namespace App\Service;
 
+use App\Entity\Address;
 use App\Entity\Order;
 use App\Entity\User;
+use App\Enum\DeliveryMode;
 use App\Repository\AddressRepository;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -11,29 +13,52 @@ class DeliveryService
 {
     public function __construct(
         private readonly AddressRepository      $addressRepository,
-        private readonly EntityManagerInterface $entityManager,
+        private readonly MondialRelayService $mondialRelayService,
+        private readonly EntityManagerInterface $entityManager
     ) {
     }
 
-    public function prepareHomeDelivery(Order $order, ?User $user = null):void
+    public function switchRelayToDeliver(Order $order, ?User $user = null): void
     {
+        $favAddress = $this->addressRepository->findOneBy([
+            'user' => $user,
+            'isActive' => true
+        ]);
 
-        $favAddress = $this->addressRepository->findOneBy(
-            [
-                'user' => $user,
-                'isActive' => true
-            ]
-        );
+        $order->setDeliveryMode(DeliveryMode::HOME);
 
         if ($favAddress) {
-            $order->setDeliveryAddress($favAddress);
-        } else {
-            $actualAddress = $order->getDeliveryAddress();
-            if ($actualAddress && $order->getRelayId() !== null) {
-                $order->setDeliveryAddress(null);
-                $order->setRelayId(null);
-            }
+            $order
+                ->setDeliveryAddress($favAddress)
+                ->setRelayId(null);
         }
-        $this->entityManager->flush();
+    }
+
+    /**
+     * @param Order $order
+     * @param string $relayId
+     * @return void
+     * @throws \SoapFault
+     */
+    public function prepareRelayDelivery(Order $order, string $relayId): void
+    {
+        $address = $this->mondialRelayService->getRelayAddress($relayId);
+
+        if (empty($address)) {
+            throw new \RuntimeException('Invalid relay');
+        }
+
+        $order->setRelayId($relayId);
+
+        $orderAddress = new Address();
+        $orderAddress
+            ->setCity($address['City'])
+            ->setStreet1($address['Street'])
+            ->setCountry($address['Country'])
+            ->setZipcode($address['ZipCode']);
+
+        $this->entityManager->persist($orderAddress);
+
+        $order->setRelayAddress($orderAddress);
     }
 }

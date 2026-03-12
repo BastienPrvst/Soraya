@@ -126,7 +126,7 @@ final class PaymentController extends AbstractController
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
-        MondialRelayService $mondialRelayService,
+        DeliveryService $deliveryService,
     ): Response {
         if ($this->canTransition($order, 'to_delivery_choice')) {
             $this->applyTransition($order, 'to_delivery_choice');
@@ -145,7 +145,7 @@ final class PaymentController extends AbstractController
 
             if ($deliveryMode === 'home') {
                 //Gestion Livraison
-
+                $order->setDeliveryMode(DeliveryMode::HOME);
                 $this->entityManager->persist($order);
                 $this->entityManager->flush();
 
@@ -159,34 +159,24 @@ final class PaymentController extends AbstractController
                 //Gestion Relay
 
                 $relayId = $form->get('relay_id')->getData();
-                if ($relayId !== null) {
-                    $address = $mondialRelayService->getRelayAddress($relayId);
-                    if (empty($address)) {
-                        $this->addFlash('error', 'Veuillez selectionner un point relais valide');
-                        return $this->redirectToRoute('checkout_delivery', [
-                            'token' => $order->getToken(),
-                        ]);
-                    }
 
-                    $order->setRelayId($relayId);
+                try {
+                    $deliveryService->prepareRelayDelivery($order, $relayId);
+                } catch (\RuntimeException) {
+                    $this->addFlash('error', 'Veuillez selectionner un point relais valide');
 
-                    $orderAdress = new Address();
-                    $orderAdress
-                        ->setCity($address['City'])
-                        ->setStreet1($address['Street'])
-                        ->setCountry($address['Country'])
-                        ->setZipcode($address['ZipCode'])
-                    ;
-                    $this->entityManager->persist($orderAdress);
-                    $order->setDeliveryAddress($orderAdress);
-                    $this->entityManager->flush();
+                    return $this->redirectToRoute('checkout_delivery', [
+                        'token' => $order->getToken(),
+                    ]);
+                }
 
-                    if ($this->canTransition($order, 'to_pending_payment')) {
-                        $this->applyTransition($order, 'to_pending_payment');
-                        return $this->redirectToRoute('checkout_summary', [
-                            'token' => $order->getToken(),
-                        ]);
-                    }
+                $this->entityManager->flush();
+
+                if ($this->canTransition($order, 'to_pending_payment')) {
+                    $this->applyTransition($order, 'to_pending_payment');
+                    return $this->redirectToRoute('checkout_summary', [
+                        'token' => $order->getToken(),
+                    ]);
                 }
             }
         }
@@ -204,8 +194,8 @@ final class PaymentController extends AbstractController
         DeliveryService $deliveryService,
     ): Response {
 
-        $order->setDeliveryMode(DeliveryMode::HOME);
-        $deliveryService->prepareHomeDelivery($order, $this->getUser());
+        $deliveryService->switchRelayToDeliver($order, $this->getUser());
+        $this->entityManager->flush();
 
         $form = $this->createForm(OrderType::class, $order, [
             'delivery_mode' => 'home'
@@ -229,11 +219,12 @@ final class PaymentController extends AbstractController
         Request $request,
     ): Response {
 
+        $order->setDeliveryMode(DeliveryMode::RELAY);
+        $this->entityManager->flush();
+
         $form = $this->createForm(OrderType::class, $order, [
             'delivery_mode' => 'relay'
         ]);
-        $order->setDeliveryMode(DeliveryMode::RELAY);
-        $this->entityManager->flush();
 
         if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
             return $this->render('payment/relay.frame.html.twig', [
@@ -249,6 +240,16 @@ final class PaymentController extends AbstractController
 
     #[Route(path: 'paiement/récapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
     public function paymentResume(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+    ): Response {
+        return $this->render('payment/resume.html.twig', [
+            'order' => $order,
+            'token' => $order->getToken(),
+        ]);
+    }
+
+    #[Route(path: '/paiement/{token}', name: 'checkout_pay')]
+    public function paymentConfirm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
         $this->verifyOrderIntegrity($order);
