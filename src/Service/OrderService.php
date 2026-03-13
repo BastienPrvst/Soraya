@@ -11,26 +11,34 @@ use App\Enum\OrderStatus;
 use App\Enum\SessionKey;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
-use Symfony\Component\Form\AbstractType;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
-class OrderService extends AbstractType
+readonly class OrderService
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private readonly RequestStack $requestStack
+        private EntityManagerInterface $entityManager,
+        private RequestStack           $requestStack,
+        private ShoppingCartService $shoppingCartService,
+        private Security $security,
     ) {
     }
 
     /**
      * @throws RandomException
      */
-    public function buildOrder(array $products, ?User $user): Order
+    public function buildOrder(array $products): Order
     {
+        /* @var User $user */
+        $user = $this->security->getUser();
+
         $order = new Order();
-        $token = bin2hex(random_bytes(20));
+        $token = bin2hex(random_bytes(32));
+        $sessionId = bin2hex(random_bytes(32));
         $order
             ->setToken($token)
+            ->setSessionId($sessionId)
             ->setUser($user)
             ->setFirstname($user?->getFirstname())
             ->setLastname($user?->getLastname())
@@ -59,6 +67,7 @@ class OrderService extends AbstractType
 
         $session = $this->requestStack->getSession();
         $session->set(SessionKey::ORDER_TOKEN->value, $order->getToken());
+        $session->set(SessionKey::SESSION_ID->value, $order->getSessionId());
 
         return $order;
     }
@@ -66,8 +75,9 @@ class OrderService extends AbstractType
     /**
      * @throws RandomException
      */
-    public function findLatestOrderOrCreateOne(?string $token, array $products, ?User $user): ?Order
+    public function findLatestOrderOrCreateOne(?string $token, array $products): ?Order
     {
+        $user = $this->security->getUser();
         if ($token !== null) {
             $order = $this->entityManager->getRepository(Order::class)->findOneBy(
                 [
@@ -82,12 +92,12 @@ class OrderService extends AbstractType
             );
 
             if ($order === null) {
-                $order = $this->buildOrder($products, $user);
+                $order = $this->buildOrder($products);
             } else {
                 $this->updateOrder($order, $products);
             }
         } else {
-            $order = $this->buildOrder($products, $user);
+            $order = $this->buildOrder($products);
         }
 
         return $order;
@@ -147,5 +157,36 @@ class OrderService extends AbstractType
         }
 
         return true;
+    }
+
+    public function verifyOrderIntegrity(Order $order): void
+    {
+        $this->verifyOrderOwnership($order);
+        $session = $this->requestStack->getSession();
+        $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
+        $products = $this->shoppingCartService->getCartInformations($cart);
+
+        $isOrderMatchingCart = $this->isOrderMatchingCart($order, $products);
+
+        if (!$isOrderMatchingCart) {
+            $this->updateOrder($order, $products);
+        }
+    }
+
+    public function verifyOrderOwnership(Order $order): void
+    {
+        $user = $this->security->getUser();
+        $session = $this->requestStack->getSession();
+
+        if ($order->getUser() !== null) {
+            if (!$user || $order->getUser() !== $user) {
+                throw new AccessDeniedException();
+            }
+        }
+
+        if (($order->getUser() === null) &&
+            $session->get(SessionKey::SESSION_ID->value) !== $order->getSessionId()) {
+            throw new AccessDeniedException();
+        }
     }
 }

@@ -25,16 +25,6 @@ class Order
     #[ORM\Column]
     private ?\DateTime $creationDate = null;
 
-    #[ORM\Column]
-    private ?bool $delivery = null;
-
-    #[ORM\ManyToOne(
-        cascade: ['persist'],
-        inversedBy: 'orders'
-    )]
-    #[Assert\Valid]
-    private ?Address $deliveryAddress = null;
-
     /**
      * @var Collection<int, OrderItem>
      */
@@ -51,12 +41,6 @@ class Order
 
     #[ORM\Column(enumType: OrderStatus::class)]
     private ?OrderStatus $status = OrderStatus::CREATED;
-
-    #[ORM\Column(length: 40, unique: true)]
-    private ?string $token = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?float $delivery_price = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     #[Assert\NotBlank(message: 'Veuillez saisir une adresse mail')]
@@ -76,20 +60,36 @@ class Order
     #[Assert\NotBlank(message: 'Veuillez saisir votre nom')]
     #[Assert\Length(min: 1, max: 255, maxMessage: 'Votre nom ne peut pas excéder 255 caractères')]
     private ?string $lastname = null;
+    #[ORM\OneToOne(mappedBy: 'RelatedOrder', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private ?Payment $payment = null;
+
+    #[ORM\Column]
+    private ?bool $delivery = null;
+
+    #[ORM\ManyToOne(
+        cascade: ['persist'],
+        inversedBy: 'orders'
+    )]
+    #[Assert\Valid]
+    private ?Address $deliveryAddress = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $deliveryPrice = null;
 
     #[ORM\Column(enumType: DeliveryMode::class)]
     private ?DeliveryMode $deliveryMode = null;
 
-    #[ORM\OneToOne(mappedBy: 'RelatedOrder', cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private ?Payment $payment = null;
-
     #[ORM\Column(length: 50, nullable: true)]
-    private ?string $relay_id = null;
+    private ?string $relayId = null;
 
     #[ORM\ManyToOne]
-    private ?Address $relay_address = null;
+    private ?Address $relayAddress = null;
 
-    private ?Address $active_address = null;
+    #[ORM\Column(length: 64, unique: true)]
+    private ?string $token = null;
+
+    #[ORM\Column(length: 64, unique: true)]
+    private ?string $sessionId = null;
 
     public function __construct()
     {
@@ -213,12 +213,12 @@ class Order
 
     public function getDeliveryPrice(): ?float
     {
-        return $this->delivery_price;
+        return $this->deliveryPrice;
     }
 
-    public function setDeliveryPrice(?float $delivery_price): static
+    public function setDeliveryPrice(?float $deliveryPrice): static
     {
-        $this->delivery_price = $delivery_price;
+        $this->deliveryPrice = $deliveryPrice;
 
         return $this;
     }
@@ -307,24 +307,24 @@ class Order
 
     public function getRelayId(): ?string
     {
-        return $this->relay_id;
+        return $this->relayId;
     }
 
-    public function setRelayId(?string $relay_id): static
+    public function setRelayId(?string $relayId): static
     {
-        $this->relay_id = $relay_id;
+        $this->relayId = $relayId;
 
         return $this;
     }
 
     public function getRelayAddress(): ?Address
     {
-        return $this->relay_address;
+        return $this->relayAddress;
     }
 
-    public function setRelayAddress(?Address $relay_address): static
+    public function setRelayAddress(?Address $relayAddress): static
     {
-        $this->relay_address = $relay_address;
+        $this->relayAddress = $relayAddress;
 
         return $this;
     }
@@ -345,5 +345,17 @@ class Order
         } else {
             $this->setDeliveryAddress($address);
         }
+    }
+
+    public function getSessionId(): ?string
+    {
+        return $this->sessionId;
+    }
+
+    public function setSessionId(string $sessionId): static
+    {
+        $this->sessionId = $sessionId;
+
+        return $this;
     }
 }

@@ -123,7 +123,7 @@ readonly class StripePaymentService
     public function handleEvent(Event $event): void
     {
         $this->logger->critical($event);
-        if ($event->type !== 'checkout.session.completed') {
+        if ($event->type !== 'payment_intent.succeeded') {
             return;
         }
 
@@ -151,8 +151,6 @@ readonly class StripePaymentService
                 $order->getPayment()?->setStatus(PaymentStatus::SUCCESS);
                 $workflow->apply($order, 'pay');
                 $this->entityManager->flush();
-                $this->shoppingCartService->emptyCart();
-                $this->mailerService->sendConfirmationEmail($order);
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
