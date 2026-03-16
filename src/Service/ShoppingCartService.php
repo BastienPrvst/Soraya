@@ -111,7 +111,7 @@ class ShoppingCartService extends AbstractType
             return 0;
         }
 
-        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
+        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value, []);
         $totalKart = 0;
 
         foreach ($shoppingCart as $id => $quantity) {

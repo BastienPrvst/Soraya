@@ -55,9 +55,8 @@ final class PaymentController extends AbstractController
         $this->orderService->verifyOrderOwnership($order);
         $cart = $request->getSession()->get(SessionKey::SHOPPING_CART->value);
         if (!$this->orderService->isOrderMatchingCart($order, $cart)) {
-            $products = $this->shoppingCartService->getCartInformations($cart);
-            $this->orderService->updateOrder($order, $products);
-            return $this->render('payment/resume.html.twig', [
+            $this->orderService->updateOrder($order);
+            return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken(),
                 'order' => $order,
             ]);

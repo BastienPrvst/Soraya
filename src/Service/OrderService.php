@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Address;
 use App\Entity\Order;
 use App\Entity\OrderItem;
+use App\Entity\Product;
 use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
@@ -20,8 +21,8 @@ readonly class OrderService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private RequestStack           $requestStack,
-        private ShoppingCartService $shoppingCartService,
         private Security $security,
+        private WorkflowService $workflowService
     ) {
     }
 
@@ -78,39 +79,39 @@ readonly class OrderService
     public function findLatestOrderOrCreateOne(?string $token, array $products): ?Order
     {
         $user = $this->security->getUser();
+        $orderRepository = $this->entityManager->getRepository(Order::class);
         if ($token !== null) {
-            $order = $this->entityManager->getRepository(Order::class)->findOneBy(
-                [
-                    'token' => $token,
-                    'status' => [
-                        OrderStatus::CREATED,
-                        OrderStatus::DELIVERY_CHOICE,
-                        OrderStatus::PENDING_PAYMENT
-                    ]
-                ],
-                ['creationDate' => 'DESC']
-            );
-
-            if ($order === null) {
-                $order = $this->buildOrder($products);
+            if ($user) {
+                $order = $orderRepository->findOneBy(
+                    [
+                        'token' => $token,
+                        'status' => [
+                            OrderStatus::CREATED,
+                            OrderStatus::DELIVERY_CHOICE,
+                            OrderStatus::PENDING_PAYMENT
+                        ],
+                        'user' => $user,
+                    ],
+                    ['creationDate' => 'DESC']
+                );
             } else {
-                $this->updateOrder($order, $products);
+                $session = $this->requestStack->getSession();
+
+                $order =
+                    $orderRepository->findValidAnonymousOrder(
+                        $token,
+                        $session->get(SessionKey::SESSION_ID->value)
+                    );
             }
-        } else {
-            $order = $this->buildOrder($products);
         }
 
+        if ($order === null) {
+            return $this->buildOrder($products);
+        }
+
+        $this->updateOrder($order);
         return $order;
     }
-
-
-    public function updateOrder(Order $order, array $products): void
-    {
-        $order->removeAllOrderItems();
-        $this->createOrderItems($products, $order);
-        $this->entityManager->flush();
-    }
-
 
     private function createOrderItems(array $products, Order $order): void
     {
@@ -136,40 +137,19 @@ readonly class OrderService
         $order->setTotal($cartTotal);
     }
 
-    public function isOrderMatchingCart(Order $order, array $shoppingCart): bool
-    {
-        $orderItems = $order->getOrderItems();
 
-        if (count($shoppingCart) !== count($orderItems)) {
-            return false;
-        }
-
-        foreach ($orderItems as $item) {
-            $id = (string) $item->getProduct()?->getId();
-
-            if (!isset($shoppingCart[$id])) {
-                return false;
-            }
-
-            if ((int)$shoppingCart[$id] !== $item->getQuantity()) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     public function verifyOrderIntegrity(Order $order): void
     {
+
+
         $this->verifyOrderOwnership($order);
         $session = $this->requestStack->getSession();
         $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
-        $products = $this->shoppingCartService->getCartInformations($cart);
 
-        $isOrderMatchingCart = $this->isOrderMatchingCart($order, $products);
-
+        $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cart);
         if (!$isOrderMatchingCart) {
-            $this->updateOrder($order, $products);
+            $this->updateOrder($order);
         }
     }
 
@@ -188,5 +168,76 @@ readonly class OrderService
             $session->get(SessionKey::SESSION_ID->value) !== $order->getSessionId()) {
             throw new AccessDeniedException();
         }
+    }
+
+    public function isOrderMatchingCart(Order $order, array $cart): bool
+    {
+        $orderItems = $order->getOrderItems();
+
+        if (count($cart) !== count($orderItems)) {
+            return false;
+        }
+
+        foreach ($orderItems as $item) {
+            $id = (string) $item->getProduct()?->getId();
+
+            if (!isset($cart[$id])) {
+                return false;
+            }
+
+            if ((int)$cart[$id] !== $item->getQuantity()) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function updateOrder(Order $order): void
+    {
+        $cartItems = $this->requestStack
+            ->getSession()
+            ->get(SessionKey::SHOPPING_CART->value, []);
+
+        if (empty($cartItems)) {
+            if ($this->workflowService->canTransition($order, OrderStatus::CANCELED->value)) {
+                $this->workflowService->applyTransition($order, OrderStatus::CANCELED->value);
+            }
+            $this->entityManager->flush();
+            return;
+        }
+
+        $productRepo = $this->entityManager->getRepository(Product::class);
+        foreach ($order->getOrderItems() as $orderItem) {
+            $this->entityManager->remove($orderItem);
+        }
+
+        $order->getOrderItems()->clear();
+        $total = 0;
+
+        foreach ($cartItems as $productId => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $product = $productRepo->find($productId);
+
+            if (!$product) {
+                continue;
+            }
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setRelatedOrder($order)
+                ->setProduct($product)
+                ->setQuantity($quantity)
+                ->setUnitPrice($product->getPrice())
+                ->setTotal($product->getPrice() * $quantity);
+
+            $this->entityManager->persist($orderItem);
+            $total += $orderItem->getTotal();
+        }
+        $order->setTotal($total);
+        $this->entityManager->flush();
     }
 }

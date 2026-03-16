@@ -25,19 +25,15 @@ class DeliveryController extends AbstractController
         private readonly OrderService $orderService,
         private readonly EntityManagerInterface $entityManager,
         private readonly DeliveryService $deliveryService,
-    )
-    {
+    ) {
     }
 
-    /**
-     * @throws SoapFault
-     */
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
-        DeliveryService $deliveryService,
     ): Response {
+
         if ($this->workflowService->canTransition($order, 'to_delivery_choice')) {
             $this->workflowService->applyTransition($order, 'to_delivery_choice');
         }
@@ -71,7 +67,7 @@ class DeliveryController extends AbstractController
                 $relayId = $form->get('relay_id')->getData();
 
                 try {
-                    $this->deliveryService->prepareRelayDelivery($order, $relayId);
+                    $this->deliveryService->switchDeliverToRelay($order, $relayId);
                 } catch (\RuntimeException|\SoapFault) {
                     $this->addFlash('error', 'Veuillez selectionner un point relais valide');
 

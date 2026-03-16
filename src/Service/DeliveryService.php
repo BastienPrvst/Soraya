@@ -40,7 +40,7 @@ class DeliveryService
      * @return void
      * @throws \SoapFault
      */
-    public function prepareRelayDelivery(Order $order, string $relayId): void
+    public function switchDeliverToRelay(Order $order, string $relayId): void
     {
         $address = $this->mondialRelayService->getRelayAddress($relayId);
 

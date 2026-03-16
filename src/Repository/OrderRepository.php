@@ -3,41 +3,45 @@
 namespace App\Repository;
 
 use App\Entity\Order;
+use App\Enum\OrderStatus;
+use App\Enum\SessionKey;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * @extends ServiceEntityRepository<Order>
  */
 class OrderRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
-    {
+    public function __construct(
+        ManagerRegistry $registry,
+        private readonly RequestStack $requestStack
+    ) {
         parent::__construct($registry, Order::class);
     }
 
-    //    /**
-    //     * @return Order[] Returns an array of Order objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('o')
-    //            ->andWhere('o.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('o.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function findValidAnonymousOrder(string $token, string $sessionId): ?Order
+    {
+        $session = $this->requestStack->getSession();
 
-    //    public function findOneBySomeField($value): ?Order
-    //    {
-    //        return $this->createQueryBuilder('o')
-    //            ->andWhere('o.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        return $this
+            ->createQueryBuilder('o')
+            ->where('o.token = :token')
+            ->andWhere('o.status IN (:statuses)')
+            ->andWhere('o.sessionId = :sessionId')
+            ->andWhere('o.creationDate >= :limitDate')
+            ->setParameter('token', $token)
+            ->setParameter('statuses', [
+                OrderStatus::CREATED,
+                OrderStatus::DELIVERY_CHOICE,
+                OrderStatus::PENDING_PAYMENT
+            ])
+            ->setParameter('sessionId', $session->get(SessionKey::SESSION_ID->value))
+            ->setParameter('limitDate', new \DateTime('-1 hour'))
+            ->orderBy('o.creationDate', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Order;
-use App\Entity\User;
 use App\Enum\SessionKey;
 use App\Service\MailerService;
 use App\Service\OrderService;
