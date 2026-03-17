@@ -4,7 +4,7 @@ namespace App\Service;
 
 use App\Entity\Order;
 use App\Enum\OrderStatus;
-use App\Enum\SessionKey;
+use App\Enum\SessionElements;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Form\AbstractType;
@@ -27,17 +27,17 @@ class ShoppingCartService extends AbstractType
         $session = $this->requestStack->getSession();
         $product = $this->productRepository->find($id);
         if ($product !== null) {
-            if (!$session->has(SessionKey::SHOPPING_CART->value)) {
-                $session->set(SessionKey::SHOPPING_CART->value, []);
+            if (!$session->has(SessionElements::SHOPPING_CART->value)) {
+                $session->set(SessionElements::SHOPPING_CART->value, []);
             }
 
-            $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
+            $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
 
             if (isset($shoppingCart[$id])) {
                 $this->update($id, true, $quantity);
             } else {
                 $shoppingCart[$id] = $quantity;
-                $session->set(SessionKey::SHOPPING_CART->value, $shoppingCart);
+                $session->set(SessionElements::SHOPPING_CART->value, $shoppingCart);
             }
         }
     }
@@ -45,17 +45,17 @@ class ShoppingCartService extends AbstractType
     public function remove(string $id): void
     {
         $session = $this->requestStack->getSession();
-        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
+        $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
         if (isset($shoppingCart[$id])) {
             unset($shoppingCart[$id]);
-            $session->set(SessionKey::SHOPPING_CART->value, $shoppingCart);
+            $session->set(SessionElements::SHOPPING_CART->value, $shoppingCart);
         }
     }
 
     public function update(string $id, bool $action, ?int $quantity = 1): void
     {
         $session = $this->requestStack->getSession();
-        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
+        $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
 
         //Action true = addition
         // False = soustraction
@@ -69,14 +69,14 @@ class ShoppingCartService extends AbstractType
                 unset($shoppingCart[$id]);
             }
         }
-        $session->set(SessionKey::SHOPPING_CART->value, $shoppingCart);
+        $session->set(SessionElements::SHOPPING_CART->value, $shoppingCart);
     }
 
     public function emptyCart(): void
     {
         $session = $this->requestStack->getSession();
-        if ($session->has(SessionKey::ORDER_TOKEN->value)) {
-            $token = $session->get(SessionKey::ORDER_TOKEN->value);
+        if ($session->has(SessionElements::ORDER_TOKEN->value)) {
+            $token = $session->get(SessionElements::ORDER_TOKEN->value);
             $order = $this->entityManager->getRepository(Order::class)->findOneBy([
                 'token' => $token,
                 'status' => [OrderStatus::CREATED, OrderStatus::DELIVERY_CHOICE, OrderStatus::PENDING_PAYMENT]
@@ -91,15 +91,15 @@ class ShoppingCartService extends AbstractType
                 }
             }
 
-            $session->remove(SessionKey::ORDER_TOKEN->value);
+            $session->remove(SessionElements::ORDER_TOKEN->value);
         }
-        $session->remove(SessionKey::SHOPPING_CART->value);
+        $session->remove(SessionElements::SHOPPING_CART->value);
     }
 
     public function getQuantity(string $id): int|null
     {
         $session = $this->requestStack->getSession();
-        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
+        $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
         return $shoppingCart[$id] ?? null;
     }
 
@@ -107,11 +107,11 @@ class ShoppingCartService extends AbstractType
     {
         $session = $this->requestStack->getSession();
 
-        if (!$session->has(SessionKey::SHOPPING_CART->value)) {
+        if (!$session->has(SessionElements::SHOPPING_CART->value)) {
             return 0;
         }
 
-        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value, []);
+        $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value, []);
         $totalKart = 0;
 
         foreach ($shoppingCart as $id => $quantity) {
@@ -131,8 +131,8 @@ class ShoppingCartService extends AbstractType
     public function getTotalQuantity(): int
     {
         $session = $this->requestStack->getSession();
-        if ($session->has(SessionKey::SHOPPING_CART->value)) {
-            $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
+        if ($session->has(SessionElements::SHOPPING_CART->value)) {
+            $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
             return array_sum($shoppingCart);
         }
 

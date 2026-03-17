@@ -5,7 +5,7 @@ namespace App\EventListener;
 use App\Entity\Address;
 use App\Entity\User;
 use App\Enum\OrderStatus;
-use App\Enum\SessionKey;
+use App\Enum\SessionElements;
 use App\Repository\OrderRepository;
 use App\Service\ShoppingCartService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -30,7 +30,7 @@ final readonly class LoginListener
         $user = $event->getUser();
         $session = $this->requestStack->getSession();
 
-        $token = $session->get(SessionKey::ORDER_TOKEN->value);
+        $token = $session->get(SessionElements::ORDER_TOKEN->value);
 
         if (!$token) {
             return;

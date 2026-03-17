@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Enum\SessionKey;
+use App\Enum\SessionElements;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,11 +27,11 @@ final class MainController extends AbstractController
     public function getSession(Request $request): Response
     {
         $session = $request->getSession();
-        $token = $session->get(SessionKey::ORDER_TOKEN->value);
-        $shoppingCart = $session->get(SessionKey::SHOPPING_CART->value);
-        $sessionId = $session->get(SessionKey::SESSION_ID->value);
+        $token = $session->get(SessionElements::ORDER_TOKEN->value);
+        $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
+        $sessionId = $session->get(SessionElements::SESSION_KEY->value);
 
-        dd($token, $shoppingCart, $sessionId);
+        dd($token, $shoppingCart, $sessionId, $session->getMetadataBag()->getCreated(), time(), time() - $session->getMetadataBag()->getCreated());
 
         return $this->render('main/session.html.twig');
     }

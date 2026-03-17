@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use App\Enum\OrderStatus;
-use App\Enum\SessionKey;
+use App\Enum\SessionElements;
 use App\Service\MailerService;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
@@ -53,7 +53,7 @@ final class PaymentController extends AbstractController
         Request $request,
     ): Response {
         $this->orderService->verifyOrderOwnership($order);
-        $cart = $request->getSession()->get(SessionKey::SHOPPING_CART->value);
+        $cart = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
         if (!$this->orderService->isOrderMatchingCart($order, $cart)) {
             $this->orderService->updateOrder($order);
             return $this->redirectToRoute('checkout_summary', [
@@ -117,8 +117,8 @@ final class PaymentController extends AbstractController
         }
 
         $session = $request->getSession();
-        if ($session->has(SessionKey::ORDER_TOKEN->value)
-            && $session->get(SessionKey::ORDER_TOKEN->value) === $order->getToken()
+        if ($session->has(SessionElements::ORDER_TOKEN->value)
+            && $session->get(SessionElements::ORDER_TOKEN->value) === $order->getToken()
         ) {
             $this->shoppingCartService->emptyCart();
         }

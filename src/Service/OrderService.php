@@ -9,7 +9,7 @@ use App\Entity\Product;
 use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
-use App\Enum\SessionKey;
+use App\Enum\SessionElements;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -36,10 +36,10 @@ readonly class OrderService
 
         $order = new Order();
         $token = bin2hex(random_bytes(32));
-        $sessionId = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
         $order
             ->setToken($token)
-            ->setSessionId($sessionId)
+            ->setSessionKey($sessionKey)
             ->setUser($user)
             ->setFirstname($user?->getFirstname())
             ->setLastname($user?->getLastname())
@@ -67,8 +67,8 @@ readonly class OrderService
         $this->entityManager->flush();
 
         $session = $this->requestStack->getSession();
-        $session->set(SessionKey::ORDER_TOKEN->value, $order->getToken());
-        $session->set(SessionKey::SESSION_ID->value, $order->getSessionId());
+        $session->set(SessionElements::ORDER_TOKEN->value, $order->getToken());
+        $session->set(SessionElements::SESSION_KEY->value, $order->getSessionKey());
 
         return $order;
     }
@@ -80,6 +80,7 @@ readonly class OrderService
     {
         $user = $this->security->getUser();
         $orderRepository = $this->entityManager->getRepository(Order::class);
+        $order = null;
         if ($token !== null) {
             if ($user) {
                 $order = $orderRepository->findOneBy(
@@ -100,12 +101,12 @@ readonly class OrderService
                 $order =
                     $orderRepository->findValidAnonymousOrder(
                         $token,
-                        $session->get(SessionKey::SESSION_ID->value)
+                        $session->get(SessionElements::SESSION_KEY->value)
                     );
             }
         }
 
-        if ($order === null) {
+        if (!$order) {
             return $this->buildOrder($products);
         }
 
@@ -141,11 +142,9 @@ readonly class OrderService
 
     public function verifyOrderIntegrity(Order $order): void
     {
-
-
         $this->verifyOrderOwnership($order);
         $session = $this->requestStack->getSession();
-        $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
+        $cart = $session->get(SessionElements::SHOPPING_CART->value, []);
 
         $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cart);
         if (!$isOrderMatchingCart) {
@@ -162,10 +161,17 @@ readonly class OrderService
             if (!$user || $order->getUser() !== $user) {
                 throw new AccessDeniedException();
             }
+            return;
         }
 
-        if (($order->getUser() === null) &&
-            $session->get(SessionKey::SESSION_ID->value) !== $order->getSessionId()) {
+        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
+        $token = $session->get(SessionElements::ORDER_TOKEN->value);
+
+        if (!$token || !hash_equals($order->getToken(), $token)) {
+            throw new AccessDeniedException();
+        }
+
+        if (!$sessionKey || !hash_equals($order->getSessionKey(), $sessionKey)) {
             throw new AccessDeniedException();
         }
     }
@@ -197,7 +203,7 @@ readonly class OrderService
     {
         $cartItems = $this->requestStack
             ->getSession()
-            ->get(SessionKey::SHOPPING_CART->value, []);
+            ->get(SessionElements::SHOPPING_CART->value, []);
 
         if (empty($cartItems)) {
             if ($this->workflowService->canTransition($order, OrderStatus::CANCELED->value)) {

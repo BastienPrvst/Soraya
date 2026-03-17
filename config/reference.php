@@ -622,7 +622,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         }>,
  *     },
  *     rate_limiter?: bool|array{ // Rate limiter configuration
- *         enabled?: bool|Param, // Default: false
+ *         enabled?: bool|Param, // Default: true
  *         limiters?: array<string, array{ // Default: []
  *             lock_factory?: scalar|null|Param, // The service ID of the lock factory used by this limiter (or null to disable locking). // Default: "auto"
  *             cache_pool?: scalar|null|Param, // The cache pool to use for storing the current limiter state. // Default: "cache.rate_limiter"
@@ -1285,9 +1285,9 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *             lifetime?: int|Param, // Default: 31536000
  *             path?: scalar|null|Param, // Default: "/"
  *             domain?: scalar|null|Param, // Default: null
- *             secure?: true|false|"auto"|Param, // Default: false
+ *             secure?: true|false|"auto"|Param, // Default: null
  *             httponly?: bool|Param, // Default: true
- *             samesite?: null|"lax"|"strict"|"none"|Param, // Default: null
+ *             samesite?: null|"lax"|"strict"|"none"|Param, // Default: "lax"
  *             always_remember_me?: bool|Param, // Default: false
  *             remember_me_parameter?: scalar|null|Param, // Default: "_remember_me"
  *         },

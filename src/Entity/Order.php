@@ -89,7 +89,7 @@ class Order
     private ?string $token = null;
 
     #[ORM\Column(length: 64, unique: true)]
-    private ?string $sessionId = null;
+    private ?string $sessionKey = null;
 
     public function __construct()
     {
@@ -339,14 +339,14 @@ class Order
         }
     }
 
-    public function getSessionId(): ?string
+    public function getSessionKey(): ?string
     {
-        return $this->sessionId;
+        return $this->sessionKey;
     }
 
-    public function setSessionId(string $sessionId): static
+    public function setSessionKey(string $sessionKey): static
     {
-        $this->sessionId = $sessionId;
+        $this->sessionKey = $sessionKey;
 
         return $this;
     }

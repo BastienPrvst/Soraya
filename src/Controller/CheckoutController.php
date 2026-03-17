@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Order;
-use App\Enum\SessionKey;
+use App\Enum\SessionElements;
 use App\Service\MailerService;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
@@ -59,8 +59,8 @@ class CheckoutController extends AbstractController
     public function paymentAuthentification(AuthenticationUtils $authenticationUtils, Request $request): Response
     {
         $session = $request->getSession();
-        $cart = $session->get(SessionKey::SHOPPING_CART->value, []);
-        $token = $session->get(SessionKey::ORDER_TOKEN->value);
+        $cart = $session->get(SessionElements::SHOPPING_CART->value, []);
+        $token = $session->get(SessionElements::ORDER_TOKEN->value);
         if (empty($cart)) {
             return $this->redirectToRoute('app_shopping_cart_view');
         }

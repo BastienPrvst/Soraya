@@ -4,7 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Order;
 use App\Enum\OrderStatus;
-use App\Enum\SessionKey;
+use App\Enum\SessionElements;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -21,7 +21,7 @@ class OrderRepository extends ServiceEntityRepository
         parent::__construct($registry, Order::class);
     }
 
-    public function findValidAnonymousOrder(string $token, string $sessionId): ?Order
+    public function findValidAnonymousOrder(string $token, string $sessionKey): ?Order
     {
         $session = $this->requestStack->getSession();
 
@@ -29,7 +29,7 @@ class OrderRepository extends ServiceEntityRepository
             ->createQueryBuilder('o')
             ->where('o.token = :token')
             ->andWhere('o.status IN (:statuses)')
-            ->andWhere('o.sessionId = :sessionId')
+            ->andWhere('o.sessionKey = :sessionKey')
             ->andWhere('o.creationDate >= :limitDate')
             ->setParameter('token', $token)
             ->setParameter('statuses', [
@@ -37,7 +37,7 @@ class OrderRepository extends ServiceEntityRepository
                 OrderStatus::DELIVERY_CHOICE,
                 OrderStatus::PENDING_PAYMENT
             ])
-            ->setParameter('sessionId', $session->get(SessionKey::SESSION_ID->value))
+            ->setParameter('sessionKey', $sessionKey)
             ->setParameter('limitDate', new \DateTime('-1 hour'))
             ->orderBy('o.creationDate', 'DESC')
             ->setMaxResults(1)
