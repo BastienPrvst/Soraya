@@ -30,6 +30,9 @@ class CheckoutController extends AbstractController
 
     use TargetPathTrait;
 
+    /**
+     * @throws RandomException
+     */
     #[Route('/paiement/back/{token}', name: 'checkout_previous')]
     public function back(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -38,6 +41,8 @@ class CheckoutController extends AbstractController
         if ($this->workflowService->canTransition($order, 'back_to_delivery_choice')) {
             $this->workflowService->applyTransition($order, 'back_to_delivery_choice');
 
+            $this->orderService->refreshSessionKey($order);
+
             return $this->redirectToRoute('checkout_delivery', [
                 'token' => $order->getToken(),
             ]);
@@ -45,6 +50,8 @@ class CheckoutController extends AbstractController
 
         if ($this->workflowService->canTransition($order, 'back_to_created')) {
             $this->workflowService->applyTransition($order, 'back_to_created');
+
+            $this->orderService->refreshSessionKey($order);
 
             return $this->redirectToRoute('checkout_auth');
         }

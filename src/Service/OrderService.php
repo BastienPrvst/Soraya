@@ -67,6 +67,7 @@ readonly class OrderService
         $this->entityManager->flush();
 
         $session = $this->requestStack->getSession();
+        $session->migrate(true);
         $session->set(SessionElements::ORDER_TOKEN->value, $order->getToken());
         $session->set(SessionElements::SESSION_KEY->value, $order->getSessionKey());
 
@@ -138,7 +139,53 @@ readonly class OrderService
         $order->setTotal($cartTotal);
     }
 
+    public function updateOrder(Order $order): void
+    {
+        $cartItems = $this->requestStack
+            ->getSession()
+            ->get(SessionElements::SHOPPING_CART->value, []);
 
+        if (empty($cartItems)) {
+            if ($this->workflowService->canTransition($order, OrderStatus::CANCELED->value)) {
+                $this->workflowService->applyTransition($order, OrderStatus::CANCELED->value);
+            }
+            $this->entityManager->flush();
+            return;
+        }
+
+        $productRepo = $this->entityManager->getRepository(Product::class);
+        foreach ($order->getOrderItems() as $orderItem) {
+            $this->entityManager->remove($orderItem);
+        }
+
+        $order->getOrderItems()->clear();
+        $total = 0;
+
+        foreach ($cartItems as $productId => $quantity) {
+            if ($quantity <= 0) {
+                continue;
+            }
+
+            $product = $productRepo->find($productId);
+
+            if (!$product) {
+                continue;
+            }
+
+            $orderItem = new OrderItem();
+            $orderItem
+                ->setRelatedOrder($order)
+                ->setProduct($product)
+                ->setQuantity($quantity)
+                ->setUnitPrice($product->getPrice())
+                ->setTotal($product->getPrice() * $quantity);
+
+            $this->entityManager->persist($orderItem);
+            $total += $orderItem->getTotal();
+        }
+        $order->setTotal($total);
+        $this->entityManager->flush();
+    }
 
     public function verifyOrderIntegrity(Order $order): void
     {
@@ -199,51 +246,21 @@ readonly class OrderService
         return true;
     }
 
-    public function updateOrder(Order $order): void
+    /**
+     * @throws RandomException
+     */
+    public function refreshSessionKey(Order $order): void
     {
-        $cartItems = $this->requestStack
-            ->getSession()
-            ->get(SessionElements::SHOPPING_CART->value, []);
-
-        if (empty($cartItems)) {
-            if ($this->workflowService->canTransition($order, OrderStatus::CANCELED->value)) {
-                $this->workflowService->applyTransition($order, OrderStatus::CANCELED->value);
-            }
-            $this->entityManager->flush();
+        if ($order->getUser() !== null) {
             return;
         }
 
-        $productRepo = $this->entityManager->getRepository(Product::class);
-        foreach ($order->getOrderItems() as $orderItem) {
-            $this->entityManager->remove($orderItem);
-        }
+        $newSessionKey = bin2hex(random_bytes(32));
 
-        $order->getOrderItems()->clear();
-        $total = 0;
+        $order->setSessionKey($newSessionKey);
 
-        foreach ($cartItems as $productId => $quantity) {
-            if ($quantity <= 0) {
-                continue;
-            }
-
-            $product = $productRepo->find($productId);
-
-            if (!$product) {
-                continue;
-            }
-
-            $orderItem = new OrderItem();
-            $orderItem
-                ->setRelatedOrder($order)
-                ->setProduct($product)
-                ->setQuantity($quantity)
-                ->setUnitPrice($product->getPrice())
-                ->setTotal($product->getPrice() * $quantity);
-
-            $this->entityManager->persist($orderItem);
-            $total += $orderItem->getTotal();
-        }
-        $order->setTotal($total);
         $this->entityManager->flush();
+        $session = $this->requestStack->getSession();
+        $session->set(SessionElements::SESSION_KEY->value, $newSessionKey);
     }
 }

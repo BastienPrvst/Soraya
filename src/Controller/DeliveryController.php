@@ -11,6 +11,7 @@ use App\Service\DeliveryService;
 use App\Service\OrderService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
+use Random\RandomException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,6 +29,9 @@ class DeliveryController extends AbstractController
     ) {
     }
 
+    /**
+     * @throws RandomException
+     */
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function paymentDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -48,6 +52,7 @@ class DeliveryController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $deliveryMode = $form->get('delivery_mode')->getData();
 
+            $this->orderService->refreshSessionKey($order);
 
             if ($deliveryMode === 'home') {
                 //Gestion Livraison

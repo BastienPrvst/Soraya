@@ -12,6 +12,7 @@ use App\Service\StripePaymentService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
+use Random\RandomException;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -41,18 +42,27 @@ final class PaymentController extends AbstractController
     public function paymentResume(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
     ): Response {
+        $this->orderService->verifyOrderIntegrity($order);
+        $this->orderService->refreshSessionKey($order);
         return $this->render('payment/resume.html.twig', [
             'order' => $order,
             'token' => $order->getToken(),
         ]);
     }
 
+    /**
+     * @throws RandomException
+     */
     #[Route(path: '/paiement/{token}', name: 'checkout_pay')]
     public function paymentConfirm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request,
     ): Response {
         $this->orderService->verifyOrderOwnership($order);
+        $this->orderService->refreshSessionKey($order);
+
+        $session = $request->getSession();
+        $session->migrate(true);
         $cart = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
         if (!$this->orderService->isOrderMatchingCart($order, $cart)) {
             $this->orderService->updateOrder($order);
