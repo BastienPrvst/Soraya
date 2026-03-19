@@ -75,7 +75,9 @@ class ShoppingCartService extends AbstractType
     public function emptyCart(): void
     {
         $session = $this->requestStack->getSession();
-        if ($session->has(SessionElements::ORDER_TOKEN->value)) {
+        $token = $session->get(SessionElements::ORDER_TOKEN->value);
+        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
+        if ($token !== null && $sessionKey !== null) {
             $token = $session->get(SessionElements::ORDER_TOKEN->value);
             $order = $this->entityManager->getRepository(Order::class)->findOneBy([
                 'token' => $token,
@@ -88,10 +90,10 @@ class ShoppingCartService extends AbstractType
                 if ($workflow->can($order, 'cancel')) {
                     $workflow->apply($order, 'cancel');
                     $this->entityManager->flush();
+                    $session->remove(SessionElements::ORDER_TOKEN->value);
+                    $session->remove(SessionElements::SESSION_KEY->value);
                 }
             }
-
-            $session->remove(SessionElements::ORDER_TOKEN->value);
         }
         $session->remove(SessionElements::SHOPPING_CART->value);
     }

@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\Order;
 use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
-use App\Service\MailerService;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
 use App\Service\StripePaymentService;
@@ -16,10 +15,14 @@ use Random\RandomException;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
@@ -41,9 +44,15 @@ final class PaymentController extends AbstractController
     #[Route(path: 'paiement/récapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
     public function paymentResume(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        #[Target('checkout')] RateLimiterFactoryInterface $rateLimiter,
+        Request $request
     ): Response {
+        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        if (false === $limiter->consume(1)->isAccepted()) {
+            throw new TooManyRequestsHttpException();
+        }
+
         $this->orderService->verifyOrderIntegrity($order);
-        $this->orderService->refreshSessionKey($order);
         return $this->render('payment/resume.html.twig', [
             'order' => $order,
             'token' => $order->getToken(),
@@ -56,14 +65,17 @@ final class PaymentController extends AbstractController
     #[Route(path: '/paiement/{token}', name: 'checkout_pay')]
     public function paymentConfirm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        Request $request,
+        #[Target('checkout')] RateLimiterFactoryInterface $rateLimiter,
+        Request $request
     ): Response {
         $this->orderService->verifyOrderOwnership($order);
-        $this->orderService->refreshSessionKey($order);
-
-        $session = $request->getSession();
-        $session->migrate(true);
         $cart = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
+
+        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        if (false === $limiter->consume(1)->isAccepted()) {
+            throw new TooManyRequestsHttpException();
+        }
+
         if (!$this->orderService->isOrderMatchingCart($order, $cart)) {
             $this->orderService->updateOrder($order);
             return $this->redirectToRoute('checkout_summary', [
@@ -90,7 +102,15 @@ final class PaymentController extends AbstractController
     #[Route(path: '/checkout/pay/{token}', name: 'checkout_stripe')]
     public function generateSession(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        #[Target('checkout')] RateLimiterFactoryInterface $rateLimiter,
+        Request $request
     ): Response {
+
+        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        if (false === $limiter->consume(1)->isAccepted()) {
+            throw new TooManyRequestsHttpException();
+        }
+
         $this->orderService->verifyOrderOwnership($order);
 
         if ($order->getStatus() === OrderStatus::PENDING_PAYMENT) {
@@ -120,6 +140,9 @@ final class PaymentController extends AbstractController
         }
 
         if ($order->getStatus() !== OrderStatus::PAID) {
+            if ($order->getStatus() !== OrderStatus::PENDING_PAYMENT) {
+                throw new BadRequestHttpException('Commande non valide');
+            }
             return $this->render('payment/pending.html.twig', [
                 'order' => $order,
                 'pollUrl' => $this->generateUrl('check_payment_status', ['token' => $order->getToken()])
@@ -133,8 +156,6 @@ final class PaymentController extends AbstractController
             $this->shoppingCartService->emptyCart();
         }
 
-        $this->orderService->verifyOrderOwnership($order);
-
         return $this->render('payment/success.html.twig', [
             'order' => $order
         ]);
@@ -143,7 +164,15 @@ final class PaymentController extends AbstractController
     #[Route(path: '/check-payment-status/{token}', name: 'check_payment_status')]
     public function paymentStatus(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        #[Target('payment_status')] RateLimiterFactoryInterface $rateLimiter,
+        Request $request,
     ): JsonResponse {
+
+        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        if (false === $limiter->consume(1)->isAccepted()) {
+            throw new TooManyRequestsHttpException();
+        }
+
         return $this->json([
             'status' => $order->getStatus()
         ]);

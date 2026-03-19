@@ -1,0 +1,14 @@
+framework:
+    rate_limiter:
+        login:
+            policy: 'fixed_window'
+            limit: 20
+            interval: '10 minutes'
+        checkout:
+            policy: 'fixed_window'
+            limit: 20
+            interval: '10 minutes'
+        payment_status:
+            policy: 'fixed_window'
+            limit: 60
+            interval: '1 minute'

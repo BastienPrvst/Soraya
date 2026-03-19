@@ -67,7 +67,6 @@ readonly class OrderService
         $this->entityManager->flush();
 
         $session = $this->requestStack->getSession();
-        $session->migrate(true);
         $session->set(SessionElements::ORDER_TOKEN->value, $order->getToken());
         $session->set(SessionElements::SESSION_KEY->value, $order->getSessionKey());
 
@@ -214,11 +213,11 @@ readonly class OrderService
         $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
         $token = $session->get(SessionElements::ORDER_TOKEN->value);
 
-        if (!$token || !hash_equals($order->getToken(), $token)) {
+        if (!$token || hash_equals($order->getToken(), $token)) {
             throw new AccessDeniedException();
         }
 
-        if (!$sessionKey || !hash_equals($order->getSessionKey(), $sessionKey)) {
+        if (!$sessionKey || hash_equals($order->getSessionKey(), $sessionKey)) {
             throw new AccessDeniedException();
         }
     }
@@ -246,21 +245,21 @@ readonly class OrderService
         return true;
     }
 
-    /**
-     * @throws RandomException
-     */
-    public function refreshSessionKey(Order $order): void
-    {
-        if ($order->getUser() !== null) {
-            return;
-        }
-
-        $newSessionKey = bin2hex(random_bytes(32));
-
-        $order->setSessionKey($newSessionKey);
-
-        $this->entityManager->flush();
-        $session = $this->requestStack->getSession();
-        $session->set(SessionElements::SESSION_KEY->value, $newSessionKey);
-    }
+//    /**
+//     * @throws RandomException
+//     */
+//    public function refreshSessionKey(Order $order): void
+//    {
+//        if ($order->getUser() !== null) {
+//            return;
+//        }
+//
+//        $newSessionKey = bin2hex(random_bytes(32));
+//
+//        $order->setSessionKey($newSessionKey);
+//
+//        $this->entityManager->flush();
+//        $session = $this->requestStack->getSession();
+//        $session->set(SessionElements::SESSION_KEY->value, $newSessionKey);
+//    }
 }
