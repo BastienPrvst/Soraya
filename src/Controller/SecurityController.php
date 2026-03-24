@@ -16,11 +16,11 @@ class SecurityController extends AbstractController
     #[Route(path: '/connexion', name: 'app_login')]
     public function login(
         AuthenticationUtils $authenticationUtils,
-        #[Target('login')] RateLimiterFactoryInterface $rateLimiter,
+        RateLimiterFactoryInterface $loginLimiter,
         Request $request
     ): Response {
 
-        $limiter = $rateLimiter->create($request->getClientIp());
+        $limiter = $loginLimiter->create($request->getClientIp());
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }

@@ -30,9 +30,6 @@ class CheckoutController extends AbstractController
 
     use TargetPathTrait;
 
-    /**
-     * @throws RandomException
-     */
     #[Route('/paiement/back/{token}', name: 'checkout_previous')]
     public function back(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -57,8 +54,10 @@ class CheckoutController extends AbstractController
      * @throws RandomException
      */
     #[Route(path: '/paiement/auth', name: 'checkout_auth')]
-    public function paymentAuthentification(AuthenticationUtils $authenticationUtils, Request $request): Response
-    {
+    public function paymentAuthentification(
+        AuthenticationUtils $authenticationUtils,
+        Request $request
+    ): Response {
         $session = $request->getSession();
         $cart = $session->get(SessionElements::SHOPPING_CART->value, []);
         $token = $session->get(SessionElements::ORDER_TOKEN->value);

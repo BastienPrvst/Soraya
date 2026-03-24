@@ -34,13 +34,18 @@ class DeliveryService
         }
     }
 
+    public function switchDeliverToRelay(Order $order): void
+    {
+        $order->setDeliveryMode(DeliveryMode::RELAY);
+    }
+
     /**
      * @param Order $order
      * @param string $relayId
      * @return void
      * @throws \SoapFault
      */
-    public function switchDeliverToRelay(Order $order, string $relayId): void
+    public function createRelayAddress(Order $order, string $relayId): void
     {
         $address = $this->mondialRelayService->getRelayAddress($relayId);
 
@@ -49,6 +54,7 @@ class DeliveryService
         }
 
         $order->setRelayId($relayId);
+
 
         $orderAddress = new Address();
         $orderAddress

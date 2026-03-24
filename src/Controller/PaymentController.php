@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
@@ -44,10 +45,10 @@ final class PaymentController extends AbstractController
     #[Route(path: 'paiement/récapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
     public function paymentResume(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        #[Target('checkout')] RateLimiterFactoryInterface $rateLimiter,
+        RateLimiterFactoryInterface $checkoutLimiter,
         Request $request
     ): Response {
-        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }
@@ -65,13 +66,13 @@ final class PaymentController extends AbstractController
     #[Route(path: '/paiement/{token}', name: 'checkout_pay')]
     public function paymentConfirm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        #[Target('checkout')] RateLimiterFactoryInterface $rateLimiter,
+        RateLimiterFactoryInterface $checkoutLimiter,
         Request $request
     ): Response {
         $this->orderService->verifyOrderOwnership($order);
         $cart = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
 
-        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }
@@ -102,11 +103,11 @@ final class PaymentController extends AbstractController
     #[Route(path: '/checkout/pay/{token}', name: 'checkout_stripe')]
     public function generateSession(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        #[Target('checkout')] RateLimiterFactoryInterface $rateLimiter,
+        RateLimiterFactoryInterface $checkoutLimiter,
         Request $request
     ): Response {
 
-        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }
@@ -164,11 +165,11 @@ final class PaymentController extends AbstractController
     #[Route(path: '/check-payment-status/{token}', name: 'check_payment_status')]
     public function paymentStatus(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        #[Target('payment_status')] RateLimiterFactoryInterface $rateLimiter,
+        RateLimiterFactoryInterface $paymentStatusLimiter,
         Request $request,
     ): JsonResponse {
 
-        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        $limiter = $paymentStatusLimiter->create($request->getClientIp() . '_' . $order->getToken());
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }

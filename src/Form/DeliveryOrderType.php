@@ -12,14 +12,12 @@ use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Validator\Constraints\NotBlank;
 
-class OrderType extends AbstractType
+class DeliveryOrderType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-
             ->add('email', EmailType::class, [
                 'label' => 'Email *',
             ])
@@ -34,11 +32,8 @@ class OrderType extends AbstractType
             ])
             ->add('delivery_mode', HiddenType::class, [
                 'mapped' => false,
-                'data' => $options['delivery_mode'],
-            ]);
-
-        if ($options['delivery_mode'] === 'home') {
-            $builder
+                'data' => 'home',
+            ])
             ->add(
                 $builder->create(
                     'deliveryAddress',
@@ -52,23 +47,12 @@ class OrderType extends AbstractType
             ->add('submit_home', SubmitType::class, [
                 'label' => 'Valider',
             ]);
-        } elseif ($options['delivery_mode'] === 'relay') {
-            $builder
-                ->add('relay_id', HiddenType::class, [
-                    'required' => 'true',
-                    "empty_data" => '',
-                ])
-                ->add('submit_relay', SubmitType::class, [
-                    'label' => 'Valider',
-                ]);
-        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Order::class,
-            'delivery_mode' => 'home'
         ]);
     }
 }

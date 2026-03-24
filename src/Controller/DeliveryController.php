@@ -6,15 +6,16 @@ namespace App\Controller;
 
 use App\Entity\Order;
 use App\Enum\DeliveryMode;
-use App\Form\OrderType;
+use App\Form\DeliveryOrderType;
+use App\Form\RelayOrderType;
 use App\Service\DeliveryService;
 use App\Service\OrderService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
-use Random\RandomException;
+use RuntimeException;
+use SoapFault;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
@@ -32,18 +33,15 @@ class DeliveryController extends AbstractController
     ) {
     }
 
-    /**
-     * @throws RandomException
-     */
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
-    public function paymentDelivery(
+    public function deliveryCreation(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        #[Target('checkout')] RateLimiterFactoryInterface $rateLimiter,
+        RateLimiterFactoryInterface $checkoutLimiter,
         Request $request,
     ): Response {
 
-        $limiter = $rateLimiter->create($request->getClientIp() . '_' . $order->getToken());
-        if (false === $limiter->consume(1)->isAccepted()) {
+        $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
+        if (false === $limiter->consume()->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }
 
@@ -52,49 +50,42 @@ class DeliveryController extends AbstractController
         }
 
         $this->orderService->verifyOrderIntegrity($order);
-
-        $form = $this->createForm(OrderType::class, $order, [
-            'delivery_mode' => $order->getDeliveryMode()->value,
-        ]);
+        if ($order->getDeliveryMode() === DeliveryMode::HOME) {
+            $form = $this->createForm(DeliveryOrderType::class, $order);
+        } else {
+            $form = $this->createForm(RelayOrderType::class, $order);
+        }
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $deliveryMode = $form->get('delivery_mode')->getData();
+
             if ($deliveryMode === 'home') {
                 //Gestion Livraison
                 $order->setDeliveryMode(DeliveryMode::HOME);
                 $this->entityManager->persist($order);
-                $this->entityManager->flush();
-
-                if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
-                    $this->workflowService->applyTransition($order, 'to_pending_payment');
-                    return $this->redirectToRoute('checkout_summary', [
-                        'token' => $order->getToken(),
-                    ]);
-                }
-            } elseif ($deliveryMode === 'relay') {
+            } else {
                 //Gestion Relay
 
                 $relayId = $form->get('relay_id')->getData();
 
                 try {
-                    $this->deliveryService->switchDeliverToRelay($order, $relayId);
-                } catch (\RuntimeException|\SoapFault) {
-                    $this->addFlash('error', 'Veuillez selectionner un point relais valide');
+                    $this->deliveryService->createRelayAddress($order, $relayId);
+                } catch (RuntimeException|SoapFault) {
+                    $this->addFlash('error', 'Veuillez sélectionner un point relais valide');
 
                     return $this->redirectToRoute('checkout_delivery', [
                         'token' => $order->getToken(),
                     ]);
                 }
+            }
 
-                $this->entityManager->flush();
-
-                if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
-                    $this->workflowService->applyTransition($order, 'to_pending_payment');
-                    return $this->redirectToRoute('checkout_summary', [
-                        'token' => $order->getToken(),
-                    ]);
-                }
+            $this->entityManager->flush();
+            if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
+                $this->workflowService->applyTransition($order, 'to_pending_payment');
+                return $this->redirectToRoute('checkout_summary', [
+                    'token' => $order->getToken(),
+                ]);
             }
         }
 
@@ -114,9 +105,7 @@ class DeliveryController extends AbstractController
         $deliveryService->switchRelayToDeliver($order, $this->getUser());
         $this->entityManager->flush();
 
-        $form = $this->createForm(OrderType::class, $order, [
-            'delivery_mode' => 'home'
-        ]);
+        $form = $this->createForm(DeliveryOrderType::class, $order);
         if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
             return $this->render('payment/delivery.frame.html.twig', [
                 'form' => $form->createView(),
@@ -137,16 +126,15 @@ class DeliveryController extends AbstractController
     ): Response {
 
         $this->orderService->verifyOrderIntegrity($order);
-        $order->setDeliveryMode(DeliveryMode::RELAY);
+        $this->deliveryService->switchDeliverToRelay($order);
         $this->entityManager->flush();
 
-        $form = $this->createForm(OrderType::class, $order, [
-            'delivery_mode' => 'relay'
-        ]);
+        $form = $this->createForm(RelayOrderType::class, $order);
 
         if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
             return $this->render('payment/relay.frame.html.twig', [
                 'order' => $order,
+                'form' => $form->createView(),
             ]);
         }
         return $this->render('payment/relay_fallback.html.twig', [
