@@ -14,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Exception\InvalidArgumentException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 readonly class OrderService
@@ -244,4 +245,5 @@ readonly class OrderService
 
         return true;
     }
+
 }

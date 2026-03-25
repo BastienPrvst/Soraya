@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Adresse de facturation
+{% endblock %}
+
+{% block body %}
+
+    <section>
+
+        <div class="user-info d-flex align-items-center justify-content-center flex-column">
+
+            <div>
+                <span>{{ order.firstname }} {{ order.lastname }}</span><br>
+                <span>{{ order.email }}</span><br>
+                {% if order.phoneNumber %}
+                    <span>{{ order.phoneNumber }}</span>
+                {% endif %}
+                {% set countries = {
+                    'FR': 'France',
+                    'BE': 'Belgique',
+                    'LU': 'Luxembourg',
+                    'MO': 'Monaco'
+                } %}
+
+                <span>{{ order.activeAddress.street1 }}</span>
+                {% if order.activeAddress.street2 %}
+                    <br>
+                    <span>{{ order.activeAddress.street2 }}</span>
+                {% endif %}
+                <br>
+                <span>{{ order.activeAddress.zipcode }} {{ order.activeAddress.city }}</span>
+                <br>
+                <span>{{ countries[order.activeAddress.country] }}</span>
+                <br>
+                <span>Livraison : {{ order.deliveryMode.value == 'relay' ? 'Point relais' : ' Domicile'}}</span>
+
+            </div>
+        </div>
+
+        <div class="w-50 mx-5">
+            <h3>Adresse de facturation</h3>
+
+            {{ form(form) }}
+        </div>
+
+    </section>
+
+{% endblock %}
+
+

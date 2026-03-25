@@ -6,7 +6,7 @@ framework:
             interval: '10 minutes'
         checkout:
             policy: 'fixed_window'
-            limit: 20
+            limit: 50
             interval: '10 minutes'
         payment_status:
             policy: 'fixed_window'

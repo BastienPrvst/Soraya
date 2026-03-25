@@ -17,9 +17,10 @@
                         <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
 
 
-                        <div class="user-info d-flex align-items-center justify-content-center flex-column">
+                        <div class="user-info d-flex flex-row align-items-center justify-content-center flex-column">
 
                             <div>
+                                <h3>Adresse de livraison</h3>
                                 <span>{{ order.firstname }} {{ order.lastname }}</span><br>
                                 <span>{{ order.email }}</span><br>
                                 {% if order.phoneNumber %}
@@ -43,8 +44,44 @@
                                 <span>{{ countries[order.activeAddress.country] }}</span>
                                 <br>
                                 <span>Livraison : {{ order.deliveryMode.value == 'relay' ? 'Point relais' : ' Domicile'}}</span>
+                                <br>
+                                <a href="{{ path('checkout_previous', { token:order.token }) }}">Modifier</a>
 
                             </div>
+
+                            {% if order.deliveryAddress != order.billingAddress %}
+                            <div class="user-info d-flex align-items-center justify-content-center flex-column">
+
+                                <div>
+                                    <h4>Adresse de facturation</h4>
+                                    <span>{{ order.firstname }} {{ order.lastname }}</span><br>
+                                    <span>{{ order.email }}</span><br>
+                                    {% if order.phoneNumber %}
+                                        <span>{{ order.phoneNumber }}</span>
+                                    {% endif %}
+                                    {% set countries = {
+                                        'FR': 'France',
+                                        'BE': 'Belgique',
+                                        'LU': 'Luxembourg',
+                                        'MO': 'Monaco'
+                                    } %}
+
+                                    <span>{{ order.billingAddress.street1 }}</span>
+                                    {% if order.billingAddress.street2 %}
+                                        <br>
+                                        <span>{{ order.billingAddress.street2 }}</span>
+                                    {% endif %}
+                                    <br>
+                                    <span>{{ order.billingAddress.zipcode }} {{ order.billingAddress.city }}</span>
+                                    <br>
+                                    <span>{{ countries[order.billingAddress.country] }}</span>
+                                    <br>
+                                    <a href="{{ path('checkout_delivery_billing_address', { token : order.token }) }}">Modifier</a>
+
+                                </div>
+                            {% endif %}
+                            </div>
+
                         </div>
                     </div>
                 </div>

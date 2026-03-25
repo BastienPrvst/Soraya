@@ -4,8 +4,10 @@ namespace App\Form;
 
 use App\Entity\Address;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -15,10 +17,22 @@ class AddressType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('street1', TextType::class, ['label' => 'Rue *'])
-            ->add('street2', TextType::class, ['label' => 'Rue 2', 'required' => false])
-            ->add('city', TextType::class, ['label' => 'Ville *'])
-            ->add('zipcode', TextType::class, ['label' => 'Code postal *'])
+            ->add('street1', TextType::class, [
+                'label' => 'Rue *',
+                'required' => false,
+            ])
+            ->add('street2', TextType::class, [
+                'label' => 'Rue 2',
+                'required' => false
+            ])
+            ->add('city', TextType::class, [
+                'label' => 'Ville *',
+                'required' => false,
+            ])
+            ->add('zipcode', TextType::class, [
+                'label' => 'Code postal *',
+                'required' => false,
+            ])
             ->add('country', CountryType::class, [
                 'label' => 'Pays',
                 'preferred_choices' => ['FR'],
@@ -26,12 +40,19 @@ class AddressType extends AbstractType
                     return in_array($countryCode, ['FR', 'BE', 'LU', 'MC'], true);
                 },
             ]);
+
+        if ($options['create'] === true) {
+            $builder->add('save', SubmitType::class, [
+                'label' => 'Enregistrer',
+            ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
             'data_class' => Address::class,
+            'create' => false
         ]);
     }
 }
