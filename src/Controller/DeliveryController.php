@@ -22,9 +22,6 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
-use Symfony\Component\Routing\Attribute\Route;
-use Symfony\UX\Turbo\TurboBundle;
-
 class DeliveryController extends AbstractController
 {
     public function __construct(
@@ -52,67 +49,17 @@ class DeliveryController extends AbstractController
         }
 
         $this->orderService->verifyOrderIntegrity($order);
-        if ($order->getDeliveryMode() === DeliveryMode::HOME) {
-            $form = $this->createForm(DeliveryOrderType::class, $order);
-        } else {
-            $form = $this->createForm(RelayOrderType::class, $order);
-        }
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $deliveryMode = $form->get('delivery_mode')->getData();
-
-            if ($deliveryMode === 'home') {
-                //Gestion Livraison
-                $this->entityManager->persist($order);
-                $order->setDeliveryMode(DeliveryMode::HOME);
-
-                if ($form->has('billingAddress') &&
-                $form->get('billingAddress')->getData()
-                ) {
-                    $billingAddress = clone $order->getDeliveryAddress();
-                    $this->entityManager->persist($billingAddress);
-                    $order->setBillingAddress($billingAddress);
-                } else {
-                    $this->entityManager->flush();
-                    return $this->redirectToRoute('checkout_delivery_billing_address', [
-                    'token' => $order->getToken()
-                    ]);
-                }
-
-                if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
-                    $this->workflowService->applyTransition($order, 'to_pending_payment');
-                    return $this->redirectToRoute('checkout_summary', [
-                        'token' => $order->getToken()
-                    ]);
-                }
-            } else {
-                //Gestion Relay
-
-                $relayId = $form->get('relay_id')->getData();
-
-                $order->setDeliveryMode(DeliveryMode::RELAY);
-
-                try {
-                    $this->deliveryService->createRelayAddress($order, $relayId);
-                } catch (RuntimeException|SoapFault) {
-                    $this->addFlash('error', 'Veuillez sélectionner un point relais valide');
-
-                    return $this->redirectToRoute('checkout_delivery', [
-                        'token' => $order->getToken(),
-                    ]);
-                }
-
-                return $this->redirectToRoute('checkout_delivery_billing_address', [
-                    'token' => $order->getToken()
-                ]);
-            }
+        if ($order->getDeliveryMode() === DeliveryMode::RELAY) {
+            return $this->redirectToRoute(
+                'checkout_delivery_relay',
+                ['token' => $order->getToken()]
+            );
         }
 
-        return $this->render('payment/delivery_choice.html.twig', [
-            'order' => $order,
-            'form' => $form->createView(),
-        ]);
+        return $this->redirectToRoute(
+            'checkout_delivery_home',
+            ['token' => $order->getToken()]
+        );
     }
 
     #[Route(path: '/paiement/livraison/home/{token}', name: 'checkout_delivery_home')]
@@ -126,14 +73,26 @@ class DeliveryController extends AbstractController
         $this->entityManager->flush();
 
         $form = $this->createForm(DeliveryOrderType::class, $order);
-        if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
-            return $this->render('payment/delivery.frame.html.twig', [
-                'form' => $form->createView(),
-                'order' => $order,
-            ]);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->entityManager->persist($order);
+            $order->setDeliveryMode(DeliveryMode::HOME);
+
+            if ($form->has('billingAddress') &&
+                $form->get('billingAddress')->getData()
+            ) {
+                $billingAddress = clone $order->getDeliveryAddress();
+                $this->entityManager->persist($billingAddress);
+                $order->setBillingAddress($billingAddress);
+            } else {
+                $this->entityManager->flush();
+                return $this->redirectToRoute('checkout_delivery_billing_address', [
+                    'token' => $order->getToken()
+                ]);
+            }
         }
 
-        return $this->render('payment/delivery_fallback.html.twig', [
+        return $this->render('payment/delivery_form.html.twig', [
             'form' => $form->createView(),
             'order' => $order,
         ]);
@@ -151,13 +110,27 @@ class DeliveryController extends AbstractController
 
         $form = $this->createForm(RelayOrderType::class, $order);
 
-        if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
-            return $this->render('payment/relay.frame.html.twig', [
-                'order' => $order,
-                'form' => $form->createView(),
+        if ($form->isSubmitted() && $form->isValid()) {
+            $relayId = $form->get('relay_id')->getData();
+
+            $order->setDeliveryMode(DeliveryMode::RELAY);
+
+            try {
+                $this->deliveryService->createRelayAddress($order, $relayId);
+            } catch (RuntimeException|SoapFault) {
+                $this->addFlash('error', 'Veuillez sélectionner un point relais valide');
+
+                return $this->redirectToRoute('checkout_delivery', [
+                    'token' => $order->getToken(),
+                ]);
+            }
+
+            return $this->redirectToRoute('checkout_delivery_billing_address', [
+                'token' => $order->getToken()
             ]);
         }
-        return $this->render('payment/relay_fallback.html.twig', [
+
+        return $this->render('payment/relay_form.html.twig', [
             'order' => $order,
             'form' => $form->createView(),
         ]);

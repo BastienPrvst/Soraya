@@ -21,26 +21,23 @@
                         <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
                     {% endif %}
 
-                    <div>
-                        <h2>Choix du mode de livraison</h2>
-                        <hr>
 
-                        <a href="{{ path('checkout_delivery_home', { token: order.token }) }}" class="mx-3 text-decoration-none">
-                            A domicile
-                        </a>
+                    <h2>1. Choix du mode de livraison</h2>
+                    <hr>
 
-                        <a href="{{ path('checkout_delivery_relay', { token: order.token, _t: 'now'|date('U') }) }}" class="mx-3 text-decoration-none">
-                            En point relais
-                        </a>
-                    </div>
+                    <a href="{{ path('checkout_delivery_home', { token: order.token }) }}">
+                        A domicile
+                    </a>
 
-                    {% set mode = order.deliveryMode is not null ? order.deliveryMode.value : 'home' %}
+                    <a href="{{ path('checkout_delivery_relay', { token: order.token, _t: 'now'|date('U') }) }}">
+                        En point relais
+                    </a>
 
                 </div>
             </section>
 
             <section id="order_details" class="col-4 ms-3">
-                <div class="d-flex align-items-start justify-content-center flex-column">
+                <div>
                     Total produit (TVA incluse) {{ order.total }}€
                     <br>
                     <span>
@@ -51,14 +48,15 @@
 
 
             <section id="delivery-content">
-
+                <div class="w-50 mx-auto">
+                    {{ form(form) }}
+                </div>
             </section>
 
         </div>
     </main>
 
 {% endblock %}
-
 
 
 

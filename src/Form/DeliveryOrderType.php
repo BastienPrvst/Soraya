@@ -61,6 +61,7 @@ class DeliveryOrderType extends AbstractType
                 'mapped' => false,
                 'label' => 'Je certifie avoir lu les Conditions Générales d\'utilisation.',
                 'required' => false,
+                'data' => $options['CGU'],
                 'constraints' => [
                     new NotBlank(
                         message: 'Veuillez accepter les conditions pour continuer.'
@@ -76,6 +77,7 @@ class DeliveryOrderType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Order::class,
+            'CGU' => false
         ]);
     }
 }
