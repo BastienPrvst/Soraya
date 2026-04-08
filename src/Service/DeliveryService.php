@@ -66,5 +66,6 @@ class DeliveryService
         $this->entityManager->persist($orderAddress);
 
         $order->setRelayAddress($orderAddress);
+        $this->entityManager->flush();
     }
 }

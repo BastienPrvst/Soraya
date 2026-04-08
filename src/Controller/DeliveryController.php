@@ -7,6 +7,7 @@ namespace App\Controller;
 use App\Entity\Address;
 use App\Entity\Order;
 use App\Enum\DeliveryMode;
+use App\Enum\SessionElements;
 use App\Form\AddressType;
 use App\Form\DeliveryOrderType;
 use App\Form\RelayOrderType;
@@ -22,6 +23,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
+use Symfony\Component\Routing\Attribute\Route;
+
 class DeliveryController extends AbstractController
 {
     public function __construct(
@@ -32,6 +35,12 @@ class DeliveryController extends AbstractController
     ) {
     }
 
+    /**
+     * @param Order $order
+     * @param RateLimiterFactoryInterface $checkoutLimiter
+     * @param Request $request
+     * @return Response
+     */
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function deliveryCreation(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -62,6 +71,12 @@ class DeliveryController extends AbstractController
         );
     }
 
+    /**
+     * @param Order $order
+     * @param Request $request
+     * @param DeliveryService $deliveryService
+     * @return Response
+     */
     #[Route(path: '/paiement/livraison/home/{token}', name: 'checkout_delivery_home')]
     public function paymentDeliveryForm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -72,24 +87,40 @@ class DeliveryController extends AbstractController
         $deliveryService->switchRelayToDeliver($order, $this->getUser());
         $this->entityManager->flush();
 
-        $form = $this->createForm(DeliveryOrderType::class, $order);
+        $form = $this->createForm(DeliveryOrderType::class, $order, [
+            'CGU' => $request->getSession()->get(SessionElements::CGU->value) ?? false,
+        ]);
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->persist($order);
+            $request->getSession()->set(SessionElements::CGU->value, true);
+
             $order->setDeliveryMode(DeliveryMode::HOME);
+            $this->entityManager->persist($order);
 
             if ($form->has('billingAddress') &&
-                $form->get('billingAddress')->getData()
+                $form->get('billingAddress')->getData() === true
             ) {
                 $billingAddress = clone $order->getDeliveryAddress();
                 $this->entityManager->persist($billingAddress);
                 $order->setBillingAddress($billingAddress);
-            } else {
                 $this->entityManager->flush();
-                return $this->redirectToRoute('checkout_delivery_billing_address', [
-                    'token' => $order->getToken()
-                ]);
+
+
+
+                if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
+                    $this->workflowService->applyTransition($order, 'to_pending_payment');
+                    $this->entityManager->flush();
+                    return $this->redirectToRoute('checkout_summary', [
+                        'token' => $order->getToken()
+                    ]);
+                }
             }
+
+
+            return $this->redirectToRoute('checkout_delivery_billing_address', [
+                'token' => $order->getToken()
+            ]);
         }
 
         return $this->render('payment/delivery_form.html.twig', [
@@ -98,6 +129,11 @@ class DeliveryController extends AbstractController
         ]);
     }
 
+    /**
+     * @param Order $order
+     * @param Request $request
+     * @return Response
+     */
     #[Route(path: '/paiement/livraison/relay/{token}', name: 'checkout_delivery_relay')]
     public function paymentRelayForm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -108,9 +144,13 @@ class DeliveryController extends AbstractController
         $this->deliveryService->switchDeliverToRelay($order);
         $this->entityManager->flush();
 
-        $form = $this->createForm(RelayOrderType::class, $order);
+        $form = $this->createForm(RelayOrderType::class, $order, [
+            'CGU' => $request->getSession()->get(SessionElements::CGU->value) ?? false,
+        ]);
+        $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $request->getSession()->set(SessionElements::CGU->value, true);
             $relayId = $form->get('relay_id')->getData();
 
             $order->setDeliveryMode(DeliveryMode::RELAY);
@@ -136,6 +176,11 @@ class DeliveryController extends AbstractController
         ]);
     }
 
+    /**
+     * @param Order $order
+     * @param Request $request
+     * @return Response
+     */
     #[Route(path: '/paiement/adresse-de-facturation/{token}', name: 'checkout_delivery_billing_address')]
     public function paymentBillingAddressForm(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,

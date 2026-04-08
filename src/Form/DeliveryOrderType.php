@@ -13,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\TelType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\IsTrue;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -60,11 +61,11 @@ class DeliveryOrderType extends AbstractType
             ->add('CGU', CheckboxType::class, [
                 'mapped' => false,
                 'label' => 'Je certifie avoir lu les Conditions Générales d\'utilisation.',
-                'required' => false,
+                'required' => true,
                 'data' => $options['CGU'],
                 'constraints' => [
-                    new NotBlank(
-                        message: 'Veuillez accepter les conditions pour continuer.'
+                    new IsTrue(
+                        message: 'Veuillez accepter les conditions.'
                     )
                 ]
             ])

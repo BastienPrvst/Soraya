@@ -92,6 +92,7 @@ class ShoppingCartService extends AbstractType
                     $this->entityManager->flush();
                     $session->remove(SessionElements::ORDER_TOKEN->value);
                     $session->remove(SessionElements::SESSION_KEY->value);
+                    $session->remove(SessionElements::CGU->value);
                 }
             }
         }

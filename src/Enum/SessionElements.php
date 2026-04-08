@@ -8,4 +8,5 @@ enum SessionElements: string
     case SHOPPING_CART = 'shopping_cart';
     case SESSION_KEY   = 'session_key';
     case DELIVERY_MODE = 'delivery_mode';
+    case CGU = 'CGU';
 }

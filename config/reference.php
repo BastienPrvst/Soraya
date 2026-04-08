@@ -1445,6 +1445,16 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     generate_final_classes?: bool|Param, // Default: true
  *     generate_final_entities?: bool|Param, // Default: false
  * }
+ * @psalm-type TurboConfig = array{
+ *     broadcast?: bool|array{
+ *         enabled?: bool|Param, // Default: true
+ *         entity_template_prefixes?: list<scalar|null|Param>,
+ *         doctrine_orm?: bool|array{ // Enable the Doctrine ORM integration
+ *             enabled?: bool|Param, // Default: true
+ *         },
+ *     },
+ *     default_transport?: scalar|null|Param, // Default: "default"
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1457,6 +1467,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     twig_extra?: TwigExtraConfig,
  *     security?: SecurityConfig,
  *     monolog?: MonologConfig,
+ *     turbo?: TurboConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1472,6 +1483,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         maker?: MakerConfig,
+ *         turbo?: TurboConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1485,6 +1497,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
+ *         turbo?: TurboConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1499,6 +1512,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
+ *         turbo?: TurboConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,
