@@ -60,7 +60,7 @@
                     {{ form_start(form) }}
 
                     <div>
-                        {{ form_row(form.relay_id, {'id': 'Target_Widget'}) }}
+                        {{ form_widget(form.relay_id, {'id': 'Target_Widget'}) }}
                     </div>
                     <div>
                         {{ form_row(form.firstname) }}
@@ -95,13 +95,17 @@
                                 {{ order.relayAddress.country }}
                             </p>
 
-                            <button class="btn-primary btn">Modifier</button>
+                            <button class="btn-primary btn change_relay">Modifier</button>
 
                         </div>
 
+                        <div id="Zone_Widget" class="d-none"></div>
+
                     {% endif %}
 
-                    {{ form_widget(form.CGU) }}
+                    {{ form_errors(form.relay_id) }}
+
+                    {{ form_row(form.CGU) }}
 
                     {{ form_row(form.submit_relay) }}
                     {{ form_end(form) }}
@@ -123,29 +127,7 @@
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}"></script>
     <script src="https://widget.mondialrelay.com/parcelshop-picker/jquery.plugin.mondialrelay.parcelshoppicker.min.js" data-turbo-eval="false"></script>
 
-    <script>
-
-        document.addEventListener("turbo:load", function () {
-            if (typeof window.jQuery === "undefined") {
-                console.error("jQuery absent");
-                return;
-            }
-
-            $("#Zone_Widget").MR_ParcelShopPicker({
-                Brand: "TTNTWSDB",
-                Country: "FR",
-                AllowedCountries: "FR,BE,LU,ES",
-                PostCode: "75001",
-                NbResults: "10",
-                Responsive: true,
-                ShowResultsOnMap: true,
-                EnableGmap: false,
-                Target: '#Target_Widget',
-                MapScrollWheel: true
-            });
-        });
-
-    </script>
+    <script src="{{ asset('js/relay.js') }}"></script>
 {% endblock %}
 
 

@@ -49,7 +49,53 @@
 
             <section id="delivery-content">
                 <div class="w-50 mx-auto">
-                    {{ form(form) }}
+                    {{ form_start(form) }}
+
+                    <div>
+                        {{ form_row(form.firstname) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.lastname) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.email) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.phoneNumber) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.deliveryAddress.street1) }}
+                    </div>
+
+                    <div class="street_wrapper">
+                        {{ form_row(form.deliveryAddress.street2) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.deliveryAddress.city) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.deliveryAddress.zipcode) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.deliveryAddress.country) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.billingAddress) }}
+                    </div>
+
+                    <div>
+                        {{ form_row(form.CGU) }}
+                    </div>
+
+                    {{ form_end(form) }}
                 </div>
             </section>
 
@@ -57,6 +103,12 @@
     </main>
 
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent()}}
+    <script src="{{ asset('js/delivery.js') }}" defer></script>
+{% endblock %}
+
 
 
 

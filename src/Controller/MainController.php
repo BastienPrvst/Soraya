@@ -31,7 +31,7 @@ final class MainController extends AbstractController
         $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
         $sessionId = $session->get(SessionElements::SESSION_KEY->value);
 
-        dd($token, $shoppingCart, $sessionId);
+        dd($token, $shoppingCart, $sessionId, $session);
 
         return $this->render('main/session.html.twig');
     }

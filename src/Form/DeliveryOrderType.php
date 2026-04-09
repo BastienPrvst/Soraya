@@ -38,10 +38,6 @@ class DeliveryOrderType extends AbstractType
                 'label' => 'Téléphone *',
                 'required' => false,
             ])
-            ->add('delivery_mode', HiddenType::class, [
-                'mapped' => false,
-                'data' => 'home',
-            ])
             ->add(
                 $builder->create(
                     'deliveryAddress',

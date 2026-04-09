@@ -37,12 +37,14 @@ class RelayOrderType extends AbstractType
                 'label' => 'Téléphone *',
                 'required' => false,
             ])
-            ->add('delivery_mode', HiddenType::class, [
-                'mapped' => false,
-                'data' => 'relay'
-            ])
             ->add('relay_id', HiddenType::class, [
                 'required' => true,
+                'error_bubbling' => false,
+                'constraints' => [
+                    new NotBlank(
+                        message: 'Veuillez choisir un point relais valide.'
+                    )
+                ]
             ])
             ->add('CGU', CheckboxType::class, [
                 'mapped' => false,

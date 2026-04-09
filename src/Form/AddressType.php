@@ -20,18 +20,31 @@ class AddressType extends AbstractType
             ->add('street1', TextType::class, [
                 'label' => 'Rue *',
                 'required' => false,
+                'attr' => [
+                    'class' => 'street_input'
+                ]
             ])
             ->add('street2', TextType::class, [
                 'label' => 'Rue 2',
-                'required' => false
+                'required' => false,
+                'attr' => [
+                    'class' => 'street2_input'
+                ]
+
             ])
             ->add('city', TextType::class, [
                 'label' => 'Ville *',
                 'required' => false,
+                'attr' => [
+                    'class' => 'city_input'
+                ]
             ])
             ->add('zipcode', TextType::class, [
                 'label' => 'Code postal *',
                 'required' => false,
+                'attr' => [
+                    'class' => 'zipcode_input'
+                ]
             ])
             ->add('country', CountryType::class, [
                 'label' => 'Pays',
