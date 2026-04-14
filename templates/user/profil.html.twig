@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <h1>Votre profil</h1>
+
+    <div>
+        Nom : {{ activeUser.lastname }}
+
+        Prénom : {{ activeUser.firstname }}
+
+        Email : {{ activeUser.email }}
+
+        <a href="{{ path('app_profile_modify') }}">Modifier mes informations</a>
+
+    </div>
+
+    <div class="orders-div">
+
+        {% if lastOrders is not empty %}
+            <h2 class="text-center">Vos dernières commandes chez nous</h2>
+            {% for order in lastOrders %}
+                <div class="bg-light rounded-2 p-3 m-3 d-flex flex-column align-items-center justify-content-center">
+
+                    <div class="w-100 text-center fs-3"> Commande #{{ "%05d"|format(order.id) }} </div>
+                    <div class="w-100">
+                        Le : {{ order.creationDate|date('d/m/Y') }}
+                    </div>
+
+                    <hr class="w-100">
+
+
+                    {% for item in order.orderItems %}
+                        <div class="d-flex flex-row w-100 justify-content-evenly">
+
+                            <p>{{ item.product.name }}</p>
+
+                            <p>Qut : {{ item.quantity }}</p>
+
+                            <p>Prix Unitaire : {{ item.unitPrice }}€</p>
+
+                            <p>Total Produits: {{ item.total }}€</p>
+
+                        </div>
+                    {% endfor %}
+
+                    <p>Prix livraison : {{ order.deliveryPrice > 0 ? order.deliveryPrice ~ '€' : 'Gratuite' }}</p>
+
+                    <p>Total : {{ order.total }}€</p>
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+            <p>Vous n'avez pas encore passé de commande chez nous.</p>
+
+        {% endif %}
+
+
+    </div>
+
+{% endblock %}
+

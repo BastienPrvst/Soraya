@@ -75,6 +75,7 @@ class AppFixtures extends Fixture
     /**
      * @return void
      * Fonction de création des fixtures de catégories et de produits
+     * @throws RandomException
      */
     private function createProducts(): void
     {
@@ -107,7 +108,7 @@ class AppFixtures extends Fixture
             $product
                 ->setWeight((random_int(1, 200) / 100))
                 ->setName('Produit' . $i)
-                ->setPrice($faker->randomFloat(2, 15, 150))
+                ->setPrice($faker->randomFloat(2, 15, 80))
                 ->setDescription($faker->paragraph())
                 ->addCategory($categories[$category]);
             $this->manager->persist($product);
@@ -168,7 +169,7 @@ class AppFixtures extends Fixture
                 $this->manager->persist($orderItem);
             }
 
-            $deliveryPrice = $total > 30 ? null : 15;
+            $deliveryPrice = $total > 50 ? null : 15;
             $total += $deliveryPrice;
 
             $order

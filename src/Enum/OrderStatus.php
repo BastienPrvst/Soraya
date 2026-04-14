@@ -8,7 +8,7 @@ enum OrderStatus: string
     case DELIVERY_CHOICE = 'delivery_choice';
     case PENDING_PAYMENT = 'pending_payment';
     case PAID = 'paid';
-    case SHIPPED = 'shipped';
+    case PENDING_SHIPPING = 'pending_shipping';
     case DELIVERED = 'delivered';
     case REFUND_PENDING = 'refund_pending';
     case REFUND = 'refund';
@@ -21,7 +21,7 @@ enum OrderStatus: string
             self::DELIVERY_CHOICE => 'Choix de livraison',
             self::PENDING_PAYMENT => 'En attente de paiement',
             self::PAID => 'Payée',
-            self::SHIPPED => 'En cours de livraison',
+            self::PENDING_SHIPPING => 'En attente de livraison',
             self::DELIVERED => 'Livrée',
             self::REFUND_PENDING => 'En attente de remboursement',
             self::REFUND => 'Remboursée',
