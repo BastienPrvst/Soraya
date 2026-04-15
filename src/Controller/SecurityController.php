@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Form\ChangePasswordType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Request;
@@ -46,20 +47,41 @@ class SecurityController extends AbstractController
     /**
      * @throws \Exception
      */
-    #[Route(path: '/changer-mot-de-passe/{token}/{expires}', name: 'app_modify_password')]
+    #[Route(path: '/changer-mon-mot-de-passe/{token}', name: 'app_modify_password')]
     public function modifyPassword(Request $request): Response
     {
-        $signer = new UriSigner($_ENV['APP_SECRET']);
 
-        if (!$signer->check($request->getUri())) {
-            throw new \RuntimeException('Lien invalide');
+        $token = $request->attributes->get('token');
+
+        [$payload, $signature] = explode('.', $token);
+
+        $expected = hash_hmac('sha256', $payload, $_ENV['APP_SECRET']);
+
+        if (!hash_equals($expected, $signature)) {
+            throw new \RuntimeException('Token invalide');
         }
 
-        $expires = $request->query->get('expires');
+        $payload = strtr($payload, '-_', '+/');
+        $data = json_decode(base64_decode($payload), true);
 
-        if ($expires < time()) {
-            throw new \RuntimeException('Lien expiré');
+        if ($data['exp'] < time()) {
+            throw new \RuntimeException('Page expirée');
         }
+
+        $email = $data['email'];
+
+        //logique formulaire de changement de mdp
+
+        $form = $this->createForm(ChangePasswordType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($data['exp'] < time()) {
+                throw new \RuntimeException('Page expirée');
+            }
+        }
+
+        return $this->render('security/modify-password.html.twig', [
+            'form' => $form->createView(),
+        ]);
     }
-
 }

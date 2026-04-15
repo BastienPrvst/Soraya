@@ -4,7 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\ModifyProfileType;
-use App\Form\ResetPasswordType;
+use App\Form\MailToChangePasswordType;
 use App\Form\UserType;
 use App\Repository\OrderRepository;
 use App\Service\MailerService;
@@ -92,7 +92,7 @@ final class UserController extends AbstractController
     #[Route(path: '/mot-de-passe-oublié', name: 'app_password_forgot')]
     public function sendResetPasswordMail(Request $request) : Response
     {
-        $form = $this->createForm(ResetPasswordType::class);
+        $form = $this->createForm(MailToChangePasswordType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $this->mailerService->sendResetPasswordEmail($form->get('email')->getData());
@@ -102,5 +102,4 @@ final class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
 }

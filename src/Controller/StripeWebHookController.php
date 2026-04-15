@@ -40,6 +40,7 @@ final class StripeWebHookController extends AbstractController
 
         $this->stripePaymentService->handleEvent($event);
 
+        //TODO: Faire l'envoi de mail de confirmation de manière propre.
         return new Response('OK', 200);
     }
 }

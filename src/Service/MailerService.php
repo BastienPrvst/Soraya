@@ -15,11 +15,11 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
-class MailerService
+readonly class MailerService
 {
 
     public function __construct(
-        private MailerInterface $mailer,
+        private MailerInterface       $mailer,
         private UrlGeneratorInterface $urlGenerator,
     ) {
     }
@@ -47,6 +47,7 @@ class MailerService
     /**
      * @throws RandomException
      * @throws TransportExceptionInterface
+     * @throws \JsonException
      */
     public function sendResetPasswordEmail(string $userMail): void
     {
@@ -54,16 +55,18 @@ class MailerService
             return;
         }
 
-        $token = bin2hex(random_bytes(32));
-        $expires = time() + 1800;
-        $signer = new UriSigner($_ENV['APP_SECRET']);
+        $data = [
+            'email' => $userMail,
+            'exp' => time() + 1800,
+        ];
+
+        $payload = rtrim(strtr(base64_encode(json_encode($data, JSON_THROW_ON_ERROR)), '+/', '-_'), '=');
+        $signature = hash_hmac('sha256', $payload, $_ENV['APP_SECRET']);
+        $token = $payload . '.' . $signature;
 
         $url = $this->urlGenerator->generate('app_modify_password', [
             'token' => $token,
-            'expires' => $expires,
         ], UrlGeneratorInterface::ABSOLUTE_URL);
-
-        $signedUrl = $signer->sign($url);
 
         $email = (new TemplatedEmail())
             ->from('noreply@soraya.com')
@@ -73,8 +76,7 @@ class MailerService
             ->locale('FR')
             ->context([
                 'data' => [
-                    'token' => $token,
-                    'expires' => $expires,
+                    'url' => $url,
                 ]
             ]);
 
