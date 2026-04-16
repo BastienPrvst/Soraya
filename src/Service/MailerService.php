@@ -3,15 +3,13 @@
 namespace App\Service;
 
 use App\Entity\Order;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\HttpFoundation\UriSigner;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
-use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -21,6 +19,7 @@ readonly class MailerService
     public function __construct(
         private MailerInterface       $mailer,
         private UrlGeneratorInterface $urlGenerator,
+        private EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -55,9 +54,19 @@ readonly class MailerService
             return;
         }
 
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userMail]);
+
+        if (!$user) {
+            return;
+        }
+
+        $user->setPasswordResetAt(new \DateTimeImmutable());
+        $this->entityManager->flush();
+
         $data = [
             'email' => $userMail,
-            'exp' => time() + 1800,
+            'exp' => time() + 900,
+            'reset' => $user->getPasswordResetAt()?->getTimestamp(),
         ];
 
         $payload = rtrim(strtr(base64_encode(json_encode($data, JSON_THROW_ON_ERROR)), '+/', '-_'), '=');

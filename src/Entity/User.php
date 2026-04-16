@@ -84,6 +84,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Order::class, mappedBy: 'user')]
     private Collection $orders;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $passwordResetAt = null;
+
 
     public function __construct()
     {
@@ -270,6 +273,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $order->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPasswordResetAt(): ?\DateTimeImmutable
+    {
+        return $this->passwordResetAt;
+    }
+
+    public function setPasswordResetAt(?\DateTimeImmutable $passwordResetAt): static
+    {
+        $this->passwordResetAt = $passwordResetAt;
 
         return $this;
     }

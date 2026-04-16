@@ -3,12 +3,13 @@
 namespace App\Controller;
 
 use App\Form\ChangePasswordType;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\UriSigner;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
@@ -48,8 +49,12 @@ class SecurityController extends AbstractController
      * @throws \Exception
      */
     #[Route(path: '/changer-mon-mot-de-passe/{token}', name: 'app_modify_password')]
-    public function modifyPassword(Request $request): Response
-    {
+    public function modifyPassword(
+        Request $request,
+        UserPasswordHasherInterface $passwordHasher,
+        UserRepository $userRepository,
+        EntityManagerInterface $entityManager,
+    ): Response {
 
         $token = $request->attributes->get('token');
 
@@ -70,14 +75,32 @@ class SecurityController extends AbstractController
 
         $email = $data['email'];
 
-        //logique formulaire de changement de mdp
+        $userToUpdate = $userRepository->findOneBy(['email' => $email]);
+
+        if ($userToUpdate) {
+            if (!$userToUpdate->getPasswordResetAt() ||
+                $userToUpdate->getPasswordResetAt()->getTimestamp() !== $data['reset']
+            ) {
+                throw new \RuntimeException('Lien invalide');
+            }
+        }
 
         $form = $this->createForm(ChangePasswordType::class);
         $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
+
+        if ($userToUpdate && $form->isSubmitted() && $form->isValid()) {
             if ($data['exp'] < time()) {
                 throw new \RuntimeException('Page expirée');
             }
+
+            $userToUpdate->setPassword(
+                $passwordHasher->hashPassword($userToUpdate, $form->get('password')->getData())
+            );
+            $userToUpdate->setPasswordResetAt(new \DateTimeImmutable());
+
+            $entityManager->flush();
+
+            return $this->redirectToRoute('app_login');
         }
 
         return $this->render('security/modify-password.html.twig', [
