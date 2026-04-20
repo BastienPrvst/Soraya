@@ -7,6 +7,7 @@ use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Random\RandomException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
@@ -48,16 +49,16 @@ readonly class MailerService
      * @throws TransportExceptionInterface
      * @throws \JsonException
      */
-    public function sendResetPasswordEmail(string $userMail): void
+    public function sendResetPasswordEmail(string $userMail): bool
     {
         if (!filter_var($userMail, FILTER_VALIDATE_EMAIL)) {
-            return;
+            return false;
         }
 
         $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $userMail]);
 
         if (!$user) {
-            return;
+            return false;
         }
 
         $user->setPasswordResetAt(new \DateTimeImmutable());
@@ -90,5 +91,7 @@ readonly class MailerService
             ]);
 
         $this->mailer->send($email);
+
+        return true;
     }
 }

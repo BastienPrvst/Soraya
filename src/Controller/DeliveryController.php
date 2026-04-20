@@ -106,8 +106,6 @@ class DeliveryController extends AbstractController
                 $order->setBillingAddress($billingAddress);
                 $this->entityManager->flush();
 
-
-
                 if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
                     $this->workflowService->applyTransition($order, 'to_pending_payment');
                     $this->entityManager->flush();
@@ -117,9 +115,10 @@ class DeliveryController extends AbstractController
                 }
             }
 
+            $this->entityManager->flush();
 
             return $this->redirectToRoute('checkout_delivery_billing_address', [
-                'token' => $order->getToken()
+                'token' => $order->getToken(),
             ]);
         }
 

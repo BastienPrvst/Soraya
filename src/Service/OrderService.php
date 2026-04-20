@@ -22,8 +22,8 @@ readonly class OrderService
     public function __construct(
         private EntityManagerInterface $entityManager,
         private RequestStack           $requestStack,
-        private Security $security,
-        private WorkflowService $workflowService
+        private Security               $security,
+        private WorkflowService        $workflowService
     ) {
     }
 

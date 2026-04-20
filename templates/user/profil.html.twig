@@ -20,7 +20,7 @@
         {% if lastOrders is not empty %}
             <h2 class="text-center">Vos dernières commandes chez nous</h2>
             {% for order in lastOrders %}
-                <div class="bg-light rounded-2 p-3 m-3 d-flex flex-column align-items-center justify-content-center">
+                <div class="bg-light rounded-2 p-3 m-3 d-flex flex-column align-items-center justify-content-center w-75 mx-auto">
 
                     <div class="w-100 text-center fs-3"> Commande #{{ "%05d"|format(order.id) }} </div>
                     <div class="w-100">

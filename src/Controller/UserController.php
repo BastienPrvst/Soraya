@@ -69,7 +69,7 @@ final class UserController extends AbstractController
         ]);
     }
 
-    #[Route(path: '/modifier-mon-profil', name: 'app_profile_modify')]
+    #[Route(path: '/mon-profil/modifier-mon-profil', name: 'app_profile_modify')]
     public function modifyProfile(Request $request) : Response
     {
         $user = $this->getUser();
@@ -101,5 +101,23 @@ final class UserController extends AbstractController
         return $this->render('security/send_reset_password_mail.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     * @throws RandomException
+     * @throws \JsonException
+     */
+    #[Route(path: '/mon-profil/changer-de-mot-de-passe', name: 'app_password_change')]
+    public function sendChangePasswordMail() : Response
+    {
+        /* @var User $user */
+        $user = $this->getUser();
+        $this->mailerService->sendResetPasswordEmail($user->getEmail());
+        $this->addFlash(
+            'success',
+            'Un mail de changement de mot de passe à bien été envoyé à l`\'adresse mail associée au compte. '
+        );
+        return $this->redirectToRoute('app_profile_modify');
     }
 }
