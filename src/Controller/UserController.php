@@ -14,9 +14,12 @@ use Random\RandomException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class UserController extends AbstractController
@@ -88,14 +91,23 @@ final class UserController extends AbstractController
     /**
      * @throws TransportExceptionInterface
      * @throws RandomException
+     * @throws \JsonException
      */
     #[Route(path: '/mot-de-passe-oublié', name: 'app_password_forgot')]
-    public function sendResetPasswordMail(Request $request) : Response
-    {
+    public function sendResetPasswordMail(
+        Request $request,
+        RateLimiterFactoryInterface $mailSenderLimiter
+    ) : Response {
+        $limiter = $mailSenderLimiter->create($request->getClientIp());
+
+        if (false === $limiter->consume(1)->isAccepted()) {
+            throw new TooManyRequestsHttpException();
+        }
+
         $form = $this->createForm(MailToChangePasswordType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->mailerService->sendResetPasswordEmail($form->get('email')->getData());
+            $this->mailerService->sendResetPasswordEmail($form->get('email')->getData(), 'forget');
         }
 
         return $this->render('security/send_reset_password_mail.html.twig', [
@@ -109,11 +121,19 @@ final class UserController extends AbstractController
      * @throws \JsonException
      */
     #[Route(path: '/mon-profil/changer-de-mot-de-passe', name: 'app_password_change')]
-    public function sendChangePasswordMail() : Response
-    {
+    public function sendChangePasswordMail(
+        Request $request,
+        RateLimiterFactoryInterface $mailSenderLimiter
+    ) : Response {
         /* @var User $user */
         $user = $this->getUser();
-        $this->mailerService->sendResetPasswordEmail($user->getEmail());
+        $limiter = $mailSenderLimiter->create($request->getClientIp() . $user->getId());
+
+        if (false === $limiter->consume(1)->isAccepted()) {
+            throw new TooManyRequestsHttpException();
+        }        /* @var User $user */
+        $user = $this->getUser();
+        $this->mailerService->sendResetPasswordEmail($user->getEmail(), 'change');
         $this->addFlash(
             'success',
             'Un mail de changement de mot de passe à bien été envoyé à l`\'adresse mail associée au compte. '

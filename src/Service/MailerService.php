@@ -49,7 +49,7 @@ readonly class MailerService
      * @throws TransportExceptionInterface
      * @throws \JsonException
      */
-    public function sendResetPasswordEmail(string $userMail): bool
+    public function sendResetPasswordEmail(string $userMail, string $type): bool
     {
         if (!filter_var($userMail, FILTER_VALIDATE_EMAIL)) {
             return false;
@@ -78,19 +78,40 @@ readonly class MailerService
             'token' => $token,
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        $email = (new TemplatedEmail())
-            ->from('noreply@soraya.com')
-            ->to($userMail)
-            ->subject('Changement de mot de passe Site Soraya')
-            ->htmlTemplate('mail/reset_password.html.twig')
-            ->locale('FR')
-            ->context([
-                'data' => [
-                    'url' => $url,
-                ]
-            ]);
+        //Template mail en fonction d'oubli ou de changement volontaire
+        //TODO faire les template de mails si differents
+        if ($type === 'forget') {
+            $email = (new TemplatedEmail())
+                ->from('noreply@soraya.com')
+                ->to($userMail)
+                ->subject('Changement de mot de passe Site Soraya')
+                ->htmlTemplate('mail/reset_password.html.twig')
+                ->locale('FR')
+                ->context([
+                    'data' => [
+                        'url' => $url,
+                    ]
+                ]);
 
-        $this->mailer->send($email);
+            $this->mailer->send($email);
+        } elseif ($type === 'reset') {
+            $email = (new TemplatedEmail())
+                ->from('noreply@soraya.com')
+                ->to($userMail)
+                ->subject('Changement de mot de passe Site Soraya')
+                ->htmlTemplate('mail/reset_password.html.twig')
+                ->locale('FR')
+                ->context([
+                    'data' => [
+                        'url' => $url,
+                    ]
+                ]);
+
+            $this->mailer->send($email);
+        } else {
+            return false;
+        }
+
 
         return true;
     }

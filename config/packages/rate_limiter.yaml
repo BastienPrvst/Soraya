@@ -12,3 +12,7 @@ framework:
             policy: 'fixed_window'
             limit: 60
             interval: '1 minute'
+        mail_sending:
+            policy: 'fixed_window'
+            limit: 1
+            interval: '3 minutes'
