@@ -59,7 +59,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         max: 255,
         maxMessage: 'Votre prénom ne peut pas dépasser {{ limit }} caractères'
     )]
-    private ?string $Firstname = null;
+    private ?string $firstname = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(
@@ -69,11 +69,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         max: 255,
         maxMessage: 'Votre nom ne peut pas dépasser {{ limit }} caractères'
     )]
-    private ?string $Lastname = null;
+    private ?string $lastname = null;
 
     #[ORM\Column(nullable: true)]
 //    #[Assert\LessThan('today')]
-    private ?\DateTime $Birthday = null;
+    private ?\DateTime $birthday = null;
 
     #[ORM\Column]
     private ?bool $isActive = false;
@@ -201,36 +201,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getFirstname(): ?string
     {
-        return $this->Firstname;
+        return $this->firstname;
     }
 
-    public function setFirstname(string $Firstname): static
+    public function setFirstname(string $firstname): static
     {
-        $this->Firstname = $Firstname;
+        $this->firstname = $firstname;
 
         return $this;
     }
 
     public function getLastname(): ?string
     {
-        return $this->Lastname;
+        return $this->lastname;
     }
 
-    public function setLastname(string $Lastname): static
+    public function setLastname(string $lastname): static
     {
-        $this->Lastname = $Lastname;
+        $this->lastname = $lastname;
 
         return $this;
     }
 
     public function getBirthday(): ?\DateTime
     {
-        return $this->Birthday;
+        return $this->birthday;
     }
 
-    public function setBirthday(?\DateTime $Birthday): static
+    public function setBirthday(?\DateTime $birthday): static
     {
-        $this->Birthday = $Birthday;
+        $this->birthday = $birthday;
 
         return $this;
     }
