@@ -43,7 +43,7 @@ class AppFixtures extends Fixture
     private function createUsers(): User
     {
         $faker = Factory::create('fr_FR');
-        for ($i = 0; $i < 10; $i++) {
+        for ($i = 0; $i < 50; $i++) {
             $user = new User();
             $password = $this->passwordHasher->hashPassword($user, 'password');
 
@@ -66,7 +66,9 @@ class AppFixtures extends Fixture
             ->setFirstname('Bastien')
             ->setLastname('Admin')
             ->setBirthday($faker->dateTimeBetween('-40 years', '-18 years'))
-            ->setIsActive(true);
+            ->setIsActive(true)
+            ->setRoles(['ROLE_ADMIN', 'ROLE_USER'])
+        ;
         $this->manager->persist($adminUser);
 
         return $adminUser;

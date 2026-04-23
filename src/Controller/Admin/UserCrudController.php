@@ -5,6 +5,9 @@ namespace App\Controller\Admin;
 use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
@@ -31,11 +34,20 @@ class UserCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            IdField::new('id'),
-            TextField::new('firstname'),
-            TextField::new('lastname'),
+            TextField::new('firstname')->setLabel('Prénom'),
+            TextField::new('lastname')->setLabel('Nom'),
             EmailField::new('email'),
-            ArrayField::new('roles'),
+            ChoiceField::new('roles')
+                ->setChoices([
+                    'Utilisateur' => 'ROLE_USER',
+                    'Administrateur' => 'ROLE_ADMIN',
+                ])
+                ->allowMultipleChoices()
+                ->renderExpanded(false),
+            BooleanField::new('isActive')
+                ->setLabel('Actif'),
+            CollectionField::new('orders')
+                ->onlyOnForms()
         ];
     }
 }
