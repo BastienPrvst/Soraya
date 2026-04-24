@@ -53,6 +53,7 @@ class AppFixtures extends Fixture
                 ->setFirstname($faker->firstName())
                 ->setLastname($faker->lastName())
                 ->setBirthday($faker->dateTimeBetween('-40 years', '-18 years'))
+                ->setPhoneNumber($faker->phoneNumber())
                 ->setIsActive(true)
             ;
 
@@ -67,6 +68,7 @@ class AppFixtures extends Fixture
             ->setLastname('Admin')
             ->setBirthday($faker->dateTimeBetween('-40 years', '-18 years'))
             ->setIsActive(true)
+            ->setPhoneNumber($faker->phoneNumber())
             ->setRoles(['ROLE_ADMIN', 'ROLE_USER'])
         ;
         $this->manager->persist($adminUser);

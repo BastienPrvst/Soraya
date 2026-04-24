@@ -46,6 +46,12 @@ class Product
     #[ORM\Column]
     private ?float $weight = null;
 
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    private ?int $discount = null;
+
+    #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    private ?int $newPrice = null;
+
     public function __construct()
     {
         $this->category = new ArrayCollection();
@@ -186,6 +192,30 @@ class Product
     public function setWeight(float $weight): static
     {
         $this->weight = $weight;
+
+        return $this;
+    }
+
+    public function getDiscount(): ?int
+    {
+        return $this->discount;
+    }
+
+    public function setDiscount(?int $discount): static
+    {
+        $this->discount = $discount;
+
+        return $this;
+    }
+
+    public function getNewPrice(): ?int
+    {
+        return $this->newPrice;
+    }
+
+    public function setNewPrice(?int $newPrice): static
+    {
+        $this->newPrice = $newPrice;
 
         return $this;
     }

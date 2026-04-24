@@ -10,6 +10,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\EmailField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -37,6 +38,8 @@ class UserCrudController extends AbstractCrudController
             TextField::new('firstname')->setLabel('Prénom'),
             TextField::new('lastname')->setLabel('Nom'),
             EmailField::new('email'),
+            TelephoneField::new('phoneNumber')
+                ->setLabel('Tel.'),
             ChoiceField::new('roles')
                 ->setChoices([
                     'Utilisateur' => 'ROLE_USER',
@@ -47,7 +50,7 @@ class UserCrudController extends AbstractCrudController
             BooleanField::new('isActive')
                 ->setLabel('Actif'),
             CollectionField::new('orders')
-                ->onlyOnForms()
+                ->onlyOnForms(),
         ];
     }
 }

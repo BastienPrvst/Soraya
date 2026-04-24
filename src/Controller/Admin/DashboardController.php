@@ -21,9 +21,6 @@ class DashboardController extends AbstractDashboardController
 
     public function index(): Response
     {
-
-        //TODO : Faire une page de visuel pour le dashboard
-
         // Option 3. You can render some custom template to display a proper dashboard with widgets, etc.
         // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
         //

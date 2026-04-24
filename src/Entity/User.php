@@ -87,6 +87,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $passwordResetAt = null;
 
+    #[ORM\Column(length: 20)]
+    private ?string $phoneNumber = null;
+
 
     public function __construct()
     {
@@ -285,6 +288,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPasswordResetAt(?\DateTimeImmutable $passwordResetAt): static
     {
         $this->passwordResetAt = $passwordResetAt;
+
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(string $phoneNumber): static
+    {
+        $this->phoneNumber = $phoneNumber;
 
         return $this;
     }

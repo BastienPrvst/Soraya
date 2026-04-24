@@ -13,6 +13,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\PercentField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 
@@ -39,15 +40,26 @@ class ProductCrudController extends AbstractCrudController
                 ->setLabel('Nom'),
             TextEditorField::new('description')
                 ->setLabel('Description')
-                ->onlyOnForms()
-            ,
+                ->onlyOnForms(),
             MoneyField::new('price')
                 ->setCurrency('EUR')
                 ->setLabel('Prix')
-                ->setStoredAsCents(false)
-                ->setTextAlign('left'),
+                ->setStoredAsCents(false),
+            PercentField::new('discount')
+                ->setLabel('% Reduction'),
+            MoneyField::new('newPrice')
+                ->setLabel('Nouveau prix')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false),
             NumberField::new('weight')
-                ->setLabel('Poids'),
+                ->setLabel('Poids')
+                ->formatValue(function ($value) {
+                    if ($value) {
+                        return $value . ' Kg';
+                    }
+                    return null;
+                })
+            ,
             AssociationField::new('category')
                 ->setLabel('Catégories')
                 ->formatValue(function ($value) {

@@ -194,6 +194,11 @@ class Order
         return $this;
     }
 
+    public function getStatusLabel(): string
+    {
+        return $this->status->label();
+    }
+
     public function getToken(): ?string
     {
         return $this->token;
@@ -286,6 +291,11 @@ class Order
         $this->deliveryMode = $deliveryMode;
 
         return $this;
+    }
+
+    public function getDeliveryModeLabel(): string
+    {
+        return $this->deliveryMode->label();
     }
 
     public function getDeliveryAddress(): ?Address
