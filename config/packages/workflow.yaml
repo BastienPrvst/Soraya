@@ -20,6 +20,7 @@ framework:
                 - delivered
                 - refund_pending
                 - refund
+                - refund_declined
                 - canceled
 
             transitions:
@@ -62,3 +63,7 @@ framework:
                 to_refund:
                     from: refund_pending
                     to: refund
+
+                to_refund_declined:
+                    from: refund_pending
+                    to: refund_declined

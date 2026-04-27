@@ -132,13 +132,17 @@ class AppFixtures extends Fixture
             return;
         }
 
-        for ($i = 0; $i < 20; $i++) {
+        for ($i = 0; $i < 50; $i++) {
             $order = new Order();
             $token = bin2hex(random_bytes(32));
             $sessionKey = bin2hex(random_bytes(32));
             $statuses = [
                 OrderStatus::REFUND,
-                OrderStatus::DELIVERED
+                OrderStatus::DELIVERED,
+                OrderStatus::CREATED,
+                OrderStatus::CANCELED,
+                OrderStatus::PENDING_SHIPPING,
+                OrderStatus::PENDING_PAYMENT
             ];
 
             $numberOfProducts = random_int(1, 5);
@@ -146,7 +150,7 @@ class AppFixtures extends Fixture
             $order
                 ->setUser($adminUser)
                 ->setEmail($adminUser->getEmail())
-                ->setDeliveryMode(DeliveryMode::HOME)
+                ->setDeliveryMode($numberOfProducts%2 === 1 ? DeliveryMode::HOME : DeliveryMode::RELAY)
                 ->setSessionKey($sessionKey)
                 ->setToken($token)
                 ->setStatus($statuses[array_rand($statuses)])
@@ -163,7 +167,7 @@ class AppFixtures extends Fixture
                 $totalProduct = $product->getPrice() * $quantity;
                 $orderItem = new OrderItem();
                 $orderItem
-                    ->setRelatedOrder($order)
+                    ->setOrder($order)
                     ->setProduct($product)
                     ->setQuantity($quantity)
                     ->setUnitPrice($product->getPrice())

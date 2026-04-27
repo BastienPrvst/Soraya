@@ -124,7 +124,7 @@ readonly class OrderService
                 $orderItem
                     ->setProduct($product['product'])
                     ->setQuantity($product['quantity'])
-                    ->setRelatedOrder($order)
+                    ->setOrder($order)
                     ->setUnitPrice($product['price'])
                     ->setTotal($product['price'] * $product['quantity'])
                 ;
@@ -174,7 +174,7 @@ readonly class OrderService
 
             $orderItem = new OrderItem();
             $orderItem
-                ->setRelatedOrder($order)
+                ->setOrder($order)
                 ->setProduct($product)
                 ->setQuantity($quantity)
                 ->setUnitPrice($product->getPrice())

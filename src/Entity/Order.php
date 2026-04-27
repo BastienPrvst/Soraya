@@ -30,7 +30,7 @@ class Order
      */
     #[ORM\OneToMany(
         targetEntity: OrderItem::class,
-        mappedBy: 'relatedOrder',
+        mappedBy: 'order',
         cascade: ['persist', 'remove'],
         orphanRemoval: true
     )]
@@ -152,7 +152,7 @@ class Order
     {
         if (!$this->orderItems->contains($orderItem)) {
             $this->orderItems->add($orderItem);
-            $orderItem->setRelatedOrder($this);
+            $orderItem->setOrder($this);
         }
 
         return $this;
@@ -162,8 +162,8 @@ class Order
     {
         if ($this->orderItems->removeElement($orderItem)) {
             // set the owning side to null (unless already changed)
-            if ($orderItem->getRelatedOrder() === $this) {
-                $orderItem->setRelatedOrder(null);
+            if ($orderItem->getOrder() === $this) {
+                $orderItem->setOrder(null);
             }
         }
 
