@@ -30,6 +30,4 @@ enum OrderStatus: string
             self::CANCELED => 'Annulée',
         };
     }
-
-
 }

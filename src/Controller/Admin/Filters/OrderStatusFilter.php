@@ -1,14 +1,14 @@
 <?php
 
-namespace App\Controller\Admin;
+namespace App\Controller\Admin\Filters;
 
 use App\Enum\OrderStatus;
-use EasyCorp\Bundle\EasyAdminBundle\Filter\FilterTrait;
 use Doctrine\ORM\QueryBuilder;
 use EasyCorp\Bundle\EasyAdminBundle\Contracts\Filter\FilterInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\EntityDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FieldDto;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\FilterDataDto;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\FilterTrait;
 use EasyCorp\Bundle\EasyAdminBundle\Form\Filter\Type\ChoiceFilterType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 

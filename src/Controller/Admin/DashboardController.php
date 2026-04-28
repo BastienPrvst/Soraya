@@ -3,6 +3,7 @@
 namespace App\Controller\Admin;
 
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Locale;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
@@ -16,7 +17,7 @@ class DashboardController extends AbstractDashboardController
 //    public function configureAssets(): Assets
 //    {
 //        return Assets::new()
-//            ->addAssetMapperEntry('charts');
+//            ->addCssFile('styles/admin.css');
 //    }
 
     public function index(): Response

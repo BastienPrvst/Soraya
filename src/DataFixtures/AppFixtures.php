@@ -156,6 +156,7 @@ class AppFixtures extends Fixture
                 ->setStatus($statuses[array_rand($statuses)])
                 ->setFirstname($adminUser->getFirstname())
                 ->setLastname($adminUser->getLastname())
+                ->setPhoneNumber($faker->phoneNumber())
                 ->setDelivery(true)
                 ->setCreationDate($faker->dateTimeBetween('now', '+ 30 days'));
 

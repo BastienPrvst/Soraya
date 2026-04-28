@@ -94,4 +94,9 @@ class OrderItem
 
         return $this;
     }
+
+    public function __toString(): string
+    {
+        return $this->getProduct()?->getName();
+    }
 }
