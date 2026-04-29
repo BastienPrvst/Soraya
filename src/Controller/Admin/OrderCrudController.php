@@ -9,6 +9,7 @@ use App\Enum\OrderStatus;
 use App\Form\Admin\OrderItemType;
 use App\Form\Admin\OrderUserType;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\ActionGroup;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
@@ -28,6 +29,12 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 
 class OrderCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private AdminUrlGenerator $adminUrlGenerator,
+    )
+    {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Order::class;
@@ -54,30 +61,20 @@ class OrderCrudController extends AbstractCrudController
         $urlGenerator = $this->container->get(AdminUrlGenerator::class);
 
         $statusActions = [
-            'paid' => [
-                'label' => 'Payées',
-                'status' => OrderStatus::PAID,
-            ],
             'pending_delivery' => [
                 'label' => 'En attente de livraison',
-                'status' => OrderStatus::PENDING_SHIPPING
+                'status' => OrderStatus::PENDING_SHIPPING,
+                'css_class' => 'btn-success'
             ],
             'pending_refund' => [
                 'label' => 'En attente de remboursement',
                 'status' => OrderStatus::PENDING_REFUND,
                 'css_class' => 'btn btn-warning',
             ],
-            'delivered' => [
-                'label' => 'Livrées',
-                'status' => OrderStatus::DELIVERED,
-            ],
-            'refund' => [
-                'label' => 'Remboursées',
-                'status' => OrderStatus::REFUND,
-            ],
             'canceled' => [
                 'label' => 'Annulées',
                 'status' => OrderStatus::CANCELED,
+                'css_class' => 'btn btn-danger'
             ],
         ];
 
@@ -95,11 +92,28 @@ class OrderCrudController extends AbstractCrudController
                             ->set('filters[status][comparison]', '=')
                             ->generateUrl()
                     )
+                    ->addCssClass($config['css_class'])
                     ->createAsGlobalAction()
             );
         }
 
-        return $actions;
+        $mailActions = ActionGroup::new('mails', 'Mails')
+            ->setIcon('fa fa-envelope')
+            ->addAction(Action::new('confirmation', 'Mail de confirmation')
+                ->linkToRoute('admin_confirmation_mail', function (Order $order) {
+                return [
+                    'token' => $order->getToken(),
+                ];
+            }));
+
+        $deliveryActions = ActionGroup::new('delivery', 'Livraison')
+            ->setIcon('fa fa-truck')
+            ->addAction(Action::new('livraison', 'Imprimer l`\'etiquette')->linkToRoute('admin_delivery'));
+
+        return $actions
+            ->add(Crud::PAGE_EDIT, $mailActions)
+            ->add(Crud::PAGE_INDEX, $deliveryActions)
+            ->add(Crud::PAGE_EDIT, $deliveryActions);
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -112,7 +126,7 @@ class OrderCrudController extends AbstractCrudController
     public function configureFields(string $pageName): iterable
     {
         return [
-            FormField::addColumn(7),
+            FormField::addColumn(6),
             IdField::new('id')
                 ->formatValue(function ($id) {
                     return '#' . sprintf('%05d', $id);
@@ -120,9 +134,22 @@ class OrderCrudController extends AbstractCrudController
                 ->setCssClass('fw-bold')
                 ->onlyOnIndex()
             ,
-            AssociationField::new('user')
+            TextField::new('user')
                 ->setLabel('Client')
-                ->onlyOnIndex(),
+                ->renderAsHtml()
+                ->formatValue(function ($value, Order $order) {
+                    if ($order->getUser() !== null) {
+                        $url = $this->adminUrlGenerator
+                            ->setController(UserCrudController::class)
+                            ->setAction(Action::DETAIL)
+                            ->setEntityId($order->getUser()->getId())
+                            ->generateUrl();
+
+                        return sprintf('<a href="%s">%s %s</a>', $url, $order->getUser()->getFirstname(), $order->getUser()->getLastname());
+                    }
+
+                    return sprintf('%s %s', $order->getFirstname(), $order->getLastname());
+                }),
             MoneyField::new('total')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false),
@@ -185,7 +212,7 @@ class OrderCrudController extends AbstractCrudController
                 ->allowAdd(false)
                 ->allowDelete(false)
                 ->onlyOnForms(),
-            FormField::addColumn(5),
+            FormField::addColumn(6),
             FormField::addFieldset('Client')
                 ->setIcon('fa fa-user')
                 ->onlyOnForms(),

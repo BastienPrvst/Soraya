@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
 use App\Service\MailerService;
 use App\Service\OrderService;
@@ -101,18 +102,4 @@ class CheckoutController extends AbstractController
         ]);
     }
 
-    /**
-     * @throws TransportExceptionInterface
-     * @throws ExceptionInterface
-     */
-    #[Route(path: '/renvoie-mail/{token}', name: 'renvoi-mail')]
-    public function renvoiMail(
-        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        MailerService $mailerService
-    ): Response {
-        $mailerService->sendConfirmationEmail($order);
-        return $this->render('payment/success.html.twig', [
-            'order' => $order
-        ]);
-    }
 }
