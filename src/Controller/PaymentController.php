@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Order;
 use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
+use App\Service\MailerService;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
 use App\Service\StripePaymentService;
@@ -22,6 +23,8 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
@@ -130,24 +133,38 @@ final class PaymentController extends AbstractController
     }
 
 
+    /**
+     * @throws TransportExceptionInterface
+     * @throws ExceptionInterface
+     */
     #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
     public function index(
         #[MapEntity(mapping: ['token' => 'token'])] ?Order $order,
         Request $request,
+        MailerService $mailerService,
     ): Response {
 
         if (!$order) {
             throw $this->createNotFoundException('Commande introuvable');
         }
 
-        if ($order->getStatus() !== OrderStatus::PAID) {
-            if ($order->getStatus() !== OrderStatus::PENDING_PAYMENT) {
-                throw new BadRequestHttpException('Commande non valide');
-            }
+        if (!$order->getStatus()?->isAtLeast(OrderStatus::PENDING_PAYMENT)) {
+            throw new BadRequestHttpException('Commande non valide');
+        }
+
+        if ($order->getStatus() === OrderStatus::PENDING_PAYMENT) {
             return $this->render('payment/pending.html.twig', [
                 'order' => $order,
                 'pollUrl' => $this->generateUrl('check_payment_status', ['token' => $order->getToken()])
             ]);
+        }
+
+        if ($order->getStatus() === OrderStatus::PAID) {
+            if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
+                $this->workflowService->applyTransition($order, 'to_pending_delivery');
+                $this->entityManager->flush();
+            }
+            $mailerService->sendConfirmationEmail($order);
         }
 
         $session = $request->getSession();

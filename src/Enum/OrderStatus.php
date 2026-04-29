@@ -30,4 +30,18 @@ enum OrderStatus: string
             self::CANCELED => 'Annulée',
         };
     }
+
+    public function isAtLeast(self $minimum): bool
+    {
+        $order = [
+            self::CREATED,
+            self::DELIVERY_CHOICE,
+            self::PENDING_PAYMENT,
+            self::PAID,
+            self::PENDING_SHIPPING,
+            self::DELIVERED,
+        ];
+
+        return array_search($this, $order) >= array_search($minimum, $order);
+    }
 }

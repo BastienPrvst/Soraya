@@ -36,8 +36,12 @@ framework:
                     from: pending_payment
                     to: paid
 
-                ship:
+                to_pending_delivery:
                     from: paid
+                    to: pending_shipping
+
+                ship:
+                    from: pending_shipping
                     to: shipped
 
                 deliver:
