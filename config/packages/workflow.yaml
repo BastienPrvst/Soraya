@@ -16,8 +16,9 @@ framework:
                 - delivery_choice
                 - pending_payment
                 - paid
+                - pending_shipping
+                - shipping
                 - shipped
-                - delivered
                 - refund_pending
                 - refund
                 - refund_declined
@@ -36,17 +37,17 @@ framework:
                     from: pending_payment
                     to: paid
 
-                to_pending_delivery:
+                to_pending_shipping:
                     from: paid
                     to: pending_shipping
 
-                ship:
+                shipping:
                     from: pending_shipping
-                    to: shipped
+                    to: shipping
 
-                deliver:
-                    from: shipped
-                    to: delivered
+                shipped:
+                    from: shipping
+                    to: shipped
 
                 cancel:
                     from: [created, delivery_choice, pending_payment]
@@ -61,7 +62,7 @@ framework:
                     to: created
 
                 to_refund_pending:
-                    from: delivered
+                    from: [shipped, shipping]
                     to: refund_pending
 
                 to_refund:

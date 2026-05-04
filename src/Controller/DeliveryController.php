@@ -156,7 +156,9 @@ class DeliveryController extends AbstractController
 
             try {
                 $this->deliveryService->createRelayAddress($order, $relayId);
-            } catch (RuntimeException|SoapFault) {
+            } catch (RuntimeException|SoapFault $exception) {
+
+                dd($exception->getMessage());
                 $this->addFlash('error', 'Veuillez sélectionner un point relais valide');
 
                 return $this->redirectToRoute('checkout_delivery', [

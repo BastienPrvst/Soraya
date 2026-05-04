@@ -10,6 +10,7 @@ parameters:
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
     stripe.secret_key: '%env(STRIPE_SECRET_KEY)%'
     stripe.webhook_secret_key: '%env(STRIPE_WEBHOOK_SECRET)%'
+    stripe.dashboard.url: '%env(STRIPE_DASHBOARD_URL)%'
     google.api.key: '%env(GOOGLE_MAP_API_KEY)%'
 services:
     # default configuration for services in *this* file

@@ -1,5 +1,31 @@
 {% extends '@EasyAdmin/page/content.html.twig' %}
 
 {% block content %}
-    <h1>TEST</h1>
+
+    <div class="d-flex flex-column justify-content-center align-items-center">
+        <h1>Bonjour, {{ app.user.firstname|capitalize }}</h1>
+
+
+        <div>
+            <div >
+                <a class="d-flex flex-column align-items-center justify-content-center my-3" href="{{ pendingShippingUrl }}">
+                    <p>Commandes à expédier :</p>
+                    <br>
+                    <p>{{ countPendingShipping }}</p>
+               </a>
+            </div>
+        </div>
+
+        <div>
+            Liens :
+
+            <a href="{{ stripe_dashboard_url }}" target="_blank">Dashboard Stripe </a>
+            <a href="#">Mondial Relay</a>
+            <a href="#">Collisimo</a>
+        </div>
+
+    </div>
+
+
+
 {% endblock %}

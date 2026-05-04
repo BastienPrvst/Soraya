@@ -12,7 +12,7 @@ class MondialRelayService
 {
 
     private const string API_URL = 'https://api.mondialrelay.com/Web_Services.asmx?WSDL';
-    private const string ENSEIGNE = 'BDTEST13';
+    private const string ENSEIGNE = 'TTNTWSDB';
     private const string PRIVATE_KEY = 'PrivateK';
 
     public function __construct(

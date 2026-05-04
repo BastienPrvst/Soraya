@@ -30,9 +30,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 class OrderCrudController extends AbstractCrudController
 {
     public function __construct(
-        private AdminUrlGenerator $adminUrlGenerator,
-    )
-    {
+        private readonly AdminUrlGenerator $adminUrlGenerator,
+    ) {
     }
 
     public static function getEntityFqcn(): string
@@ -101,12 +100,15 @@ class OrderCrudController extends AbstractCrudController
             ->setIcon('fa fa-envelope')
             ->addAction(Action::new('confirmation', 'Mail de confirmation')
                 ->linkToRoute('admin_confirmation_mail', function (Order $order) {
-                return [
+                    return [
                     'token' => $order->getToken(),
-                ];
-            }));
+                    ];
+                }));
 
         $deliveryActions = ActionGroup::new('delivery', 'Livraison')
+            ->displayIf(static function (Order $order) {
+                return $order->getStatus()?->isAtLeast(OrderStatus::PENDING_SHIPPING);
+            })
             ->setIcon('fa fa-truck')
             ->addAction(Action::new('livraison', 'Imprimer l`\'etiquette')->linkToRoute('admin_delivery'));
 
@@ -145,7 +147,12 @@ class OrderCrudController extends AbstractCrudController
                             ->setEntityId($order->getUser()->getId())
                             ->generateUrl();
 
-                        return sprintf('<a href="%s">%s %s</a>', $url, $order->getUser()->getFirstname(), $order->getUser()->getLastname());
+                        return sprintf(
+                            '<a href="%s">%s %s</a>',
+                            $url,
+                            $order->getUser()->getFirstname(),
+                            $order->getUser()->getLastname()
+                        );
                     }
 
                     return sprintf('%s %s', $order->getFirstname(), $order->getLastname());
@@ -155,7 +162,8 @@ class OrderCrudController extends AbstractCrudController
                 ->setStoredAsCents(false),
             DateField::new('creationDate')
                 ->setLabel('Date')
-                ->setFormat('d/m/Y'),
+                ->setFormat('dd/MM/YYYY')
+                ->setTimezone('Europe/Paris'),
             ChoiceField::new('status')
                 ->setLabel('Statut')
                 ->setChoices(
@@ -167,7 +175,7 @@ class OrderCrudController extends AbstractCrudController
                 ->renderAsBadges([
                     OrderStatus::CREATED->value   => 'secondary',
                     OrderStatus::PAID->value      => 'primary',
-                    OrderStatus::DELIVERED->value => 'success',
+                    OrderStatus::SHIPPED->value => 'success',
                     OrderStatus::REFUND->value    => 'warning',
                     OrderStatus::CANCELED->value  => 'danger',
                 ])

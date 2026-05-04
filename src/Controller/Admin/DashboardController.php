@@ -2,30 +2,51 @@
 
 namespace App\Controller\Admin;
 
+use App\Repository\OrderRepository;
+use App\Repository\UserRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Locale;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Component\HttpFoundation\Response;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
 {
+    public function __construct(
+        private readonly UserRepository $userRepository,
+        private readonly OrderRepository $orderRepository,
+        private readonly AdminUrlGenerator $adminUrlGenerator,
+    )
+    {
+    }
 
-//    public function configureAssets(): Assets
-//    {
-//        return Assets::new()
-//            ->addCssFile('styles/admin.css');
-//    }
+    public function configureAssets(): Assets
+    {
+        return Assets::new()
+            ->addCssFile('styles/admin.css');
+    }
 
     public function index(): Response
     {
-        // Option 3. You can render some custom template to display a proper dashboard with widgets, etc.
-        // (tip: it's easier if your template extends from @EasyAdmin/page/content.html.twig)
-        //
-         return $this->render('admin/dashboard.html.twig');
+        $pendingShippingUrl = $this->adminUrlGenerator
+            ->setController(OrderCrudController::class)
+            ->setAction('index')
+            ->set('filters[status][value][]', 'pending_shipping')
+            ->set('filters[status][comparison]', '=')
+            ->generateUrl();
+
+        $countPendingShipping = $this->orderRepository->count([
+            'status' => ['pending_shipping'],
+        ]);
+
+        return $this->render('admin/dashboard.html.twig', [
+            'pendingShippingUrl' => $pendingShippingUrl,
+            'countPendingShipping' => $countPendingShipping,
+        ]);
     }
 
     public function configureDashboard(): Dashboard

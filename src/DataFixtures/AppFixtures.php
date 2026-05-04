@@ -138,7 +138,7 @@ class AppFixtures extends Fixture
             $sessionKey = bin2hex(random_bytes(32));
             $statuses = [
                 OrderStatus::REFUND,
-                OrderStatus::DELIVERED,
+                OrderStatus::SHIPPED,
                 OrderStatus::CREATED,
                 OrderStatus::CANCELED,
                 OrderStatus::PENDING_SHIPPING,

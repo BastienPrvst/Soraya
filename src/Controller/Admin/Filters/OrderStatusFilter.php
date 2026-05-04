@@ -38,7 +38,7 @@ class OrderStatusFilter implements FilterInterface
                     array_map(fn(OrderStatus $s) => [
                         'class' => match ($s) {
                             OrderStatus::PAID      => 'bg-primary',
-                            OrderStatus::DELIVERED => 'bg-success',
+                            OrderStatus::SHIPPED => 'bg-success',
                             OrderStatus::REFUND    => 'bg-warning',
                             OrderStatus::CANCELED  => 'bg-danger',
                             default         => 'bg-secondary',

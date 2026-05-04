@@ -9,7 +9,8 @@ enum OrderStatus: string
     case PENDING_PAYMENT = 'pending_payment';
     case PAID = 'paid';
     case PENDING_SHIPPING = 'pending_shipping';
-    case DELIVERED = 'delivered';
+    case SHIPPING = 'shipping';
+    case SHIPPED = 'shipped';
     case PENDING_REFUND = 'refund_pending';
     case REFUND = 'refund';
     case REFUND_DECLINED = 'refund_declined';
@@ -23,7 +24,8 @@ enum OrderStatus: string
             self::PENDING_PAYMENT => 'En attente de paiement',
             self::PAID => 'Payée',
             self::PENDING_SHIPPING => 'En attente de livraison',
-            self::DELIVERED => 'Livrée',
+            self::SHIPPING => 'Livraison',
+            self::SHIPPED => 'Livrée',
             self::PENDING_REFUND => 'En attente de remboursement',
             self::REFUND => 'Remboursée',
             self::REFUND_DECLINED => 'Remboursement décliné',
@@ -39,7 +41,12 @@ enum OrderStatus: string
             self::PENDING_PAYMENT,
             self::PAID,
             self::PENDING_SHIPPING,
-            self::DELIVERED,
+            self::SHIPPING,
+            self::SHIPPED,
+            self::PENDING_REFUND,
+            self::REFUND,
+            self::REFUND_DECLINED,
+            self::CANCELED,
         ];
 
         return array_search($this, $order) >= array_search($minimum, $order);

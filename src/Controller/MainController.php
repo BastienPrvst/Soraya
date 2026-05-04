@@ -26,6 +26,8 @@ final class MainController extends AbstractController
     #[Route(path: '/session', name: 'app_session')]
     public function getSession(Request $request): Response
     {
+
+        //TODO: A supprimer à un moment ou un autre hein
         $session = $request->getSession();
         $token = $session->get(SessionElements::ORDER_TOKEN->value);
         $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);

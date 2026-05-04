@@ -17,6 +17,13 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class AdminController extends AbstractController
 {
+
+    #[Route(path: '/admin/dashboard', name: 'admin_dashboard')]
+    public function showDashboard(): Response
+    {
+        return $this->render('admin/dashboard.html.twig');
+    }
+
     /**
      * @throws TransportExceptionInterface
      * @throws ExceptionInterface
@@ -27,20 +34,18 @@ class AdminController extends AbstractController
         MailerService $mailerService,
         Request $request
     ): Response {
-        if ($order->getStatus()?->isAtLeast(OrderStatus::PAID)){
+        if ($order->getStatus()?->isAtLeast(OrderStatus::PAID)) {
             $mailerService->sendConfirmationEmail($order);
         }
         return $this->redirect($request->headers->get('referer'));
     }
 
-    #[Route(path: '/imprimer-etiquette/{token}', name: 'admin_delivery_sticker')]
+    #[Route(path: '/admin/imprimer-etiquette/{token}', name: 'admin_delivery_sticker')]
     public function printDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         Request $request
-    ): Response
-    {
+    ): Response {
         //TODO: Faire la logique d'impression etiquette colissimo ou mondial relay
         return $this->redirect($request->headers->get('referer'));
     }
-
 }
