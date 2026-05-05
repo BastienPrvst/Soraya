@@ -3,6 +3,7 @@
 namespace App\EventListener;
 
 use App\Entity\Order;
+use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Repository\OrderRepository;
 use Symfony\Bundle\SecurityBundle\Security;
@@ -29,12 +30,20 @@ final readonly class CheckoutRedirectListener
 
         $request = $event->getRequest();
 
-        $orderRoutes = [
-            'checkout_delivery',
-            'checkout_summary',
+        $deliveryRoutes = [
+            'checkout_delivery_home',
+            'checkout_delivery_relay'
         ];
 
-        if (!in_array($request->attributes->get('_route'), $orderRoutes, true)) {
+        $payRoutes = [
+            'checkout_summary',
+            'checkout_pay'
+        ];
+
+
+        $allRoutes = array_merge($deliveryRoutes, $payRoutes);
+
+        if (!in_array($request->attributes->get('_route'), $allRoutes, true)) {
             return;
         }
 
@@ -51,9 +60,13 @@ final readonly class CheckoutRedirectListener
         }
 
         $route = match ($order->getStatus()) {
-            OrderStatus::DELIVERY_CHOICE => 'checkout_delivery',
-            OrderStatus::PENDING_PAYMENT => 'checkout_summary',
-            OrderStatus::PAID => 'checkout_success',
+            OrderStatus::DELIVERY_CHOICE => in_array($request->attributes->get('_route'), $deliveryRoutes, true)
+                ? $request->attributes->get('_route')
+                : 'checkout_delivery_home',
+            OrderStatus::PENDING_PAYMENT => in_array($request->attributes->get('_route'), $payRoutes, true)
+            ? $request->attributes->get('_route')
+            : 'checkout_summary',
+            OrderStatus::PAID, OrderStatus::PENDING_SHIPPING => 'checkout_success',
             default => null,
         };
 
