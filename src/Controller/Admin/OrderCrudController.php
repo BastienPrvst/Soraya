@@ -2,6 +2,7 @@
 
 namespace App\Controller\Admin;
 
+use App\Controller\Admin\Fields\OrderAddressType;
 use App\Controller\Admin\Filters\OrderStatusFilter;
 use App\Entity\Order;
 use App\Enum\DeliveryMode;
@@ -26,6 +27,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use phpDocumentor\Reflection\Types\This;
 
 class OrderCrudController extends AbstractCrudController
 {
@@ -99,6 +101,9 @@ class OrderCrudController extends AbstractCrudController
         $mailActions = ActionGroup::new('mails', 'Mails')
             ->setIcon('fa fa-envelope')
             ->addAction(Action::new('confirmation', 'Mail de confirmation')
+                ->displayIf(static function (Order $order) {
+                    return $order->getStatus()?->isAtLeast(OrderStatus::PAID);
+                })
                 ->linkToRoute('admin_confirmation_mail', function (Order $order) {
                     return [
                     'token' => $order->getToken(),
@@ -115,7 +120,9 @@ class OrderCrudController extends AbstractCrudController
         return $actions
             ->add(Crud::PAGE_EDIT, $mailActions)
             ->add(Crud::PAGE_INDEX, $deliveryActions)
-            ->add(Crud::PAGE_EDIT, $deliveryActions);
+            ->add(Crud::PAGE_EDIT, $deliveryActions)
+            ->reorder(Crud::PAGE_INDEX, ['delivery', Action::EDIT, Action::DELETE])
+            ->reorder(Crud::PAGE_EDIT, [Action::SAVE_AND_RETURN, Action::SAVE_AND_CONTINUE, 'delivery', 'mails']);
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -127,6 +134,15 @@ class OrderCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        if ($pageName === CRUD::PAGE_INDEX) {
+            return $this->getIndexFields();
+        }
+
+        return $this->getFormFields();
+    }
+
+    private function getIndexFields(): iterable
+    {
         return [
             FormField::addColumn(6),
             IdField::new('id')
@@ -134,7 +150,6 @@ class OrderCrudController extends AbstractCrudController
                     return '#' . sprintf('%05d', $id);
                 })
                 ->setCssClass('fw-bold')
-                ->onlyOnIndex()
             ,
             TextField::new('user')
                 ->setLabel('Client')
@@ -179,63 +194,84 @@ class OrderCrudController extends AbstractCrudController
                     OrderStatus::REFUND->value    => 'warning',
                     OrderStatus::CANCELED->value  => 'danger',
                 ])
-                ->setSortable(true)
-                ->onlyOnIndex(),
+                ->setSortable(true),
+            TextField::new('deliveryModeLabel')
+                ->setLabel('Livraison')
+                ->setSortable(true),
+            AssociationField::new('orderItems')
+                ->setLabel('Nbr de produits'),
+        ];
+    }
+
+    private function getFormFields(): iterable
+    {
+        return [
+            FormField::addColumn(6),
+            FormField::addFieldset(),
+            MoneyField::new('total')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->setColumns(3),
+            DateField::new('creationDate')
+                ->setLabel('Date')
+                ->setFormat('dd/MM/YYYY')
+                ->setTimezone('Europe/Paris')
+                ->setColumns(4),
             ChoiceField::new('status')
                 ->setLabel('Statut')
                 ->setChoices(
                     array_combine(
                         array_map(fn(OrderStatus $s) => $s->label(), OrderStatus::cases()),
-                        array_map(fn(OrderStatus $s) => $s->value, OrderStatus::cases())
+                        OrderStatus::cases()
                     )
                 )
                 ->setFormTypeOption(
                     'choice_value',
                     fn($value) => $value instanceof OrderStatus ? $value->value : $value
                 )
-                ->onlyOnForms(),
-            TextField::new('deliveryModeLabel')
-                ->setLabel('Livraison')
-                ->setSortable(true)
-                ->onlyOnIndex(),
+                ->setColumns(4),
             ChoiceField::new('deliveryMode')
                 ->setLabel('Mode')
-                ->setChoices([
+                ->setChoices(
                     array_combine(
                         array_map(fn(DeliveryMode $s) => $s->label(), DeliveryMode::cases()),
-                        array_map(fn(DeliveryMode $s) => $s->value, DeliveryMode::cases())
+                        DeliveryMode::cases()
                     )
-                ])
+                )
                 ->setFormTypeOption(
                     'choice_value',
                     fn($value) => $value instanceof DeliveryMode ? $value->value : $value
-                )
-            ->onlyOnForms(),
-            AssociationField::new('orderItems')
-                ->setLabel('Nbr de produits')
-                ->onlyOnIndex(),
+                ),
             CollectionField::new('orderItems')
                 ->setLabel('Articles')
                 ->setEntryType(OrderItemType::class)
                 ->allowAdd(false)
-                ->allowDelete(false)
-                ->onlyOnForms(),
+                ->allowDelete(false),
             FormField::addColumn(6),
             FormField::addFieldset('Client')
-                ->setIcon('fa fa-user')
-                ->onlyOnForms(),
+                ->setIcon('fa fa-user'),
             TextField::new('firstname')
                 ->setLabel('Prénom')
-                ->onlyOnForms(),
+                ->setColumns(6),
             TextField::new('lastname')
-                ->setLabel('Nom')
-                ->onlyOnForms(),
+                ->setColumns(6)
+                ->setLabel('Nom'),
             TelephoneField::new('phoneNumber')
                 ->setLabel('Tel.')
-                ->onlyOnForms(),
+                ->setColumns(6),
             EmailField::new('email')
                 ->setLabel('Email')
-                ->onlyOnForms(),
+                ->setColumns(6),
+            FormField::addFieldset('Adresses')
+                ->setIcon('fa fa-home'),
+            Field::new('deliveryAddress')
+                ->setFormType(OrderAddressType::class)
+                ->setLabel('Livraison')
+                ->setColumns(6),
+            Field::new('billingAddress')
+                ->setFormType(OrderAddressType::class)
+                ->setLabel('Facturation')
+                ->setColumns(6)
         ];
     }
 }

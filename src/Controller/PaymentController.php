@@ -160,8 +160,8 @@ final class PaymentController extends AbstractController
         }
 
         if ($order->getStatus() === OrderStatus::PAID) {
-            if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
-                $this->workflowService->applyTransition($order, 'to_pending_delivery');
+            if ($this->workflowService->canTransition($order, 'to_pending_shipping')) {
+                $this->workflowService->applyTransition($order, 'to_pending_shipping');
                 $this->entityManager->flush();
             }
             $mailerService->sendConfirmationEmail($order);

@@ -91,8 +91,6 @@ readonly class StripePaymentService
             ];
         }
 
-
-
         $stripeSession = Session::create([
             'ui_mode' => 'embedded',
             'customer_email' => $order->getEmail(),
@@ -104,6 +102,20 @@ readonly class StripePaymentService
             'metadata' => [
                 'order_token' => $order->getToken(),
             ],
+            'billing_address_collection' => 'required',
+            'payment_intent_data' => [
+                'shipping' => [
+                    'name'    => $order->getFirstname() . ' ' . $order->getLastname(),
+                    'phone'   => $order->getPhoneNumber(),
+                    'address' => [
+                        'line1'       => $order->getDeliveryAddress()?->getStreet1(),
+                        'line2'       => $order->getDeliveryAddress()?->getStreet2(),
+                        'city'        => $order->getDeliveryAddress()?->getCity(),
+                        'postal_code' => $order->getDeliveryAddress()?->getZipCode(),
+                        'country'     => $order->getDeliveryAddress()?->getCountry(),
+                    ],
+                ],
+            ]
         ]);
 
         $payment
