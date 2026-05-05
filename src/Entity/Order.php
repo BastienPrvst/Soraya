@@ -91,9 +91,6 @@ class Order
     #[ORM\Column(length: 64, unique: true)]
     private ?string $sessionKey = null;
 
-    #[ORM\ManyToOne]
-    private ?Address $BillingAddress = null;
-
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -341,16 +338,6 @@ class Order
         }
 
         return $this->getDeliveryAddress();
-    }
-
-    public function getBillingAddress(): ?Address
-    {
-        return $this->BillingAddress;
-    }
-
-    public function setBillingAddress(?Address $BillingAddress): void
-    {
-        $this->BillingAddress = $BillingAddress;
     }
 
     public function setActiveAddress(Address $address): void

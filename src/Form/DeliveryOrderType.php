@@ -48,12 +48,6 @@ class DeliveryOrderType extends AbstractType
                     ]
                 )
             )
-            ->add('billingAddress', CheckboxType::class, [
-                'data' => true,
-                'label' => 'Utiliser cette adresse comme adresse de facturation',
-                'mapped' => false,
-                'required' => false,
-            ])
             ->add('CGU', CheckboxType::class, [
                 'mapped' => false,
                 'label' => 'Je certifie avoir lu les Conditions Générales d\'utilisation.',

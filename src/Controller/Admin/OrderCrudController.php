@@ -262,15 +262,11 @@ class OrderCrudController extends AbstractCrudController
             EmailField::new('email')
                 ->setLabel('Email')
                 ->setColumns(6),
-            FormField::addFieldset('Adresses')
+            FormField::addFieldset('Adresse')
                 ->setIcon('fa fa-home'),
             Field::new('deliveryAddress')
                 ->setFormType(OrderAddressType::class)
                 ->setLabel('Livraison')
-                ->setColumns(6),
-            Field::new('billingAddress')
-                ->setFormType(OrderAddressType::class)
-                ->setLabel('Facturation')
                 ->setColumns(6)
         ];
     }

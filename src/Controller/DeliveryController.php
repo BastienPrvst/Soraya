@@ -98,28 +98,14 @@ class DeliveryController extends AbstractController
             $order->setDeliveryMode(DeliveryMode::HOME);
             $this->entityManager->persist($order);
 
-            if ($form->has('billingAddress') &&
-                $form->get('billingAddress')->getData() === true
-            ) {
-                $billingAddress = clone $order->getDeliveryAddress();
-                $this->entityManager->persist($billingAddress);
-                $order->setBillingAddress($billingAddress);
+            if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
+                $this->workflowService->applyTransition($order, 'to_pending_payment');
                 $this->entityManager->flush();
-
-                if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
-                    $this->workflowService->applyTransition($order, 'to_pending_payment');
-                    $this->entityManager->flush();
-                    return $this->redirectToRoute('checkout_summary', [
-                        'token' => $order->getToken()
-                    ]);
-                }
+                return $this->redirectToRoute('checkout_summary', [
+                    'token' => $order->getToken()
+                ]);
             }
 
-            $this->entityManager->flush();
-
-            return $this->redirectToRoute('checkout_delivery_billing_address', [
-                'token' => $order->getToken(),
-            ]);
         }
 
         return $this->render('payment/delivery_form.html.twig', [
@@ -158,7 +144,6 @@ class DeliveryController extends AbstractController
                 $this->deliveryService->createRelayAddress($order, $relayId);
             } catch (RuntimeException|SoapFault $exception) {
 
-                dd($exception->getMessage());
                 $this->addFlash('error', 'Veuillez sélectionner un point relais valide');
 
                 return $this->redirectToRoute('checkout_delivery', [
@@ -166,57 +151,18 @@ class DeliveryController extends AbstractController
                 ]);
             }
 
-            return $this->redirectToRoute('checkout_delivery_billing_address', [
+            if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
+            $this->workflowService->applyTransition($order, 'to_pending_payment');
+            $this->entityManager->flush();
+            return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken()
             ]);
+            }
         }
 
         return $this->render('payment/relay_form.html.twig', [
             'order' => $order,
             'form' => $form->createView(),
-        ]);
-    }
-
-    /**
-     * @param Order $order
-     * @param Request $request
-     * @return Response
-     */
-    #[Route(path: '/paiement/adresse-de-facturation/{token}', name: 'checkout_delivery_billing_address')]
-    public function paymentBillingAddressForm(
-        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        Request $request,
-    ): Response {
-        if ($this->workflowService->canTransition($order, 'back_to_delivery_choice')) {
-            $this->workflowService->applyTransition($order, 'back_to_delivery_choice');
-        }
-
-        $billingAddress = $order->getBillingAddress();
-
-        if (!$billingAddress) {
-            $billingAddress = new Address();
-        }
-
-        $form = $this->createForm(AddressType::class, $billingAddress, ['create' => true]);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $billingAddress = $form->getData();
-            $this->entityManager->persist($billingAddress);
-            $order->setBillingAddress($billingAddress);
-            $this->entityManager->flush();
-
-            if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
-                $this->workflowService->applyTransition($order, 'to_pending_payment');
-                return $this->redirectToRoute('checkout_summary', [
-                    'token' => $order->getToken(),
-                ]);
-            }
-        }
-
-        return $this->render('payment/billing_address.html.twig', [
-           'order' => $order,
-           'form' => $form->createView(),
         ]);
     }
 }
