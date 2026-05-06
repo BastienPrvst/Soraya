@@ -32,19 +32,32 @@ class DashboardController extends AbstractDashboardController
 
     public function index(): Response
     {
-        $pendingShippingUrl = $this->adminUrlGenerator
+        $toPrepareUrl = $this->adminUrlGenerator
+            ->setController(OrderCrudController::class)
+            ->setAction('index')
+            ->set('filters[status][value][]', 'to_prepare')
+            ->set('filters[status][comparison]', '=')
+            ->generateUrl();
+
+        $toShipUrl = $this->adminUrlGenerator
             ->setController(OrderCrudController::class)
             ->setAction('index')
             ->set('filters[status][value][]', 'pending_shipping')
             ->set('filters[status][comparison]', '=')
             ->generateUrl();
 
+        $countPrepare = $this->orderRepository->count([
+            'status' => ['to_prepare'],
+        ]);
+
         $countPendingShipping = $this->orderRepository->count([
             'status' => ['pending_shipping'],
         ]);
 
         return $this->render('admin/dashboard.html.twig', [
-            'pendingShippingUrl' => $pendingShippingUrl,
+            'toPrepareUrl' => $toPrepareUrl,
+            'toShipUrl' => $toShipUrl,
+            'countPrepare' => $countPrepare,
             'countPendingShipping' => $countPendingShipping,
         ]);
     }

@@ -8,6 +8,7 @@ enum OrderStatus: string
     case DELIVERY_CHOICE = 'delivery_choice';
     case PENDING_PAYMENT = 'pending_payment';
     case PAID = 'paid';
+    case TO_PREPARE = 'to_prepare';
     case PENDING_SHIPPING = 'pending_shipping';
     case SHIPPING = 'shipping';
     case SHIPPED = 'shipped';
@@ -23,6 +24,7 @@ enum OrderStatus: string
             self::DELIVERY_CHOICE => 'Choix de livraison',
             self::PENDING_PAYMENT => 'En attente de paiement',
             self::PAID => 'Payée',
+            self::TO_PREPARE => 'A préparer',
             self::PENDING_SHIPPING => 'En attente de livraison',
             self::SHIPPING => 'Livraison',
             self::SHIPPED => 'Livrée',
@@ -40,6 +42,7 @@ enum OrderStatus: string
             self::DELIVERY_CHOICE,
             self::PENDING_PAYMENT,
             self::PAID,
+            self::TO_PREPARE,
             self::PENDING_SHIPPING,
             self::SHIPPING,
             self::SHIPPED,

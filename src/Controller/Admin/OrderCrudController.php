@@ -24,6 +24,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\Field;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
@@ -62,20 +63,25 @@ class OrderCrudController extends AbstractCrudController
         $urlGenerator = $this->container->get(AdminUrlGenerator::class);
 
         $statusActions = [
-            'pending_delivery' => [
-                'label' => 'En attente de livraison',
-                'status' => OrderStatus::PENDING_SHIPPING,
+            'to_prepare' => [
+                'label'     => 'A préparer',
+                'status'    => OrderStatus::TO_PREPARE,
                 'css_class' => 'btn-success'
             ],
+            'pending_shipping' => [
+                'label'     => 'A expédier',
+                'status'    => OrderStatus::PENDING_SHIPPING,
+                'css_class' => 'btn-primary'
+            ],
             'pending_refund' => [
-                'label' => 'En attente de remboursement',
-                'status' => OrderStatus::PENDING_REFUND,
-                'css_class' => 'btn btn-warning',
+                'label'     => 'En attente de remboursement',
+                'status'    => OrderStatus::PENDING_REFUND,
+                'css_class' => 'btn-warning',
             ],
             'canceled' => [
-                'label' => 'Annulées',
-                'status' => OrderStatus::CANCELED,
-                'css_class' => 'btn btn-danger'
+                'label'     => 'Annulées',
+                'status'    => OrderStatus::CANCELED,
+                'css_class' => 'btn-danger'
             ],
         ];
 
@@ -117,12 +123,35 @@ class OrderCrudController extends AbstractCrudController
             ->setIcon('fa fa-truck')
             ->addAction(Action::new('livraison', 'Imprimer l`\'etiquette')->linkToRoute('admin_delivery'));
 
+        $packageAction = Action::new('package', 'Préparer')
+            ->setIcon('fa-solid fa-box')
+            ->linkToRoute(
+                'admin_package_order',
+                fn(Order $order) => ['token' => $order->getToken()]
+            )
+            ->displayIf(static function (Order $order) {
+                return $order->getStatus() === OrderStatus::TO_PREPARE;
+            });
+
         return $actions
             ->add(Crud::PAGE_EDIT, $mailActions)
             ->add(Crud::PAGE_INDEX, $deliveryActions)
             ->add(Crud::PAGE_EDIT, $deliveryActions)
-            ->reorder(Crud::PAGE_INDEX, ['delivery', Action::EDIT, Action::DELETE])
-            ->reorder(Crud::PAGE_EDIT, [Action::SAVE_AND_RETURN, Action::SAVE_AND_CONTINUE, 'delivery', 'mails']);
+            ->add(Crud::PAGE_INDEX, $packageAction)
+            ->add(Crud::PAGE_EDIT, $packageAction)
+            ->reorder(Crud::PAGE_INDEX, [
+                'delivery',
+                'package',
+                Action::EDIT,
+                Action::DELETE
+            ])
+            ->reorder(Crud::PAGE_EDIT, [
+                Action::SAVE_AND_RETURN,
+                Action::SAVE_AND_CONTINUE,
+                'package',
+                'delivery',
+                'mails'
+            ]);
     }
 
     public function configureFilters(Filters $filters): Filters
@@ -145,10 +174,8 @@ class OrderCrudController extends AbstractCrudController
     {
         return [
             FormField::addColumn(6),
-            IdField::new('id')
-                ->formatValue(function ($id) {
-                    return '#' . sprintf('%05d', $id);
-                })
+            IdField::new('betterId')
+                ->setLabel('ID')
                 ->setCssClass('fw-bold')
             ,
             TextField::new('user')
@@ -188,8 +215,8 @@ class OrderCrudController extends AbstractCrudController
                     )
                 )
                 ->renderAsBadges([
-                    OrderStatus::CREATED->value   => 'secondary',
-                    OrderStatus::PAID->value      => 'primary',
+                    OrderStatus::TO_PREPARE->value   => 'success',
+                    OrderStatus::PENDING_SHIPPING->value      => 'primary',
                     OrderStatus::SHIPPED->value => 'success',
                     OrderStatus::REFUND->value    => 'warning',
                     OrderStatus::CANCELED->value  => 'danger',
@@ -198,8 +225,9 @@ class OrderCrudController extends AbstractCrudController
             TextField::new('deliveryModeLabel')
                 ->setLabel('Livraison')
                 ->setSortable(true),
-            AssociationField::new('orderItems')
-                ->setLabel('Nbr de produits'),
+            NumberField::new('totalQuantity')
+                ->setLabel('Nbr de produits')
+                ->setTextAlign('center'),
         ];
     }
 
@@ -267,7 +295,6 @@ class OrderCrudController extends AbstractCrudController
             Field::new('deliveryAddress')
                 ->setFormType(OrderAddressType::class)
                 ->setLabel('Livraison')
-                ->setColumns(6)
         ];
     }
 }

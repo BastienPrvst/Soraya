@@ -16,6 +16,7 @@ framework:
                 - delivery_choice
                 - pending_payment
                 - paid
+                - to_prepare
                 - pending_shipping
                 - shipping
                 - shipped
@@ -37,8 +38,12 @@ framework:
                     from: pending_payment
                     to: paid
 
-                to_pending_shipping:
+                to_prepare:
                     from: paid
+                    to: to_prepare
+
+                to_pending_shipping:
+                    from: to_prepare
                     to: pending_shipping
 
                 shipping:

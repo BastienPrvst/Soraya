@@ -2,6 +2,7 @@
 
 namespace App\DataFixtures;
 
+use App\Entity\Address;
 use App\Entity\Category;
 use App\Entity\Order;
 use App\Entity\OrderItem;
@@ -141,8 +142,10 @@ class AppFixtures extends Fixture
                 OrderStatus::SHIPPED,
                 OrderStatus::CREATED,
                 OrderStatus::CANCELED,
+                OrderStatus::TO_PREPARE,
                 OrderStatus::PENDING_SHIPPING,
-                OrderStatus::PENDING_PAYMENT
+                OrderStatus::PENDING_PAYMENT,
+                OrderStatus::PENDING_REFUND
             ];
 
             $numberOfProducts = random_int(1, 5);
@@ -177,6 +180,22 @@ class AppFixtures extends Fixture
                 $total += $totalProduct;
                 $this->manager->persist($orderItem);
             }
+
+            $deliveryMode = $numberOfProducts%2 === 1 ? DeliveryMode::HOME : DeliveryMode::RELAY;
+            $address = new Address();
+            $address
+                ->setStreet1($faker->streetAddress())
+                ->setCity($faker->city())
+                ->setZipCode($faker->postcode())
+                ->setCountry($faker->country());
+
+            $this->manager->persist($address);
+
+            $order
+                ->setDeliveryAddress($address)
+                ->setRelayAddress($address)
+                ->setDeliveryMode($deliveryMode);
+
 
             $deliveryPrice = $total > 50 ? null : 15;
             $total += $deliveryPrice;

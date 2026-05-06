@@ -167,6 +167,15 @@ class Order
         return $this;
     }
 
+    public function getTotalQuantity(): int
+    {
+        $total = 0;
+        foreach ($this->orderItems as $item) {
+            $total += $item->getQuantity();
+        }
+        return $total;
+    }
+
     public function getTotal(): ?float
     {
         return $this->total;
@@ -359,5 +368,10 @@ class Order
         $this->sessionKey = $sessionKey;
 
         return $this;
+    }
+
+    public function getBetterId(): string
+    {
+        return '#' . sprintf('%05d', $this->getId());
     }
 }

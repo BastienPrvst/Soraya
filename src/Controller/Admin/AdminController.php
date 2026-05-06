@@ -6,7 +6,13 @@ namespace App\Controller\Admin;
 
 use App\Entity\Order;
 use App\Enum\OrderStatus;
+use App\Form\Admin\PackageType;
+use App\Repository\OrderRepository;
 use App\Service\MailerService;
+use App\Service\WorkflowService;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
+use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -17,6 +23,12 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class AdminController extends AbstractController
 {
+
+    public function __construct(
+        private AdminContextProvider $adminContextProvider,
+    )
+    {
+    }
 
     #[Route(path: '/admin/dashboard', name: 'admin_dashboard')]
     public function showDashboard(): Response
@@ -47,5 +59,50 @@ class AdminController extends AbstractController
     ): Response {
         //TODO: Faire la logique d'impression etiquette colissimo ou mondial relay
         return $this->redirect($request->headers->get('referer'));
+    }
+
+    #[Route(path: '/admin/package/{token}', name: 'admin_package_order')]
+    public function preparePackage(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        Request $request,
+        WorkflowService $workflowService,
+        AdminUrlGenerator $adminUrlGenerator,
+        OrderRepository $orderRepository,
+    ): Response {
+        if ($order->getStatus() !== OrderStatus::TO_PREPARE) {
+            return $this->redirect($request->headers->get('referer'));
+        }
+
+        $form = $this->createForm(PackageType::class, $order);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            if ($workflowService->canTransition($order, 'to_pending_shipping')) {
+                $workflowService->applyTransition($order, 'to_pending_shipping');
+            }
+
+            $nextOrder = $orderRepository->findNextToPrepare($order);
+
+            $url = $adminUrlGenerator
+                ->setController(OrderCrudController::class)
+                ->setAction('index')
+                ->set('filters[status][value][]', 'to_prepare')
+                ->set('filters[status][comparison]', '=')
+                ->generateUrl();
+
+            if (!$nextOrder || $form->get('validate')->isClicked()) {
+                return $this->redirect($url);
+            }
+
+            return $this->redirect(
+                $adminUrlGenerator
+                    ->setRoute('admin_package_order', ['token' => $nextOrder->getToken()])
+                    ->generateUrl()
+            );
+        }
+
+        return $this->render('admin/package.html.twig', [
+            'form' => $form->createView(),
+            'order' => $order
+        ]);
     }
 }

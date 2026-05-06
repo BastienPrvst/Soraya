@@ -8,11 +8,19 @@
 
         <div>
             <div >
-                <a class="d-flex flex-column align-items-center justify-content-center my-3" href="{{ pendingShippingUrl }}">
+                <a class="d-flex flex-column align-items-center justify-content-center my-3" href="{{ toPrepareUrl }}">
+                    <p>Commandes à emballer :</p>
+                    <br>
+                    <p>{{ countPrepare }}</p>
+               </a>
+            </div>
+
+            <div >
+                <a class="d-flex flex-column align-items-center justify-content-center my-3" href="{{ toShipUrl }}">
                     <p>Commandes à expédier :</p>
                     <br>
                     <p>{{ countPendingShipping }}</p>
-               </a>
+                </a>
             </div>
         </div>
 

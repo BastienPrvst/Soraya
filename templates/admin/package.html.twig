@@ -1,0 +1,86 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content %}
+
+    <main class="container-fluid">
+        <div class="row w-100">
+            <h1>Emballer la commande {{ order.betterId }}</h1>
+
+            <section  class="col-12 col-lg-5">
+
+                <h2>Informations commande</h2>
+
+                <div>
+
+                    <ul>
+                        <li>Type de livraison : {{ order.deliveryMode.value|capitalize }}</li>
+                        <li>Prix de la livraison : {{ order.deliveryPrice > 0 ? order.deliveryPrice : 'Gratuite' }}</li>
+                        <li>Total :{{ order.total ~ ' €' }}</li>
+
+                    </ul>
+
+                    <div>
+                        <h3>Adresse de livraison :</h3>
+                        <p>
+                            {{ order.activeAddress.street1 }}
+
+                            <br>
+
+                            {% if order.activeAddress.street2 %}
+                                {{ order.activeAddress.street2 }}
+                                <br>
+                            {% endif %}
+
+                            {{order.activeAddress.city }}
+                            <br>
+
+                            {{ order.activeAddress.zipcode }}
+
+                            <br>
+
+                            {{ order.activeAddress.country }}
+
+                        </p>
+                    </div>
+
+                    <br>
+
+
+
+                </div>
+
+
+            </section>
+            <section class="d-flex flex-row col-12 col-lg-7">
+                {{ form_start(form, {
+                    'attr': {
+                        'class' : 'w-100'
+                    }
+                }) }}
+
+                {% for item in order.orderItems %}
+                    <div class="bg-primary w-75 mx-auto p-3 my-3 rounded-2 d-flex align-items-center fs-6">
+                        {{ form_row(form['item_' ~ loop.index0]) }}
+                    </div>
+
+                {% endfor %}
+
+                <div class="mx-auto w-75 d-flex justify-content-evenly">
+                    {{ form_row(form.validate) }}
+                    {{ form_row(form.validate_continue) }}
+                </div>
+
+                {{ form_end(form) }}
+            </section>
+
+        </div>
+
+
+
+
+    </main>
+
+
+
+{% endblock %}
+

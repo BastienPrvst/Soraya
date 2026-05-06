@@ -65,4 +65,16 @@ class OrderRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    public function findNextToPrepare(Order $exclude): ?Order
+    {
+        return $this->createQueryBuilder('o')
+            ->where('o.status = :status')
+            ->andWhere('o.id != :id')
+            ->setParameter('status', OrderStatus::TO_PREPARE)
+            ->setParameter('id', $exclude->getId())
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
 }
