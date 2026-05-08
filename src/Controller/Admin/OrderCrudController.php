@@ -62,6 +62,20 @@ class OrderCrudController extends AbstractCrudController
     {
         $urlGenerator = $this->container->get(AdminUrlGenerator::class);
 
+        $editDeleteGroup = ActionGroup::new('actions', '')
+            ->setIcon('fa fa-ellipsis-v')
+            ->addAction(
+                Action::new(Action::EDIT, 'Modifier')
+                    ->setIcon('fa fa-pencil')
+                    ->linkToCrudAction(Action::EDIT)  // ✅
+            )
+            ->addAction(
+                Action::new(Action::DELETE, 'Supprimer')
+                    ->setIcon('fa fa-trash')
+                    ->addCssClass('text-danger')
+                    ->linkToCrudAction(Action::DELETE)  // ✅
+            );
+
         $statusActions = [
             'to_prepare' => [
                 'label'     => 'A préparer',
@@ -117,11 +131,18 @@ class OrderCrudController extends AbstractCrudController
                 }));
 
         $deliveryActions = ActionGroup::new('delivery', 'Livraison')
-            ->displayIf(static function (Order $order) {
-                return $order->getStatus()?->isAtLeast(OrderStatus::PENDING_SHIPPING);
-            })
             ->setIcon('fa fa-truck')
-            ->addAction(Action::new('livraison', 'Imprimer l`\'etiquette')->linkToRoute('admin_delivery'));
+            ->addAction(
+                Action::new(
+                    'livraison',
+                    'Imprimer l`\'etiquette'
+                )
+                    ->linkToRoute('admin_delivery')
+                    ->renderAsButton()
+                    ->displayIf(static function (Order $order) {
+                        return $order->getStatus()?->isAtLeast(OrderStatus::PENDING_SHIPPING);
+                    })
+            );
 
         $packageAction = Action::new('package', 'Préparer')
             ->setIcon('fa-solid fa-box')
@@ -129,6 +150,7 @@ class OrderCrudController extends AbstractCrudController
                 'admin_package_order',
                 fn(Order $order) => ['token' => $order->getToken()]
             )
+            ->renderAsLink()
             ->displayIf(static function (Order $order) {
                 return $order->getStatus() === OrderStatus::TO_PREPARE;
             });
@@ -139,11 +161,11 @@ class OrderCrudController extends AbstractCrudController
             ->add(Crud::PAGE_EDIT, $deliveryActions)
             ->add(Crud::PAGE_INDEX, $packageAction)
             ->add(Crud::PAGE_EDIT, $packageAction)
+            ->add(Crud::PAGE_INDEX, $editDeleteGroup)
             ->reorder(Crud::PAGE_INDEX, [
-                'delivery',
                 'package',
-                Action::EDIT,
-                Action::DELETE
+                'delivery',
+                'actions'
             ])
             ->reorder(Crud::PAGE_EDIT, [
                 Action::SAVE_AND_RETURN,
@@ -151,7 +173,9 @@ class OrderCrudController extends AbstractCrudController
                 'package',
                 'delivery',
                 'mails'
-            ]);
+            ])
+            ->remove(Crud::PAGE_INDEX, Action::DELETE)
+            ->remove(Crud::PAGE_INDEX, Action::EDIT);
     }
 
     public function configureFilters(Filters $filters): Filters

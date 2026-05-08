@@ -75,6 +75,8 @@ class AdminController extends AbstractController
 
         $form = $this->createForm(PackageType::class, $order);
         $form->handleRequest($request);
+        $numberToPrepare = $orderRepository->count(['status' => OrderStatus::TO_PREPARE->value]);
+
         if ($form->isSubmitted() && $form->isValid()) {
             if ($workflowService->canTransition($order, 'to_pending_shipping')) {
                 $workflowService->applyTransition($order, 'to_pending_shipping');
@@ -101,8 +103,43 @@ class AdminController extends AbstractController
         }
 
         return $this->render('admin/package.html.twig', [
-            'form' => $form->createView(),
-            'order' => $order
+            'form' => $form,
+            'order' => $order,
+            'numberToPrepare' => $numberToPrepare,
         ]);
     }
+
+//    #[Route('/admin/label/{token}', name: 'admin_print_label')]
+//    public function printLabel(
+//        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+//    ): Response {
+//
+//        $pdfContent = $this->colissimoService->generateLabel($order);
+//
+//
+//        $html = sprintf('
+//        <!DOCTYPE html>
+//        <html lang="fr">
+//        <head>
+//            <style>
+//                body, html { margin: 0; padding: 0; height: 100%%; }
+//                iframe { width: 100%%; height: 100%%; border: none; }
+//            </style>
+//        </head>
+//        <body>
+//            <iframe id="pdf" src="data:application/pdf;base64,%s"></iframe>
+//            <script>
+//                document.getElementById("pdf").onload = function() {
+//                    this.contentWindow.print();
+//                };
+//            </script>
+//        </body>
+//        </html>
+//    ', base64_encode($pdfContent));
+//
+//        return new Response($html, 200, [
+//            'Content-Type' => 'text/html',
+//        ]);
+//    }
+
 }

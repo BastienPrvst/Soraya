@@ -20,8 +20,7 @@ class DashboardController extends AbstractDashboardController
         private readonly UserRepository $userRepository,
         private readonly OrderRepository $orderRepository,
         private readonly AdminUrlGenerator $adminUrlGenerator,
-    )
-    {
+    ) {
     }
 
     public function configureAssets(): Assets

@@ -2,85 +2,89 @@
 
 {% block content %}
 
-    <main class="container-fluid">
-        <div class="row w-100">
-            <h1>Emballer la commande {{ order.betterId }}</h1>
+    <main class="package-page container-fluid">
+        <div class="row g-4">
+            <h1 class="mb-0">Emballer la commande {{ order.betterId }}</h1>
+            <div class="col-12 d-flex flex-wrap align-items-end">
 
-            <section  class="col-12 col-lg-5">
+                <small class="text-muted">{{ order.totalQuantity }} produit(s) à emballer</small>
+                <small class="ms-auto text-muted">{{ numberToPrepare > 0 ? numberToPrepare ~ ' commandes restantes' : 'Dernière commande à préparer' }}</small>
+            </div>
 
-                <h2>Informations commande</h2>
-
-                <div>
-
+            {# Infos commande #}
+            <section class="col-12 col-lg-5">
+                <div class="order-info-card">
+                    <h2 class="fs-5 mb-3">Informations commande</h2>
                     <ul>
-                        <li>Type de livraison : {{ order.deliveryMode.value|capitalize }}</li>
-                        <li>Prix de la livraison : {{ order.deliveryPrice > 0 ? order.deliveryPrice : 'Gratuite' }}</li>
-                        <li>Total :{{ order.total ~ ' €' }}</li>
-
+                        <li><strong>Livraison</strong> : {{ order.deliveryMode.value|capitalize }}</li>
+                        <li><strong>Prix livraison</strong> : {{ order.deliveryPrice > 0 ? order.deliveryPrice ~ ' €' : 'Gratuite' }}</li>
+                        <li><strong>Total</strong> : {{ order.total }} €</li>
+                        <li><strong>Transporteur</strong> :</li>
                     </ul>
 
-                    <div>
-                        <h3>Adresse de livraison :</h3>
-                        <p>
-                            {{ order.activeAddress.street1 }}
+                    <div class="order-address">
+                        <strong>📦 Adresse de livraison</strong><br>
+                        {{ order.activeAddress.street1 }}<br>
+                        {% if order.activeAddress.street2 %}
+                            {{ order.activeAddress.street2 }}<br>
+                        {% endif %}
+                        {{ order.activeAddress.zipcode }} {{ order.activeAddress.city }}<br>
+                        {{ order.activeAddress.fullCountry }}
+                        <br>
 
-                            <br>
+                        <div class="w-100 d-flex justify-content-center mt-3">
+                            <a href="#"
+                               target="_blank"
+                               class="btn btn-primary">
+                                <i class="fa fa-print me-2 mx-auto"></i>Imprimer l'étiquette
+                            </a>
+                        </div>
 
-                            {% if order.activeAddress.street2 %}
-                                {{ order.activeAddress.street2 }}
-                                <br>
-                            {% endif %}
 
-                            {{order.activeAddress.city }}
-                            <br>
-
-                            {{ order.activeAddress.zipcode }}
-
-                            <br>
-
-                            {{ order.activeAddress.country }}
-
-                        </p>
                     </div>
+                </div>
+            </section>
 
-                    <br>
+            {# Formulaire produits #}
+            <section class="col-12 col-lg-7">
+                {{ form_start(form) }}
 
+                <div class="d-flex flex-column gap-3 mb-4">
+                    {% for field in form %}
+                        {% if field.vars.name starts with 'item_' %}
+                            <div>
+                                <label class="item-button" for="{{ field.vars.id }}">
+                                    <span class="item-name">
+                                        {{ field.vars.attr['data-product-name']|capitalize }}
+                                    </span>
 
+                                    <span class="item-qty">
+                                        Qté : {{ field.vars.attr['data-quantity'] }}
+                                    </span>
 
+                                    {{ form_widget(field) }}
+
+                                    <span class="item-check">
+                                        <i class="fa fa-check"></i>
+                                    </span>
+                                </label>
+
+                                {{ form_errors(field) }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
                 </div>
 
-
-            </section>
-            <section class="d-flex flex-row col-12 col-lg-7">
-                {{ form_start(form, {
-                    'attr': {
-                        'class' : 'w-100'
-                    }
-                }) }}
-
-                {% for item in order.orderItems %}
-                    <div class="bg-primary w-75 mx-auto p-3 my-3 rounded-2 d-flex align-items-center fs-6">
-                        {{ form_row(form['item_' ~ loop.index0]) }}
-                    </div>
-
-                {% endfor %}
-
-                <div class="mx-auto w-75 d-flex justify-content-evenly">
-                    {{ form_row(form.validate) }}
-                    {{ form_row(form.validate_continue) }}
+                <div class="d-flex justify-content-center gap-3">
+                    {{ form_widget(form.validate) }}
+                    {{ form_widget(form.validate_continue) }}
                 </div>
 
                 {{ form_end(form) }}
             </section>
 
         </div>
-
-
-
-
     </main>
-
-
 
 {% endblock %}
 

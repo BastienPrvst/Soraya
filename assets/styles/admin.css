@@ -1,0 +1,113 @@
+/* ── Layout ─────────────────────────────────────────────── */
+.package-page {
+    max-width: 1200px;
+}
+
+/* ── Carte informations commande ────────────────────────── */
+.order-info-card {
+    background: var(--bs-white);
+    border: 1px solid var(--bs-border-color);
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.order-info-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.order-info-card ul li {
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--bs-border-color);
+    font-size: 0.95rem;
+}
+
+.order-info-card ul li:last-child {
+    border-bottom: none;
+}
+
+.order-address {
+    margin-top: 1rem;
+    background: var(--bs-gray-100);
+    border-radius: 8px;
+    padding: 1rem;
+    font-size: 0.9rem;
+    line-height: 1.8;
+}
+
+/* ── Bouton item ───────────────────────────── */
+.item-button {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    border: 2px solid #dee2e6;
+    background: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+    margin: 0;
+}
+
+.item-button:hover {
+    border-color: #20c997;
+    background: #f0fdf9;
+}
+
+.item-name {
+    flex: 1;
+    font-size: 1rem;
+    font-weight: 500;
+    color: #212529;
+}
+
+.item-qty {
+    font-size: 0.9rem;
+    color: #6c757d;
+    background: #f1f3f5;
+    padding: 0.2rem 0.6rem;
+    border-radius: 20px;
+}
+
+/* Cache la checkbox native */
+.product-check-input {
+    display: none;
+}
+
+/* Cercle check à droite */
+.item-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+/* État coché */
+.item-button:has(input:checked) {
+    border-color: #20c997;
+    background: #f0fdf9;
+}
+
+.item-button:has(input:checked) .item-name {
+    color: #0a7c5c;
+    font-weight: 600;
+}
+
+.item-button:has(input:checked) .item-qty {
+    background: #d1faf0;
+    color: #0a7c5c;
+}
+
+.item-button:has(input:checked) .item-check {
+    background: #20c997;
+    border-color: #20c997;
+    color: #fff;
+}

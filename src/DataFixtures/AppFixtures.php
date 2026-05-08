@@ -187,7 +187,7 @@ class AppFixtures extends Fixture
                 ->setStreet1($faker->streetAddress())
                 ->setCity($faker->city())
                 ->setZipCode($faker->postcode())
-                ->setCountry($faker->country());
+                ->setCountry('FR');
 
             $this->manager->persist($address);
 

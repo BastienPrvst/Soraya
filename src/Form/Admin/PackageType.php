@@ -20,35 +20,30 @@ class PackageType extends AbstractType
 
         foreach ($order->getOrderItems() as $index => $item) {
             $builder->add('item_' . $index, CheckboxType::class, [
-                'label'    => sprintf(
-                    '%s — Quantité : %d',
-                    $item->getProduct()->getName(),
-                    $item->getQuantity()
-                ),
+                'label'    => false,
                 'required' => false,
                 'mapped'   => false,
                 'attr'     => [
+                    'class' => 'product-check-input',
                     'data-item-id' => $item->getId(),
-                    'class'        => 'btn-check',
-                    'autocomplete' => 'off',
+                    'data-product-name' => $item->getProduct()->getName(),
+                    'data-quantity' => $item->getQuantity(),
                 ],
-                'constraints' => [
-                    new IsTrue(message: 'Ce produit n\'a pas été marqué comme emballé'),
-                ],
+                'constraints' => [new IsTrue(message: 'Ce produit n\'a pas été marqué comme emballé')],
             ]);
         }
 
         $builder->add('validate', SubmitType::class, [
             'label' => 'Valider le colis',
             'attr'  => [
-                'class' => 'btn btn-secondary',
+                'class' => 'btn btn-secondary btn-lg px-2',
             ],
         ]);
 
         $builder->add('validate_continue', SubmitType::class, [
-            'label' => 'Valider le colis et continuer',
+            'label' => 'Valider et continuer',
             'attr'  => [
-                'class' => 'btn btn-primary',
+                'class' => 'btn btn-primary btn-lg px-2',
             ],
         ]);
     }

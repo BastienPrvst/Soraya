@@ -180,4 +180,15 @@ class Address
 
         return $this;
     }
+
+    public function getFullCountry(): ?string
+    {
+        return match ($this->country) {
+            'FR' => 'France',
+            'BE' => 'Belgique',
+            'LU' => 'Luxembourg',
+            'MC' => 'Monaco',
+            default => $this->getCountry(),
+        };
+    }
 }
