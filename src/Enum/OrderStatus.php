@@ -26,7 +26,7 @@ enum OrderStatus: string
             self::PAID => 'Payée',
             self::TO_PREPARE => 'A préparer',
             self::PENDING_SHIPPING => 'En attente de livraison',
-            self::SHIPPING => 'Livraison',
+            self::SHIPPING => 'En cours de livraison',
             self::SHIPPED => 'Livrée',
             self::PENDING_REFUND => 'En attente de remboursement',
             self::REFUND => 'Remboursée',

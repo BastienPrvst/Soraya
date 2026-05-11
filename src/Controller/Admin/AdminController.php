@@ -10,7 +10,10 @@ use App\Form\Admin\PackageType;
 use App\Repository\OrderRepository;
 use App\Service\MailerService;
 use App\Service\WorkflowService;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
@@ -23,12 +26,6 @@ use Symfony\Component\Routing\Attribute\Route;
 
 class AdminController extends AbstractController
 {
-
-    public function __construct(
-        private AdminContextProvider $adminContextProvider,
-    )
-    {
-    }
 
     #[Route(path: '/admin/dashboard', name: 'admin_dashboard')]
     public function showDashboard(): Response
@@ -109,6 +106,22 @@ class AdminController extends AbstractController
         ]);
     }
 
+    #[Route(path: '/admin/package/shipped/{token}', name: 'admin_package_shipped')]
+    public function markAsDelivered(
+        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
+        EntityManagerInterface $entityManager,
+        AdminUrlGenerator $adminUrlGenerator,
+    ): Response {
+        $order->setStatus(OrderStatus::SHIPPING);
+        $entityManager->flush();
+
+        return $this->redirect($adminUrlGenerator
+            ->setController(OrderCrudController::class)
+            ->setAction(Action::EDIT)
+            ->setEntityId($order->getId())
+            ->generateUrl());
+    }
+
 //    #[Route('/admin/label/{token}', name: 'admin_print_label')]
 //    public function printLabel(
 //        #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -141,5 +154,4 @@ class AdminController extends AbstractController
 //            'Content-Type' => 'text/html',
 //        ]);
 //    }
-
 }

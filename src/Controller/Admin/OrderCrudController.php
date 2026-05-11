@@ -8,14 +8,17 @@ use App\Entity\Order;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Form\Admin\OrderItemType;
-use App\Form\Admin\OrderUserType;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
+use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\ActionGroup;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
-use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -28,7 +31,9 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use phpDocumentor\Reflection\Types\This;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
+use Symfony\Component\HttpFoundation\Response;
 
 class OrderCrudController extends AbstractCrudController
 {
@@ -58,6 +63,10 @@ class OrderCrudController extends AbstractCrudController
             ->addFormTheme('admin/forms/order_items.html.twig');
     }
 
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
     public function configureActions(Actions $actions): Actions
     {
         $urlGenerator = $this->container->get(AdminUrlGenerator::class);
@@ -67,18 +76,18 @@ class OrderCrudController extends AbstractCrudController
             ->addAction(
                 Action::new(Action::EDIT, 'Modifier')
                     ->setIcon('fa fa-pencil')
-                    ->linkToCrudAction(Action::EDIT)  // ✅
+                    ->linkToCrudAction(Action::EDIT)
             )
             ->addAction(
                 Action::new(Action::DELETE, 'Supprimer')
                     ->setIcon('fa fa-trash')
                     ->addCssClass('text-danger')
-                    ->linkToCrudAction(Action::DELETE)  // ✅
+                    ->linkToCrudAction(Action::DELETE)
             );
 
         $statusActions = [
             'to_prepare' => [
-                'label'     => 'A préparer',
+                'label'     => 'A emballer',
                 'status'    => OrderStatus::TO_PREPARE,
                 'css_class' => 'btn-success'
             ],
@@ -87,15 +96,15 @@ class OrderCrudController extends AbstractCrudController
                 'status'    => OrderStatus::PENDING_SHIPPING,
                 'css_class' => 'btn-primary'
             ],
+            'shipping' => [
+                'label'     => 'En cours de livraison',
+                'status'    => OrderStatus::SHIPPING,
+                'css_class' => 'btn-secondary'
+            ],
             'pending_refund' => [
                 'label'     => 'En attente de remboursement',
                 'status'    => OrderStatus::PENDING_REFUND,
                 'css_class' => 'btn-warning',
-            ],
-            'canceled' => [
-                'label'     => 'Annulées',
-                'status'    => OrderStatus::CANCELED,
-                'css_class' => 'btn-danger'
             ],
         ];
 
@@ -135,12 +144,23 @@ class OrderCrudController extends AbstractCrudController
             ->addAction(
                 Action::new(
                     'livraison',
-                    'Imprimer l`\'etiquette'
+                    'Imprimer l\'etiquette'
                 )
                     ->linkToRoute('admin_delivery')
                     ->renderAsButton()
                     ->displayIf(static function (Order $order) {
                         return $order->getStatus()?->isAtLeast(OrderStatus::PENDING_SHIPPING);
+                    })
+            )
+            ->addAction(
+                Action::new(
+                    'livraison_shipped',
+                    'Colis expédié'
+                )
+                    ->linkToRoute('admin_delivery_shipped')
+                    ->renderAsButton()
+                    ->displayIf(static function (Order $order) {
+                        return $order->getStatus() === OrderStatus::PENDING_SHIPPING;
                     })
             );
 
@@ -150,9 +170,18 @@ class OrderCrudController extends AbstractCrudController
                 'admin_package_order',
                 fn(Order $order) => ['token' => $order->getToken()]
             )
-            ->renderAsLink()
             ->displayIf(static function (Order $order) {
                 return $order->getStatus() === OrderStatus::TO_PREPARE;
+            });
+
+        $markAsShippedAction = Action::new('markAsShipped', 'Colis expédié')
+            ->setIcon('fa-solid fa-circle-check')
+            ->linkToRoute(
+                'admin_package_shipped',
+                fn(Order $order) => ['token' => $order->getToken()]
+            )
+            ->displayIf(static function (Order $order) {
+                return $order->getStatus() === OrderStatus::PENDING_SHIPPING;
             });
 
         return $actions
@@ -162,6 +191,9 @@ class OrderCrudController extends AbstractCrudController
             ->add(Crud::PAGE_INDEX, $packageAction)
             ->add(Crud::PAGE_EDIT, $packageAction)
             ->add(Crud::PAGE_INDEX, $editDeleteGroup)
+            ->add(Crud::PAGE_EDIT, $markAsShippedAction)
+            ->addBatchAction(Action::new('batchMarkAsShipped', 'En cours de livraison')
+                ->linkToCrudAction('batchMarkAsShipped'))
             ->reorder(Crud::PAGE_INDEX, [
                 'package',
                 'delivery',
@@ -170,6 +202,7 @@ class OrderCrudController extends AbstractCrudController
             ->reorder(Crud::PAGE_EDIT, [
                 Action::SAVE_AND_RETURN,
                 Action::SAVE_AND_CONTINUE,
+                'markAsShipped',
                 'package',
                 'delivery',
                 'mails'
@@ -263,12 +296,12 @@ class OrderCrudController extends AbstractCrudController
             MoneyField::new('total')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false)
-                ->setColumns(3),
+                ->setColumns(4),
             DateField::new('creationDate')
                 ->setLabel('Date')
                 ->setFormat('dd/MM/YYYY')
                 ->setTimezone('Europe/Paris')
-                ->setColumns(4),
+                ->setColumns(6),
             ChoiceField::new('status')
                 ->setLabel('Statut')
                 ->setChoices(
@@ -281,7 +314,7 @@ class OrderCrudController extends AbstractCrudController
                     'choice_value',
                     fn($value) => $value instanceof OrderStatus ? $value->value : $value
                 )
-                ->setColumns(4),
+                ->setColumns(12),
             ChoiceField::new('deliveryMode')
                 ->setLabel('Mode')
                 ->setChoices(
@@ -320,5 +353,36 @@ class OrderCrudController extends AbstractCrudController
                 ->setFormType(OrderAddressType::class)
                 ->setLabel('Livraison')
         ];
+    }
+
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ORMException
+     * @throws ContainerExceptionInterface
+     * @throws OptimisticLockException
+     */
+    #[AdminRoute]
+    public function batchMarkAsShipped(
+        BatchActionDto $batchActionDto,
+        EntityManagerInterface $entityManager
+    ): Response {
+        $className = $batchActionDto->getEntityFqcn();
+
+        foreach ($batchActionDto->getEntityIds() as $id) {
+            /** @var Order $order */
+            $order = $entityManager->find($className, $id);
+            if ($order && $order->getStatus() === OrderStatus::PENDING_SHIPPING) {
+                $order->setStatus(OrderStatus::SHIPPING);
+            }
+        }
+
+        $entityManager->flush();
+
+        return $this->redirect(
+            $this->container->get(AdminUrlGenerator::class)
+                ->setController(self::class)
+                ->setAction(Action::INDEX)
+                ->generateUrl()
+        );
     }
 }

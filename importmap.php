@@ -35,4 +35,17 @@ return [
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
+    'chart.js' => [
+        'version' => '4.5.1',
+    ],
+    '@kurkle/color' => [
+        'version' => '0.3.4',
+    ],
+    'admin' => [
+        'path' => './assets/admin.js',
+        'entrypoint' => true,
+    ],
+    '@symfony/ux-chartjs/controller' => [
+        'path' => './vendor/symfony/ux-chartjs/assets/dist/controller.js',
+    ],
 ];

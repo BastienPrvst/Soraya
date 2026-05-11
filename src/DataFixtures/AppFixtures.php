@@ -133,7 +133,7 @@ class AppFixtures extends Fixture
             return;
         }
 
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 200; $i++) {
             $order = new Order();
             $token = bin2hex(random_bytes(32));
             $sessionKey = bin2hex(random_bytes(32));
@@ -161,7 +161,7 @@ class AppFixtures extends Fixture
                 ->setLastname($adminUser->getLastname())
                 ->setPhoneNumber($faker->phoneNumber())
                 ->setDelivery(true)
-                ->setCreationDate($faker->dateTimeBetween('now', '+ 30 days'));
+                ->setCreationDate($faker->dateTimeBetween('- 365 days'));
 
             $total = 0;
 

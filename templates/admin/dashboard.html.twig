@@ -10,7 +10,6 @@
             <div >
                 <a class="d-flex flex-column align-items-center justify-content-center my-3" href="{{ toPrepareUrl }}">
                     <p>Commandes à emballer :</p>
-                    <br>
                     <p>{{ countPrepare }}</p>
                </a>
             </div>
@@ -18,7 +17,6 @@
             <div >
                 <a class="d-flex flex-column align-items-center justify-content-center my-3" href="{{ toShipUrl }}">
                     <p>Commandes à expédier :</p>
-                    <br>
                     <p>{{ countPendingShipping }}</p>
                 </a>
             </div>
@@ -32,8 +30,21 @@
             <a href="#">Collisimo</a>
         </div>
 
+        <div class="mb-3">
+            {% for year in years %}
+                <a href="{{ path('admin', { year: year }) }}"
+                   class="btn btn-sm {{ year == selectedYear ? 'btn-primary' : 'btn-outline-secondary' }}">
+                    {{ year }}
+                </a>
+            {% endfor %}
+        </div>
+
+        <div class="chart" style="width: 800px">
+            {{ render_chart(chart) }}
+        </div>
+
     </div>
 
 
-
 {% endblock %}
+

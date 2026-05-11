@@ -8,6 +8,8 @@ use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Exception;
+use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -18,7 +20,8 @@ class OrderRepository extends ServiceEntityRepository
 {
     public function __construct(
         ManagerRegistry $registry,
-        private readonly RequestStack $requestStack
+        private readonly RequestStack $requestStack,
+        private readonly EntityManagerInterface $entityManager
     ) {
         parent::__construct($registry, Order::class);
     }
@@ -77,4 +80,25 @@ class OrderRepository extends ServiceEntityRepository
             ->getOneOrNullResult();
     }
 
+    /**
+     * @throws Exception
+     */
+    public function getOrderByMonth(int $year): array
+    {
+        $conn = $this->getEntityManager()->getConnection();
+
+        $sql = '
+        SELECT
+            MONTH(creation_date) AS month,
+            COUNT(id) AS total
+        FROM `order`
+        WHERE YEAR(creation_date) = :year
+        GROUP BY month
+        ORDER BY month ASC
+        ';
+
+        return $conn
+            ->executeQuery($sql, ['year' => $year])
+            ->fetchAllAssociative();
+    }
 }
