@@ -1,3 +1,8 @@
+:root{
+    --package-color-bg: #DAFAE5;
+    --package-color-text: #0D5D41;
+}
+
 /* ── Layout ─────────────────────────────────────────────── */
 .package-page {
     max-width: 1200px;
@@ -36,7 +41,7 @@
     line-height: 1.8;
 }
 
-/* ── Bouton item ───────────────────────────── */
+/* ── Bouton item ──────────────────────────── */
 .item-button {
     display: flex;
     align-items: center;
@@ -71,12 +76,10 @@
     border-radius: 20px;
 }
 
-/* Cache la checkbox native */
 .product-check-input {
     display: none;
 }
 
-/* Cercle check à droite */
 .item-check {
     width: 28px;
     height: 28px;
@@ -111,3 +114,41 @@
     border-color: #20c997;
     color: #fff;
 }
+
+/*───────────────────────Dashboard─────────────────────────*/
+
+.crud-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.quick-crud {
+    background: white;
+    border-radius: 20px;
+    font-size: 16px;
+    aspect-ratio: 16/9;
+    display: flex;
+    align-items: center;
+    justify-content: start;
+    text-align: center;
+    border: 1px solid var(--bs-border-color);
+    box-sizing: border-box;
+    flex: 0 0 calc(25% - 12px);
+
+    @media (max-width: 768px) {
+        flex: 0 0 calc(50% - 8px);
+    }
+}
+
+.crud-link-number{
+    font-size: 45px;
+    font-weight: 600;
+    align-self: start;
+    margin: 0 0 0 15px;
+    color: black;
+}
+
+
+
+

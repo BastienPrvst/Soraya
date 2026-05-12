@@ -71,9 +71,6 @@ class DashboardController extends AbstractDashboardController
         //3. ⁠Panier moyen
         //4. ⁠Nombre de visiteurs du site
 
-
-
-        $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
         $months = [
             1 => 'Jan',
             2 => 'Fév',
@@ -92,33 +89,77 @@ class DashboardController extends AbstractDashboardController
         $request = $this->requestStack->getCurrentRequest();
 
         $currentYear = (int) date('Y');
+        $currentMonth = (int) date('m');
         $selectedYear = (int) $request->query->get('year', $currentYear);
 
-        $orderByMonth = $this->orderRepository->getOrderByMonth($selectedYear);
+        $orderByMonth = $this->orderRepository->getOrdersByMonth($selectedYear);
 
         $dataByMonth = [];
         foreach ($orderByMonth as $row) {
-            $dataByMonth[(int)$row['month']] = (int)$row['total'];
+            $dataByMonth[(int)$row['month']] = [
+                'order_count' => (int)$row['order_count'],
+                'total_price' => (float)$row['total_price'],
+            ];
         }
 
         $data = [];
-        foreach ($months as $num => $label) {
-            $data[] = $dataByMonth[$num] ?? 0;
+        foreach ($months as $month => $monthName) {
+            if ($selectedYear === $currentYear && $month > $currentMonth) {
+                break;
+            }
+
+            $orderCount = $dataByMonth[$month]['order_count'] ?? 0;
+            $totalPrice = $dataByMonth[$month]['total_price'] ?? 0;
+
+            $data[$month] = [
+                'label' => $monthName,
+                'order_count' => $orderCount,
+                'total_price' => $totalPrice,
+                'average' => $orderCount > 0 ? $totalPrice / $orderCount : 0,
+            ];
         }
 
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
+
         $chart->setData([
-            'labels' => array_values($months),
-            'datasets' => [[
-                'label' => 'Ventes par mois',
-                'data' => $data,
-            ]],
+            'labels' => array_column($data, 'label'),
+            'datasets' => [
+                [
+                    'label' => 'Nbr commandes',
+                    'data' => array_column($data, 'order_count'),
+                    'backgroundColor' => '#9BD0F5',
+                ],
+
+            ],
+
         ]);
+
+        $chart2 = $this->chartBuilder->createChart(Chart::TYPE_LINE);
+        $chart2->setData([
+            'labels' => array_column($data, 'label'),
+            'datasets' => [
+
+                [
+                    'label' => 'Panier moyen',
+                    'data' => array_column($data, 'average'),
+                    'type' => 'bar'
+                ],
+
+                [
+                    'label' => 'Chiffre d\'affaire',
+                    'data' => array_column($data, 'total_price'),
+
+                ]
+            ]
+        ]);
+
         return $this->render('admin/dashboard.html.twig', [
             'toPrepareUrl' => $toPrepareUrl,
             'toShipUrl' => $toShipUrl,
             'countPrepare' => $countPrepare,
             'countPendingShipping' => $countPendingShipping,
             'chart' => $chart,
+            'chart2' => $chart2,
             'selectedYear' => $selectedYear,
             'years' => range(2025, $currentYear),
         ]);

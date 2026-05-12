@@ -83,14 +83,15 @@ class OrderRepository extends ServiceEntityRepository
     /**
      * @throws Exception
      */
-    public function getOrderByMonth(int $year): array
+    public function getOrdersByMonth(int $year): array
     {
         $conn = $this->getEntityManager()->getConnection();
 
         $sql = '
         SELECT
             MONTH(creation_date) AS month,
-            COUNT(id) AS total
+            COUNT(id) AS order_count,
+            SUM(total + COALESCE(delivery_price, 0)) AS total_price
         FROM `order`
         WHERE YEAR(creation_date) = :year
         GROUP BY month
