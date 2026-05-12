@@ -168,7 +168,7 @@ class DashboardController extends AbstractDashboardController
     public function configureDashboard(): Dashboard
     {
         return Dashboard::new()
-            ->setTitle('ProjetSoraya')
+            ->setTitle('Lévédène')
             ->renderContentMaximized()
             ->setDefaultColorScheme('light')
             ->setLocales([
