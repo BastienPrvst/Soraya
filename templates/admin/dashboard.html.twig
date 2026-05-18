@@ -3,88 +3,80 @@
 {% block content %}
 
     <main class="container-fluid main-dashboard">
-        <div class="row">
-            <h1 class="mt-3">Bonjour, {{ app.user.firstname|capitalize }}</h1>
-
-            <section class="admin-s1 col-12 mt-5">
+        <div class="row admin-wrapper">
+            <h1 class="admin-title mt-3">Bonjour, {{ app.user.firstname|capitalize }}</h1>
 
                 <div class="crud-links">
-                    <div class="quick-crud p-3 rounded-4">
-                        <a class="d-flex flex-column align-items-center justify-content-center" href="{{ toPrepareUrl }}">
+                    <div class="quick-crud">
+                        <a href="{{ toPrepareUrl }}">
                             <p class="crud-link-label">À emballer</p>
                             <p class="crud-link-number">{{ countPrepare }}</p>
                         </a>
                     </div>
 
-                    <div class="quick-crud p-3 rounded-4">
-                        <a class="d-flex flex-column align-items-center" href="{{ toShipUrl }}">
+                    <div class="quick-crud">
+                        <a href="{{ toShipUrl }}">
                             <p class="crud-link-label">À expédier</p>
                             <p class="crud-link-number">{{ countPendingShipping }}</p>
                         </a>
                     </div>
 
-                    <div class="quick-crud p-3 rounded-4">
-                        <a class="d-flex flex-column align-items-center justify-content-center" href="{{ toShipUrl }}">
+                    <div class="quick-crud">
+                        <a href="{{ toShipUrl }}">
                             <p class="crud-link-label">Annulées</p>
                             <p class="crud-link-number">{{ countPendingShipping }}</p>
                         </a>
                     </div>
 
-                    <div class="quick-crud p-3 rounded-4">
-                        <a class="d-flex flex-column align-items-center justify-content-center" href="{{ toShipUrl }}">
+                    <div class="quick-crud">
+                        <a href="{{ toShipUrl }}">
                             <p class="crud-link-label">Remboursements</p>
                             <p class="crud-link-number">{{ countPendingShipping }}</p>
                         </a>
                     </div>
                 </div>
 
-            </section>
+                    <div class="other-links">
+                        <p>Liens</p>
 
-            <section class="admin-s2 d-flex flex-row p-3 flex-wrap">
+                        <div>
+                            <a href="{{ stripe_dashboard_url }}" target="_blank"> Dashboard Stripe </a>
 
-                <div class="other-links d-flex flex-column align-items-start p-3 rounded-4">
-                    <p class="pb-3 mx-auto">Liens</p>
+                            <span class="link-logos"><img src="{{ asset('icons/stripe.svg') }}" alt="logo stripe"></span>
+                        </div>
 
-                    <div>
-                        <a href="{{ stripe_dashboard_url }}" target="_blank"> Dashboard Stripe </a>
+                        <div>
+                            <a href="#">Mondial Relay</a>
 
-                        <span class="link-logos"><img src="{{ asset('icons/stripe.svg') }}" alt="logo stripe"></span>
-                    </div>
+                            <span class="link-logos"><img src="{{ asset('icons/mondial_relay.svg') }}" alt="logo mondial relay"></span>
+                        </div>
 
-                    <div>
-                        <a href="#">Mondial Relay</a>
+                        <div>
+                            <a href="#">Colissimo</a>
 
-                        <span class="link-logos"><img src="{{ asset('icons/mondial_relay.svg') }}" alt="logo mondial relay"></span>
-                    </div>
-
-                    <div>
-                        <a href="#">Colissimo</a>
-
-                        <span class="link-logos"><img src="{{ asset('icons/Colissimo_Logo.svg') }}" alt="logo colissimo">
+                            <span class="link-logos"><img src="{{ asset('icons/Colissimo_Logo.svg') }}" alt="logo colissimo">
                     </span>
+                        </div>
+
                     </div>
 
-                </div>
 
+                    <div class="year-select">
+                        {% for year in years %}
+                            <a href="{{ path('admin', { year: year }) }}"
+                               class="btn btn-sm {{ year == selectedYear ? 'btn-primary' : 'btn-outline-secondary' }}">
+                                {{ year }}
+                            </a>
+                        {% endfor %}
+                    </div>
 
-                <div class="mb-3">
-                    {% for year in years %}
-                        <a href="{{ path('admin', { year: year }) }}"
-                           class="btn btn-sm {{ year == selectedYear ? 'btn-primary' : 'btn-outline-secondary' }}">
-                            {{ year }}
-                        </a>
-                    {% endfor %}
-                </div>
+                    <div class="chart1 chart-container">
+                        {{ render_chart(chart) }}
+                    </div>
 
-                <div class="chart">
-                    {{ render_chart(chart) }}
-                </div>
-
-                <div class="chart">
-                    {{ render_chart(chart2) }}
-                </div>
-
-            </section>
+                    <div class="chart2 chart-container">
+                        {{ render_chart(chart2) }}
+                    </div>
 
         </div>
 
