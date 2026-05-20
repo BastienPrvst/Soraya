@@ -36,7 +36,7 @@ return [
         'version' => '7.3.0',
     ],
     'chart.js' => [
-        'version' => '4.5.1',
+        'version' => '4.0.1',
     ],
     '@kurkle/color' => [
         'version' => '0.3.4',
@@ -47,5 +47,11 @@ return [
     ],
     '@symfony/ux-chartjs/controller' => [
         'path' => './vendor/symfony/ux-chartjs/assets/dist/controller.js',
+    ],
+    'chartjs-plugin-datalabels' => [
+        'version' => '2.2.0',
+    ],
+    'chart.js/helpers' => [
+        'version' => '4.0.1',
     ],
 ];

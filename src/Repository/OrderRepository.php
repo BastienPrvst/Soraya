@@ -102,4 +102,16 @@ class OrderRepository extends ServiceEntityRepository
             ->executeQuery($sql, ['year' => $year])
             ->fetchAllAssociative();
     }
+
+    public function getProductsSoldByCategories(): array
+    {
+        return $this->createQueryBuilder('o')
+            ->select('COUNT(oi.id) AS order_count, c.name as categories')
+            ->leftJoin('o.orderItems', 'oi')
+            ->leftJoin('oi.product', 'p')
+            ->leftJoin('p.category', 'c')
+            ->groupBy('c.id')
+            ->getQuery()
+            ->getResult();
+    }
 }

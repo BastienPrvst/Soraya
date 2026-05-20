@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Repository\OrderRepository;
 use App\Repository\UserRepository;
+use App\Service\Admin\DashboardService;
 use Doctrine\DBAL\Exception;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Assets;
@@ -24,11 +25,8 @@ use Symfony\UX\Chartjs\Model\Chart;
 class DashboardController extends AbstractDashboardController
 {
     public function __construct(
-        private readonly UserRepository        $userRepository,
-        private readonly OrderRepository       $orderRepository,
+        private readonly DashboardService $dashboardService,
         private readonly AdminUrlGenerator     $adminUrlGenerator,
-        private readonly ChartBuilderInterface $chartBuilder,
-        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -58,110 +56,19 @@ class DashboardController extends AbstractDashboardController
             ->set('filters[status][comparison]', '=')
             ->generateUrl();
 
-        $countPrepare = $this->orderRepository->count([
-            'status' => ['to_prepare'],
-        ]);
-
-        $countPendingShipping = $this->orderRepository->count([
-            'status' => ['pending_shipping'],
-        ]);
-
-        //1. Chiffre d’affaires
-        //2. ⁠Nombre de commandes
-        //3. ⁠Panier moyen
-        //4. ⁠Nombre de visiteurs du site
-
-        $months = [
-            1 => 'Jan',
-            2 => 'Fév',
-            3 => 'Mars',
-            4 => 'Avr',
-            5 => 'Mai',
-            6 => 'Juin',
-            7 => 'Juil',
-            8 => 'Aout',
-            9 => 'Sep',
-            10 => 'Oct',
-            11 => 'Nov',
-            12 => 'Dec'
-        ];
-
-        $request = $this->requestStack->getCurrentRequest();
-
-        $currentYear = (int) date('Y');
-        $currentMonth = (int) date('m');
-        $selectedYear = (int) $request->query->get('year', $currentYear);
-
-        $orderByMonth = $this->orderRepository->getOrdersByMonth($selectedYear);
-
-        $dataByMonth = [];
-        foreach ($orderByMonth as $row) {
-            $dataByMonth[(int)$row['month']] = [
-                'order_count' => (int)$row['order_count'],
-                'total_price' => (float)$row['total_price'],
-            ];
-        }
-
-        $data = [];
-        foreach ($months as $month => $monthName) {
-            if ($selectedYear === $currentYear && $month > $currentMonth) {
-                break;
-            }
-
-            $orderCount = $dataByMonth[$month]['order_count'] ?? 0;
-            $totalPrice = $dataByMonth[$month]['total_price'] ?? 0;
-
-            $data[$month] = [
-                'label' => $monthName,
-                'order_count' => $orderCount,
-                'total_price' => $totalPrice,
-                'average' => $orderCount > 0 ? $totalPrice / $orderCount : 0,
-            ];
-        }
-
-        $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
-
-        $chart->setData([
-            'labels' => array_column($data, 'label'),
-            'datasets' => [
-                [
-                    'label' => 'Nbr commandes',
-                    'data' => array_column($data, 'order_count'),
-                    'backgroundColor' => '#9BD0F5',
-                ],
-
-            ],
-
-        ]);
-
-        $chart2 = $this->chartBuilder->createChart(Chart::TYPE_LINE);
-        $chart2->setData([
-            'labels' => array_column($data, 'label'),
-            'datasets' => [
-
-                [
-                    'label' => 'Panier moyen',
-                    'data' => array_column($data, 'average'),
-                    'type' => 'bar'
-                ],
-
-                [
-                    'label' => 'Chiffre d\'affaire',
-                    'data' => array_column($data, 'total_price'),
-
-                ]
-            ]
-        ]);
+        $data = $this->dashboardService->getDashboard();
 
         return $this->render('admin/dashboard.html.twig', [
             'toPrepareUrl' => $toPrepareUrl,
             'toShipUrl' => $toShipUrl,
-            'countPrepare' => $countPrepare,
-            'countPendingShipping' => $countPendingShipping,
-            'chart' => $chart,
-            'chart2' => $chart2,
-            'selectedYear' => $selectedYear,
-            'years' => range(2025, $currentYear),
+            'countPrepare' => $data['countPrepare'],
+            'countPendingShipping' => $data['countPendingShipping'],
+            'chart' => $data['chart'],
+            'chart2' => $data['chart2'],
+            'chart3' => $data['chart3'],
+            'selectedYear' => $data['selectedYear'],
+            'currentYear' => $data['currentYear'],
+            'years' => range(2025, $data['currentYear']),
         ]);
     }
 
@@ -173,8 +80,7 @@ class DashboardController extends AbstractDashboardController
             ->setDefaultColorScheme('light')
             ->setLocales([
                 Locale::new('fr', 'Français'),
-            ])
-            ;
+            ]);
     }
 
     public function configureMenuItems(): iterable
