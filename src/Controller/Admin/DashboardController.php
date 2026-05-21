@@ -2,8 +2,6 @@
 
 namespace App\Controller\Admin;
 
-use App\Repository\OrderRepository;
-use App\Repository\UserRepository;
 use App\Service\Admin\DashboardService;
 use Doctrine\DBAL\Exception;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminDashboard;
@@ -13,13 +11,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Locale;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
-use Psr\Container\ContainerExceptionInterface;
-use Psr\Container\NotFoundExceptionInterface;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
-use Symfony\UX\Chartjs\Model\Chart;
 
 #[AdminDashboard(routePath: '/admin', routeName: 'admin')]
 class DashboardController extends AbstractDashboardController
@@ -58,6 +50,21 @@ class DashboardController extends AbstractDashboardController
 
         $data = $this->dashboardService->getDashboard();
 
+        $months = [
+            1 => 'Jan',
+            2 => 'Fev',
+            3 => 'Mar',
+            4 => 'Avr',
+            5 => 'Mai',
+            6 => 'Juin',
+            7 => 'Juil',
+            8 => 'Aout',
+            9 => 'Sep',
+            10 => 'Oct',
+            11 => 'Nov',
+            12 => 'Dec',
+        ];
+
         return $this->render('admin/dashboard.html.twig', [
             'toPrepareUrl' => $toPrepareUrl,
             'toShipUrl' => $toShipUrl,
@@ -67,7 +74,10 @@ class DashboardController extends AbstractDashboardController
             'chart2' => $data['chart2'],
             'chart3' => $data['chart3'],
             'selectedYear' => $data['selectedYear'],
+            'selectedMonth' => $data['selectedMonth'],
             'currentYear' => $data['currentYear'],
+            'currentMonth' => $data['currentMonth'],
+            'months' => $months,
             'years' => range(2025, $data['currentYear']),
         ]);
     }

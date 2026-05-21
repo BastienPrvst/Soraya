@@ -103,13 +103,39 @@ class OrderRepository extends ServiceEntityRepository
             ->fetchAllAssociative();
     }
 
-    public function getProductsSoldByCategories(): array
+    /**
+     * @throws \Exception
+     */
+    public function getProductsSoldByCategories(int $month): array
     {
+        if (!$month
+        || $month < 1
+        || $month > 12) {
+            $startDate = new \DateTime('first day of this month');
+            $lastDay = new \DateTime('last day of this month');
+        } else {
+            $year      = (new \DateTime())->format('Y');
+            $startDate = new \DateTime("first day of $year-$month");
+            $lastDay   = new \DateTime("last day of $year-$month");
+        }
+        $startDate->setTime(0, 0, 0);
+        $lastDay->setTime(23, 59, 59);
+
+        $statuses = array_filter(
+            OrderStatus::cases(),
+            static fn($status) => $status->isAtLeast(OrderStatus::PAID)
+        );
+
         return $this->createQueryBuilder('o')
             ->select('COUNT(oi.id) AS order_count, c.name as categories')
             ->leftJoin('o.orderItems', 'oi')
             ->leftJoin('oi.product', 'p')
             ->leftJoin('p.category', 'c')
+            ->where('o.creationDate BETWEEN :startDate AND :endDate')
+            ->andWhere('o.status IN (:statuses)')
+            ->setParameter('startDate', $startDate)
+            ->setParameter('endDate', $lastDay)
+            ->setParameter('statuses', $statuses)
             ->groupBy('c.id')
             ->getQuery()
             ->getResult();

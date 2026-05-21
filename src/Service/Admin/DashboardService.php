@@ -3,6 +3,7 @@
 namespace App\Service\Admin;
 
 use App\Repository\OrderRepository;
+use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
@@ -17,6 +18,10 @@ class DashboardService
     ) {
     }
 
+    /**
+     * @throws Exception
+     * @throws \Exception
+     */
     public function getDashboard(): array
     {
         $countPrepare = $this->orderRepository->count([
@@ -48,8 +53,6 @@ class DashboardService
         ];
 
         $request = $this->requestStack->getCurrentRequest();
-
-//        dd($request);
 
         $currentYear = (int) date('Y');
         $currentMonth = (int) date('m');
@@ -94,46 +97,62 @@ class DashboardService
                     'data' => array_column($data, 'order_count'),
                     'backgroundColor' => '#9BD0F5',
                 ],
-
             ],
-
         ]);
 
         //Panier moyen + CA
 
-        $chart2 = $this->chartBuilder->createChart(Chart::TYPE_LINE);
+        $chart2 = $this->chartBuilder->createChart(Chart::TYPE_BAR);
         $chart2->setData([
             'labels' => array_column($data, 'label'),
             'datasets' => [
-
                 [
                     'label' => 'Panier moyen',
                     'data' => array_column($data, 'average'),
-                    'type' => 'bar',
                     'backgroundColor' => '#4ABEBE',
                     'borderColor' => '#4ABEBE',
+                    'yAxisID' => 'y',  // ← axe gauche
                 ],
-
                 [
                     'label' => 'Chiffre d\'affaire',
                     'data' => array_column($data, 'total_price'),
                     'backgroundColor' => '#FD9E3F',
                     'borderColor' => '#FD9E3F',
+                    'yAxisID' => 'y2',
                 ]
             ]
         ]);
 
         $chart2->setOptions([
-            'plugins' => [
-                'datalabels' => [
-                    'display' => false,
-                ]
-            ]
+            'barPercentage' => 0.9,
+            'scales' => [
+                'y' => [
+                    'type' => 'linear',
+                    'position' => 'left',
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Panier moyen €',
+                    ],
+                ],
+                'y2' => [
+                    'type' => 'linear',
+                    'position' => 'right',
+                    'title' => [
+                        'display' => true,
+                        'text' => 'CA €',
+                    ],
+                    'grid' => [
+                        'drawOnChartArea' => false,
+                    ],
+                ],
+            ],
         ]);
 
         //Ventes par categories de produits
 
-        $productsData = $this->orderRepository->getProductsSoldByCategories();
+        $selectedMonth = $request->query->get('month', $currentMonth);
+
+        $productsData = $this->orderRepository->getProductsSoldByCategories((int)$selectedMonth);
 
         $chart3 = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
 
@@ -141,25 +160,35 @@ class DashboardService
             'labels' => array_column($productsData, 'categories'),
             'datasets' => [
                 [
-                    'label' => 'Produits vendus par catégorie',
+                    'label' => 'Vendus ce mois-ci',
                     'data' => array_column($productsData, 'order_count'),
+                    'cutout' => '40%',
+                    'position' => 'chartarea'
                 ]
             ]
         ]);
 
         $chart3->setOptions([
+            'responsive' => true,
+            'maintainAspectRatio' => false,
+
             'plugins' => [
                 'legend' => [
-                    'display' => false,
-                ],
-                'datalabels' => [
                     'display' => true,
-                    'color' => '#FFF',
-                    'font' => [
-                        'weight' => 'bold',
-                        'size' => 18
-                    ],
-                ]
+                    'position' => 'left',
+                    'labels' => [
+                        'boxWidth' => 12,
+                        'padding' => 10,
+                        'font' => [
+                            'size' => 12,
+                            'weight' => 'bold'
+                        ]
+                    ]
+                ],
+                'title' => [
+                    'display' => true,
+                    'text' => 'Ventes par categories par mois',
+                ],
             ]
         ]);
 
@@ -170,6 +199,8 @@ class DashboardService
             'chart2' => $chart2,
             'chart3' => $chart3,
             'selectedYear' => $selectedYear,
+            'selectedMonth' => $selectedMonth,
+            'currentMonth' => $currentMonth,
             'currentYear' => $currentYear,
         ];
     }

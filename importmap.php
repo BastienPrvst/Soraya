@@ -48,10 +48,4 @@ return [
     '@symfony/ux-chartjs/controller' => [
         'path' => './vendor/symfony/ux-chartjs/assets/dist/controller.js',
     ],
-    'chartjs-plugin-datalabels' => [
-        'version' => '2.2.0',
-    ],
-    'chart.js/helpers' => [
-        'version' => '4.0.1',
-    ],
 ];

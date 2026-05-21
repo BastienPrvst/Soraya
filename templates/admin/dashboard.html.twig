@@ -61,35 +61,54 @@
                     </div>
 
 
-            <div class="year-select">
-                <div class="dropdown-years">
-                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                        {{ selectedYear }}
-                    </button>
-                    <ul class="dropdown-menu">
-                        {% for year in years %}
-                            <li>
-                                <a class="dropdown-item {{ year == selectedYear ? 'active' : '' }}"
-                                   href="{{ path('admin', { year: year }) }}">
-                                    {{ year }}
-                                </a>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                <div class="year-select">
+                    <div class="dropdown-years">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            {{ selectedYear }}
+                        </button>
+                        <ul class="dropdown-menu">
+                            {% for year in years %}
+                                <li>
+                                    <a class="dropdown-item {{ year == selectedYear ? 'active' : '' }}"
+                                       href="{{ path('admin', { year: year }) }}">
+                                        {{ year }}
+                                    </a>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
                 </div>
-            </div>
 
-                    <div class="chart1 chart-container">
-                        {{ render_chart(chart) }}
+                <div class="chart1 chart-container">
+                    {{ render_chart(chart) }}
+                </div>
+
+                <div class="chart2 chart-container">
+                    {{ render_chart(chart2) }}
+                </div>
+
+                <div class="chart3 chart-container">
+
+                    <div class="year-select">
+                        <div class="dropdown-years">
+                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                {{ months[selectedMonth] }}
+                            </button>
+                            <ul class="dropdown-menu">
+                                {% for value, label in months %}
+                                    <li>
+                                        <a class="dropdown-item {{ value == selectedMonth ? 'active' : '' }}"
+                                           href="{{ path('admin', { year: selectedYear, month: value }) }}">
+                                            {{ label }}
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
 
-                    <div class="chart2 chart-container">
-                        {{ render_chart(chart2) }}
-                    </div>
-
-                    <div class="chart3 chart-container">
-                        {{ render_chart(chart3) }}
-                    </div>
+                    {{ render_chart(chart3) }}
+                </div>
 
         </div>
 
