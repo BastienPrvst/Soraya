@@ -126,8 +126,12 @@ class OrderRepository extends ServiceEntityRepository
             static fn($status) => $status->isAtLeast(OrderStatus::PAID)
         );
 
-        return $this->createQueryBuilder('o')
-            ->select('COUNT(oi.id) AS order_count, c.name as categories')
+        $results = $this->createQueryBuilder('o')
+            ->select(
+                '
+                c.name as categories',
+                'SUM(oi.quantity) as product_sold',
+            )
             ->leftJoin('o.orderItems', 'oi')
             ->leftJoin('oi.product', 'p')
             ->leftJoin('p.category', 'c')
@@ -139,5 +143,11 @@ class OrderRepository extends ServiceEntityRepository
             ->groupBy('c.id')
             ->getQuery()
             ->getResult();
+
+        array_walk($results, function (&$item) use ($results) {
+            $item['total_product_sold'] = array_sum(array_column($results, 'product_sold'));
+        });
+
+        return $results;
     }
 }

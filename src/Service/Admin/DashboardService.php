@@ -156,17 +156,30 @@ class DashboardService
 
         $chart3 = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
 
+        $productsLabels = array_map(function ($product) {
+            return
+                $product['categories'] .
+                ' ' . $product['product_sold'] . ' (' .
+                round(
+                    ($product['product_sold'] / $product['total_product_sold'] * 100)
+                ) . '%)';
+        }, $productsData);
+
         $chart3->setData([
-            'labels' => array_column($productsData, 'categories'),
+            'labels' => $productsLabels,
             'datasets' => [
                 [
                     'label' => 'Vendus ce mois-ci',
-                    'data' => array_column($productsData, 'order_count'),
+                    'data' => array_column($productsData, 'product_sold'),
                     'cutout' => '40%',
                     'position' => 'chartarea'
                 ]
             ]
         ]);
+
+        $total = !empty($productsData)
+            ? array_sum(array_column($productsData, 'product_sold'))
+            : 0;
 
         $chart3->setOptions([
             'responsive' => true,
@@ -187,7 +200,14 @@ class DashboardService
                 ],
                 'title' => [
                     'display' => true,
-                    'text' => 'Ventes par categories par mois',
+                    'text' => [
+                        'Ventes par catégories',
+                        '(' . ($total) . ' produits vendus)'
+                    ],
+                    'align' => 'start',
+                    'font' => [
+                        'size' => 16,
+                    ]
                 ],
             ]
         ]);

@@ -172,17 +172,36 @@
     display: flex;
     align-items: center;
     background: white;
-    border-radius: 20px;
+    border-radius: 16px;
     font-size: 16px;
     max-width: clamp(50px, calc(25% - 12px), 300px);
     min-width: 0;
     max-height: 15vh;
     aspect-ratio: 16/9;
     text-align: center;
-    border: 1px solid var(--bs-border-color);
+    border: none;
     box-sizing: border-box;
     flex: 0 0 calc(25% - 12px);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
+
+.quick-crud:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.quick-crud:nth-child(1) { background: linear-gradient(135deg, #e0f7ef, #b2edd8); }
+.quick-crud:nth-child(1) .crud-link-number { color: #0a7c5c; }
+
+.quick-crud:nth-child(2) { background: linear-gradient(135deg, #e8f0fe, #c2d4fc); }
+.quick-crud:nth-child(2) .crud-link-number { color: #2a52be; }
+
+.quick-crud:nth-child(3) { background: linear-gradient(135deg, #fff4e0, #fde4b0); }
+.quick-crud:nth-child(3) .crud-link-number { color: #b06800; }
+
+.quick-crud:nth-child(4) { background: linear-gradient(135deg, #fde8e8, #f9c0c0); }
+.quick-crud:nth-child(4) .crud-link-number { color: #c0392b; }
 
 .quick-crud a {
     width: 100%;
@@ -190,11 +209,13 @@
     flex-direction: column;
 }
 
-.crud-link-label{
-    color: var(--text-color);
-    font-size: clamp(16px, 4vw, 22px);
+.crud-link-label {
+    color: #555;
+    font-size: clamp(13px, 1.2vw, 17px);
+    font-weight: 500;
     align-self: start;
     padding-left: 5%;
+    padding-top: 8%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -211,37 +232,79 @@
 .other-links {
     width: 100%;
     height: 100%;
-    border: 1px solid var(--bs-border-color);
+    background: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     grid-column: span 1;
     grid-row: 3;
-    border-radius: 20px;
-    padding: 15px;
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.other-links > p {
+    font-size: 20px;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
 }
 
 .other-links > div {
     display: flex;
     align-items: center;
-    height: 45px;
+    height: 48px;
     width: 100%;
+    border-radius: 10px;
+    padding: 0 10px;
+    transition: background 0.2s ease;
+    margin-bottom: 4px;
 }
 
-.other-links p {
-    font-size: 20px;
+.other-links > div:hover {
+    background: #f5f7fa;
+}
+
+.other-links a {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    flex: 1;
+}
+
+.other-links a:hover {
+    color: #20c997;
 }
 
 .link-logos {
     margin-left: auto;
-    margin-right: 5px;
-    justify-self: flex-end;
+    margin-right: 0;
 }
 
-.link-logos img{
-    width: 45px;
+.link-logos img {
+    width: 40px;
+    opacity: 0.85;
+    transition: opacity 0.2s ease;
+}
+
+.other-links > div:hover .link-logos img {
+    opacity: 1;
 }
 
 .chart-container {
-    padding: 0;
+    padding: 5px;
     position: relative;
+    background: white;
+    border-radius: 16px;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    transition: box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.chart-container:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
 }
 
 .chart1 {
@@ -262,6 +325,39 @@
     grid-column: 3/5;
     grid-row: 3;
     width: 100%;
+    padding: 16px;
+}
+
+.chart3 .year-select {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    grid-column: unset;
+    grid-row: unset;
+    display: block;
+}
+
+.chart3 .dropdown-years {
+    position: static;
+}
+
+.chart3 .btn-secondary {
+    background: #f5f7fa;
+    border: 1px solid #e2e8f0;
+    color: #444;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 10px;
+    padding: 4px 12px;
+    transition: background 0.2s ease;
+}
+
+.chart3 .btn-secondary:hover,
+.chart3 .btn-secondary:focus {
+    background: #e9ecef;
+    color: #222;
+    border-color: #ced4da;
+    box-shadow: none;
 }
 
 @media (max-width: 768px) {
@@ -301,28 +397,29 @@
         grid-row: 3;
     }
 
-    .chart-container{
+    .chart-container {
         height: auto;
-        padding: 25px 0;
-        border-top: 1px solid var(--bs-border-color);
+        padding: 16px;
+        border-top: none;
+        margin-bottom: 4px;
     }
 
-    .chart3{
+    .chart3 {
         grid-column: span 4;
         grid-row: 4;
     }
 
-    .chart1{
+    .chart1 {
         grid-column: span 4;
         grid-row: 5;
+        padding: 0;
     }
 
     .chart2 {
         grid-column: span 4;
         grid-row: 6;
+        padding: 0;
     }
-
-
 
 }
 
