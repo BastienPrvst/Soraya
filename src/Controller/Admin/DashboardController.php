@@ -48,6 +48,20 @@ class DashboardController extends AbstractDashboardController
             ->set('filters[status][comparison]', '=')
             ->generateUrl();
 
+        $toRefundUrl = $this->adminUrlGenerator
+            ->setController(OrderCrudController::class)
+            ->setAction('index')
+            ->set('filters[status][value][]', 'refund_pending')
+            ->set('filters[status][comparison]', '=')
+            ->generateUrl();
+
+        $toCancelUrl = $this->adminUrlGenerator
+            ->setController(OrderCrudController::class)
+            ->setAction('index')
+            ->set('filters[status][value][]', 'cancelled')
+            ->set('filters[status][comparison]', '=')
+            ->generateUrl();
+
         $data = $this->dashboardService->getDashboard();
 
         $months = [
@@ -68,8 +82,12 @@ class DashboardController extends AbstractDashboardController
         return $this->render('admin/dashboard.html.twig', [
             'toPrepareUrl' => $toPrepareUrl,
             'toShipUrl' => $toShipUrl,
+            'toRefundUrl' => $toRefundUrl,
+            'toCancelUrl' => $toCancelUrl,
             'countPrepare' => $data['countPrepare'],
             'countPendingShipping' => $data['countPendingShipping'],
+            'countRefunded' => $data['countRefunded'],
+            'countCancelled' => $data['countCancelled'],
             'chart' => $data['chart'],
             'chart2' => $data['chart2'],
             'chart3' => $data['chart3'],

@@ -150,4 +150,21 @@ class OrderRepository extends ServiceEntityRepository
 
         return $results;
     }
+
+    public function getCanceledOfTheWeek(): int
+    {
+        $now = new \DateTime();
+        $startOfWeek = (clone $now)->modify('monday this week')->setTime(0, 0, 0);
+        $endOfWeek   = (clone $now)->modify('sunday this week')->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('o')
+            ->select('COUNT(o.id)')
+            ->where('o.status IN (:status)')
+            ->andWhere('o.creationDate BETWEEN :start AND :end')
+            ->setParameter('status', ['cancelled'])
+            ->setParameter('start', $startOfWeek)
+            ->setParameter('end', $endOfWeek)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }

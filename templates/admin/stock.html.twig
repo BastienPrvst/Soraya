@@ -1,0 +1,74 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content %}
+
+    <main>
+        <div class="stock-page">
+
+            <h1>Gestion du stock de {{ product.name }}</h1>
+
+            <div class="stock-form-card">
+                <form
+                    action="{{ path('admin_product_stock', { product: product.id }) }}"
+                    method="post"
+                    id="stock-form"
+                    class="d-flex flex-column"
+                >
+                    <p class="stock-current">Stock actuel : {{ product.stock }}</p>
+
+                    <div class="stock-field">
+                        <label for="add-stock">Quantité à ajouter</label>
+                        <input type="number" name="add-stock" id="add-stock"
+                               oninput="document.getElementById('remove-stock').disabled = this.value !== ''">
+                    </div>
+
+                    <div class="stock-field">
+                        <label for="remove-stock">Quantité à supprimer</label>
+                        <input type="number" name="remove-stock" id="remove-stock"
+                               oninput="document.getElementById('add-stock').disabled = this.value !== ''">
+                    </div>
+
+                    <button type="button"
+                            data-bs-toggle="modal"
+                            data-bs-target="#confirm-stock-modal"
+                            class="btn btn-primary align-self-center mt-2 px-4">
+                        Valider
+                    </button>
+
+                </form>
+            </div>
+
+            {# Modale de confirmation #}
+            <div class="modal fade" id="confirm-stock-modal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+
+                        <div class="modal-header">
+                            <h5 class="modal-title">Confirmer la modification du stock</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+
+                        <div class="modal-body">
+                            Êtes-vous sûr de vouloir modifier le stock de <strong>{{ product.name }}</strong> ?
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                Annuler
+                            </button>
+                            <button type="submit" form="stock-form" class="btn btn-primary">
+                                Confirmer
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+
+{% endblock %}
+
+

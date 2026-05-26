@@ -23,7 +23,7 @@ framework:
                 - refund_pending
                 - refund
                 - refund_declined
-                - canceled
+                - cancelled
 
             transitions:
                 to_delivery_choice:
@@ -56,7 +56,7 @@ framework:
 
                 cancel:
                     from: [created, delivery_choice, pending_payment]
-                    to: canceled
+                    to: cancelled
 
                 back_to_delivery_choice:
                     from: pending_payment

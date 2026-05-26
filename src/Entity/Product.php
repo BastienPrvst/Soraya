@@ -7,6 +7,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
 class Product
@@ -41,6 +42,7 @@ class Product
      * @var Collection<int, Image>
      */
     #[ORM\OneToMany(targetEntity: Image::class, mappedBy: 'product', cascade: ['persist', 'remove'])]
+    #[Assert\Valid]
     private Collection $images;
 
     #[ORM\Column]
@@ -51,6 +53,12 @@ class Product
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $newPrice = null;
+
+    #[ORM\Column]
+    private ?int $stock = null;
+
+    #[ORM\Column(length: 255)]
+    private ?string $smallDescription = null;
 
     public function __construct()
     {
@@ -223,5 +231,29 @@ class Product
     public function __toString(): string
     {
         return $this->getName();
+    }
+
+    public function getStock(): ?int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(int $stock): static
+    {
+        $this->stock = $stock;
+
+        return $this;
+    }
+
+    public function getSmallDescription(): ?string
+    {
+        return $this->smallDescription;
+    }
+
+    public function setSmallDescription(string $smallDescription): static
+    {
+        $this->smallDescription = $smallDescription;
+
+        return $this;
     }
 }

@@ -8,13 +8,13 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 
-class DashboardService
+readonly class DashboardService
 {
 
     public function __construct(
-        private readonly OrderRepository $orderRepository,
-        private readonly RequestStack $requestStack,
-        private readonly ChartBuilderInterface $chartBuilder,
+        private OrderRepository       $orderRepository,
+        private RequestStack          $requestStack,
+        private ChartBuilderInterface $chartBuilder,
     ) {
     }
 
@@ -32,10 +32,11 @@ class DashboardService
             'status' => ['pending_shipping'],
         ]);
 
-        //1. Chiffre d’affaires
-        //2. ⁠Nombre de commandes
-        //3. ⁠Panier moyen
-        //4. ⁠Nombre de visiteurs du site
+        $countRefunded = $this->orderRepository->count([
+            'status' => ['refund_pending'],
+        ]);
+
+        $countCancelled = $this->orderRepository->getCanceledOfTheWeek();
 
         $months = [
             1 => 'Jan',
@@ -85,7 +86,7 @@ class DashboardService
             ];
         }
 
-        //Nbr commandes par moi
+        //Nbr commandes par mois
 
         $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
 
@@ -111,7 +112,7 @@ class DashboardService
                     'data' => array_column($data, 'average'),
                     'backgroundColor' => '#4ABEBE',
                     'borderColor' => '#4ABEBE',
-                    'yAxisID' => 'y',  // ← axe gauche
+                    'yAxisID' => 'y',
                 ],
                 [
                     'label' => 'Chiffre d\'affaire',
@@ -171,8 +172,6 @@ class DashboardService
                 [
                     'label' => 'Vendus ce mois-ci',
                     'data' => array_column($productsData, 'product_sold'),
-                    'cutout' => '40%',
-                    'position' => 'chartarea'
                 ]
             ]
         ]);
@@ -215,6 +214,8 @@ class DashboardService
         return [
             'countPrepare' => $countPrepare,
             'countPendingShipping' => $countPendingShipping,
+            'countRefunded' => $countRefunded,
+            'countCancelled' => $countCancelled,
             'chart' => $chart,
             'chart2' => $chart2,
             'chart3' => $chart3,

@@ -15,7 +15,7 @@ enum OrderStatus: string
     case PENDING_REFUND = 'refund_pending';
     case REFUND = 'refund';
     case REFUND_DECLINED = 'refund_declined';
-    case CANCELED = 'canceled';
+    case CANCELLED = 'cancelled';
 
     public function label(): string
     {
@@ -31,7 +31,7 @@ enum OrderStatus: string
             self::PENDING_REFUND => 'En attente de remboursement',
             self::REFUND => 'Remboursée',
             self::REFUND_DECLINED => 'Remboursement décliné',
-            self::CANCELED => 'Annulée',
+            self::CANCELLED => 'Annulée',
         };
     }
 
@@ -49,7 +49,7 @@ enum OrderStatus: string
             self::PENDING_REFUND,
             self::REFUND,
             self::REFUND_DECLINED,
-            self::CANCELED,
+            self::CANCELLED,
         ];
 
         return array_search($this, $order) >= array_search($minimum, $order);

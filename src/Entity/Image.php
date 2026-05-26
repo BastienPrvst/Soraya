@@ -27,7 +27,7 @@ class Image
             "image/avif"
         ],
         maxSizeMessage: "Le taille maximum du fichier ne doit pas dépasser 2Mo",
-        mimeTypesMessage: "Format non supporté (JPEG, PNG, WEBP uniquement)."
+        mimeTypesMessage: "Format non supporté (JPEG, PNG, WEBP, AVIF uniquement)."
     )]
     private ?File $imageFile = null;
     #[ORM\Column(length: 500)]

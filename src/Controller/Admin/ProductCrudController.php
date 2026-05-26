@@ -13,12 +13,15 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\PercentField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
+use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use Symfony\Component\Form\Form;
 
 class ProductCrudController extends AbstractCrudController
 {
@@ -53,7 +56,16 @@ class ProductCrudController extends AbstractCrudController
                     ->linkToCrudAction(Action::DELETE)
             );
 
+        $stockAction = Action::new('stock', 'Gérer le stock')
+            ->setIcon('fa fa-box')
+            ->linkToRoute(
+                'admin_product_stock',
+                fn(Product $product) => ['product' => $product->getId()]
+            );
+
         return $actions
+            ->add(Crud::PAGE_INDEX, $stockAction)
+            ->add(Crud::PAGE_EDIT, $stockAction)
             ->add(Crud::PAGE_INDEX, $editDeleteGroup)
             ->remove(Crud::PAGE_INDEX, Action::DELETE)
             ->remove(Crud::PAGE_INDEX, Action::EDIT);
@@ -61,12 +73,31 @@ class ProductCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
+        if ($pageName === CRUD::PAGE_INDEX) {
+            return $this->getIndexFields();
+        }
+
+        return $this->getFormFields();
+    }
+
+    private function getIndexFields(): iterable
+    {
         return [
             TextField::new('name')
-                ->setLabel('Nom'),
-            TextEditorField::new('description')
-                ->setLabel('Description')
-                ->onlyOnForms(),
+                ->setLabel('Nom')
+                ->setCssClass('fw-bold'),
+            IntegerField::new('stock')
+                ->setLabel('Stock')
+                ->setCssClass('fw-bold')
+                ->formatValue(function ($value, Product $product) {
+                    $stock = $product->getStock();
+
+                    if ($stock < 20) {
+                        return sprintf('<span style="color: red; font-weight: 600;">%d</span>', $stock);
+                    }
+
+                    return $stock;
+                }),
             MoneyField::new('price')
                 ->setCurrency('EUR')
                 ->setLabel('Prix')
@@ -77,6 +108,47 @@ class ProductCrudController extends AbstractCrudController
                 ->setLabel('Nouveau prix')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false),
+            AssociationField::new('category')
+                ->setLabel('Catégories')
+                ->formatValue(function ($value) {
+                    return implode(', ', $value->map(fn($c) => $c->getName())->toArray());
+                })
+            ,
+        ];
+    }
+
+    private function getFormFields(): iterable
+    {
+        return [
+            FormField::addColumn(6),
+            FormField::addFieldset(),
+            TextField::new('name')
+                ->setLabel('Nom')
+                ->setCssClass('fw-bold')
+                ->setColumns(8),
+            IntegerField::new('stock')
+                ->setLabel('Stock')
+                ->setDisabled()
+                ->setColumns(4),
+            TextEditorField::new('smallDescription')
+                ->setLabel('Description courte')
+                ->setHelp('255 caractères maximum'),
+            TextEditorField::new('description')
+                ->setLabel('Description'),
+            FormField::addFieldSet('Prix'),
+            MoneyField::new('price')
+                ->setCurrency('EUR')
+                ->setLabel('Prix')
+                ->setStoredAsCents(false)
+                ->setColumns(4),
+            PercentField::new('discount')
+                ->setLabel('% Reduction')
+                ->setColumns(4),
+            MoneyField::new('newPrice')
+                ->setLabel('Nouveau prix')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->setColumns(4),
             NumberField::new('weight')
                 ->setLabel('Poids')
                 ->formatValue(function ($value) {
@@ -85,20 +157,20 @@ class ProductCrudController extends AbstractCrudController
                     }
                     return null;
                 })
+                ->onlyOnDetail()
             ,
             AssociationField::new('category')
                 ->setLabel('Catégories')
                 ->formatValue(function ($value) {
                     return implode(', ', $value->map(fn($c) => $c->getName())->toArray());
-                })
-            ,
+                }),
+
+            FormField::addColumn(6),
+            FormField::addFieldset(),
             CollectionField::new('images', 'Galerie')
                 ->setEntryType(ImageType::class)
-                ->allowAdd()
-                ->allowDelete()
                 ->renderExpanded()
                 ->setFormTypeOption('by_reference', false)
-                ->onlyOnForms()
         ];
     }
 }

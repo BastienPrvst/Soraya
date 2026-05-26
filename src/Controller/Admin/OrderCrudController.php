@@ -155,7 +155,7 @@ class OrderCrudController extends AbstractCrudController
             ->addAction(
                 Action::new(
                     'livraison_shipped',
-                    'Colis expédié'
+                    'Marquer comme expédié'
                 )
                     ->linkToRoute('admin_delivery_shipped')
                     ->renderAsButton()
@@ -174,7 +174,7 @@ class OrderCrudController extends AbstractCrudController
                 return $order->getStatus() === OrderStatus::TO_PREPARE;
             });
 
-        $markAsShippedAction = Action::new('markAsShipped', 'Colis expédié')
+        $markAsShippedAction = Action::new('markAsShipped', 'Marquer comme expedié')
             ->setIcon('fa-solid fa-circle-check')
             ->linkToRoute(
                 'admin_package_shipped',
@@ -192,7 +192,7 @@ class OrderCrudController extends AbstractCrudController
             ->add(Crud::PAGE_EDIT, $packageAction)
             ->add(Crud::PAGE_INDEX, $editDeleteGroup)
             ->add(Crud::PAGE_EDIT, $markAsShippedAction)
-            ->addBatchAction(Action::new('batchMarkAsShipped', 'En cours de livraison')
+            ->addBatchAction(Action::new('batchMarkAsShipped', 'Marquer comme expédié')
                 ->linkToCrudAction('batchMarkAsShipped'))
             ->reorder(Crud::PAGE_INDEX, [
                 'package',
@@ -276,7 +276,7 @@ class OrderCrudController extends AbstractCrudController
                     OrderStatus::PENDING_SHIPPING->value      => 'primary',
                     OrderStatus::SHIPPED->value => 'success',
                     OrderStatus::REFUND->value    => 'warning',
-                    OrderStatus::CANCELED->value  => 'danger',
+                    OrderStatus::CANCELLED->value  => 'danger',
                 ])
                 ->setSortable(true),
             TextField::new('deliveryModeLabel')

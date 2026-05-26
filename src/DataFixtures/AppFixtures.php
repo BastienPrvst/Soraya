@@ -114,8 +114,10 @@ class AppFixtures extends Fixture
                 ->setWeight((random_int(1, 200) / 100))
                 ->setName('Produit' . $i)
                 ->setPrice($faker->randomFloat(2, 15, 80))
+                ->setSmallDescription($faker->text(255))
                 ->setDescription($faker->paragraph())
-                ->addCategory($categories[$category]);
+                ->addCategory($categories[$category])
+                ->setStock(random_int(1, 250));
             $this->manager->persist($product);
         }
         $this->manager->flush();
@@ -141,7 +143,7 @@ class AppFixtures extends Fixture
                 OrderStatus::REFUND,
                 OrderStatus::SHIPPED,
                 OrderStatus::CREATED,
-                OrderStatus::CANCELED,
+                OrderStatus::CANCELLED,
                 OrderStatus::TO_PREPARE,
                 OrderStatus::PENDING_SHIPPING,
                 OrderStatus::PENDING_PAYMENT,

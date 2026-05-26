@@ -18,11 +18,12 @@ class ImageType extends AbstractType
             ->add('imageFile', VichImageType::class, [
                 'label' => false,
                 'required' => false,
-                'allow_delete' => true,
+                'allow_delete' => false,
                 'download_uri' => false,
                 'image_uri' => true,
                 'attr' => [
-                    'class' => 'js-image-input'
+                    'class' => 'js-image-input',
+                    'accept' => 'image/jpeg,image/png,image/webp,image/avif'
                 ]
             ])
             ->add('isMain', CheckboxType::class, [

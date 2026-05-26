@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Order;
+use App\Entity\Product;
 use App\Enum\OrderStatus;
 use App\Form\Admin\PackageType;
 use App\Repository\OrderRepository;
@@ -121,6 +122,48 @@ class AdminController extends AbstractController
             ->setEntityId($order->getId())
             ->generateUrl());
     }
+
+    #[Route(path: '/admin/stock/{product}', name: 'admin_product_stock')]
+    public function manageStocks(
+        Product $product,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        AdminUrlGenerator $adminUrlGenerator,
+    ): Response {
+        $addStock = $request->request->get('add-stock');
+        $removeStock = $request->request->get('remove-stock');
+        $actualStock = $product->getStock();
+        $url = $adminUrlGenerator
+            ->setController(ProductCrudController::class)
+            ->setAction('index')
+            ->generateUrl();
+
+        if ($addStock && is_numeric($addStock)) {
+            $actualStock += $addStock;
+            $product->setStock($actualStock);
+            $entityManager->flush();
+            return $this->redirect($url);
+        }
+
+        if ($removeStock && is_numeric($removeStock)) {
+            if (($actualStock - $removeStock) < 0) {
+                $this->addFlash('error', 'Le stock ne peut pas aller en dessous de 0');
+                return $this->render('admin/stock.html.twig', [
+                    'product' => $product,
+                ]);
+            }
+
+            $product->setStock($actualStock - $removeStock);
+            $entityManager->flush();
+            return $this->redirect($url);
+        }
+
+
+        return $this->render('admin/stock.html.twig', [
+        'product' => $product,
+        ]);
+    }
+
 
 //    #[Route('/admin/label/{token}', name: 'admin_print_label')]
 //    public function printLabel(

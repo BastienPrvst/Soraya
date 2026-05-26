@@ -40,7 +40,7 @@ class OrderStatusFilter implements FilterInterface
                             OrderStatus::PAID      => 'bg-primary',
                             OrderStatus::SHIPPED => 'bg-success',
                             OrderStatus::REFUND    => 'bg-warning',
-                            OrderStatus::CANCELED  => 'bg-danger',
+                            OrderStatus::CANCELLED  => 'bg-danger',
                             default         => 'bg-secondary',
                         }
                     ], OrderStatus::cases())

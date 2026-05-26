@@ -146,8 +146,8 @@ readonly class OrderService
             ->get(SessionElements::SHOPPING_CART->value, []);
 
         if (empty($cartItems)) {
-            if ($this->workflowService->canTransition($order, OrderStatus::CANCELED->value)) {
-                $this->workflowService->applyTransition($order, OrderStatus::CANCELED->value);
+            if ($this->workflowService->canTransition($order, OrderStatus::CANCELLED->value)) {
+                $this->workflowService->applyTransition($order, OrderStatus::CANCELLED->value);
             }
             $this->entityManager->flush();
             return;
