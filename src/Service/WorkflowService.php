@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Order;
+use App\Enum\OrderStatus;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Workflow\Registry;
@@ -22,6 +23,9 @@ readonly class WorkflowService
             ->can($order, $transition);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function applyTransition(Order $order, string $transition): void
     {
         $workflow = $this->registry->get($order, 'order_completing');
@@ -31,6 +35,10 @@ readonly class WorkflowService
         }
 
         $workflow->apply($order, $transition);
+        if ($order->getStatus()?->isAtLeast(OrderStatus::PAID)) {
+            $order->setUpdatedAt(new \DateTimeImmutable('', new \DateTimeZone('Europe/Paris')));
+        }
+
         $this->entityManager->flush();
     }
 }

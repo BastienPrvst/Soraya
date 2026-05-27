@@ -6,6 +6,7 @@ use App\Entity\User;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\ActionGroup;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
+use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ArrayField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
@@ -17,6 +18,10 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
+use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
 class UserCrudController extends AbstractCrudController
 {
@@ -34,6 +39,12 @@ class UserCrudController extends AbstractCrudController
             ->showEntityActionsInlined();
     }
 
+
+
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
     public function configureActions(Actions $actions): Actions
     {
         $editDeleteGroup = ActionGroup::new('actions', '')
@@ -49,9 +60,25 @@ class UserCrudController extends AbstractCrudController
                     ->addCssClass('text-danger')
                     ->linkToCrudAction(Action::DELETE)
             );
+        $adminUrlGenerator = $this->container->get(AdminUrlGenerator::class);
+
+        $ordersAction = Action::new('showOrders', 'Commandes liées')
+            ->setIcon('fa fa-eye')
+            ->linkToUrl(function (User $user) use ($adminUrlGenerator) {
+                return $adminUrlGenerator
+                    ->setController(OrderCrudController::class)
+                    ->setAction(Action::INDEX)
+                    ->set('filters[user][value]', $user->getId())
+                    ->set('filters[user][comparison]', '=')
+                    ->generateUrl();
+            });
 
         return $actions
             ->add(Crud::PAGE_INDEX, $editDeleteGroup)
+            ->add(Crud::PAGE_INDEX, $ordersAction)
+            ->add(Crud::PAGE_EDIT, $ordersAction)
+            ->add(Crud::PAGE_DETAIL, $ordersAction)
+            ->reorder(Crud::PAGE_INDEX, ['showOrders', 'actions'])
             ->remove(Crud::PAGE_INDEX, Action::DELETE)
             ->remove(Crud::PAGE_INDEX, Action::EDIT);
     }
@@ -72,9 +99,7 @@ class UserCrudController extends AbstractCrudController
                 ->allowMultipleChoices()
                 ->renderExpanded(false),
             BooleanField::new('isActive')
-                ->setLabel('Actif'),
-            CollectionField::new('orders')
-                ->onlyOnForms(),
+                ->setLabel('Actif')
         ];
     }
 }

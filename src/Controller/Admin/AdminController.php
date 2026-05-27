@@ -89,6 +89,8 @@ class AdminController extends AbstractController
                 ->set('filters[status][comparison]', '=')
                 ->generateUrl();
 
+            $this->addFlash('success', 'La commande ' . $order->getBetterId() . ' est marquée comme emballée.');
+
             if (!$nextOrder || $form->get('validate')->isClicked()) {
                 return $this->redirect($url);
             }
@@ -112,13 +114,21 @@ class AdminController extends AbstractController
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         EntityManagerInterface $entityManager,
         AdminUrlGenerator $adminUrlGenerator,
+        Request $request,
     ): Response {
-        $order->setStatus(OrderStatus::SHIPPING);
-        $entityManager->flush();
+        try {
+            $order->setStatus(OrderStatus::SHIPPING);
+            $entityManager->flush();
+        } catch (\Exception) {
+            $this->addFlash('error', 'Une erreur est survenue');
+            return $this->redirect($request->headers->get('referer'));
+        }
+
+        $this->addFlash('success', 'Commande ' . $order->getBetterId() . ' marquée comme expédiée.');
 
         return $this->redirect($adminUrlGenerator
             ->setController(OrderCrudController::class)
-            ->setAction(Action::EDIT)
+            ->setAction(Action::INDEX)
             ->setEntityId($order->getId())
             ->generateUrl());
     }
@@ -148,9 +158,11 @@ class AdminController extends AbstractController
         if ($removeStock && is_numeric($removeStock)) {
             if (($actualStock - $removeStock) < 0) {
                 $this->addFlash('error', 'Le stock ne peut pas aller en dessous de 0');
-                return $this->render('admin/stock.html.twig', [
-                    'product' => $product,
-                ]);
+                return $this->redirect(
+                    $adminUrlGenerator
+                        ->setRoute('admin_product_stock', ['product' => $product->getId()])
+                        ->generateUrl()
+                );
             }
 
             $product->setStock($actualStock - $removeStock);

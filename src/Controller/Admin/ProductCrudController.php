@@ -9,10 +9,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\IdField;
-use EasyCorp\Bundle\EasyAdminBundle\Field\ImageField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\IntegerField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
@@ -21,7 +18,6 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
-use Symfony\Component\Form\Form;
 
 class ProductCrudController extends AbstractCrudController
 {
@@ -93,7 +89,7 @@ class ProductCrudController extends AbstractCrudController
                     $stock = $product->getStock();
 
                     if ($stock < 20) {
-                        return sprintf('<span style="color: red; font-weight: 600;">%d</span>', $stock);
+                        return sprintf('<span style="color: red; font-weight: 800; background: #F9D4D4; padding: 0 5px; border-radius: 5px">%d</span><span style="font-size: 24px;">⚠️</span>', $stock);
                     }
 
                     return $stock;

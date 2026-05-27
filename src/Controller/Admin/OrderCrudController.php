@@ -30,6 +30,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\MoneyField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\NumberField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TelephoneField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
+use EasyCorp\Bundle\EasyAdminBundle\Filter\EntityFilter;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
@@ -155,9 +156,11 @@ class OrderCrudController extends AbstractCrudController
             ->addAction(
                 Action::new(
                     'livraison_shipped',
-                    'Marquer comme expédié'
+                    'Marquer comme expédiée'
                 )
-                    ->linkToRoute('admin_delivery_shipped')
+                    ->linkToRoute('admin_package_shipped', function ($order) {
+                        return ['token' => $order->getToken()];
+                    })
                     ->renderAsButton()
                     ->displayIf(static function (Order $order) {
                         return $order->getStatus() === OrderStatus::PENDING_SHIPPING;
@@ -213,9 +216,9 @@ class OrderCrudController extends AbstractCrudController
 
     public function configureFilters(Filters $filters): Filters
     {
-        return $filters->add(
-            OrderStatusFilter::new('status')
-        );
+        return $filters
+            ->add(OrderStatusFilter::new('status'))
+            ->add(EntityFilter::new('user'));
     }
 
     public function configureFields(string $pageName): iterable
@@ -260,7 +263,7 @@ class OrderCrudController extends AbstractCrudController
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false),
             DateField::new('creationDate')
-                ->setLabel('Date')
+                ->setLabel('Date de création')
                 ->setFormat('dd/MM/YYYY')
                 ->setTimezone('Europe/Paris'),
             ChoiceField::new('status')
@@ -285,6 +288,9 @@ class OrderCrudController extends AbstractCrudController
             NumberField::new('totalQuantity')
                 ->setLabel('Nbr de produits')
                 ->setTextAlign('center'),
+            DateField::new('updatedAt')
+                ->setFormat('dd/MM/YYYY à HH:mm')
+                ->setLabel('Dernière modification')
         ];
     }
 

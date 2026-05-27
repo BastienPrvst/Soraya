@@ -91,6 +91,9 @@ class Order
     #[ORM\Column(length: 64, unique: true)]
     private ?string $sessionKey = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -373,5 +376,17 @@ class Order
     public function getBetterId(): string
     {
         return '#' . sprintf('%05d', $this->getId());
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
     }
 }
