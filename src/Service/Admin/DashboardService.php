@@ -153,7 +153,7 @@ readonly class DashboardService
 
         $selectedMonth = $request->query->get('month', $currentMonth);
 
-        $productsData = $this->orderRepository->getProductsSoldByCategories((int)$selectedMonth);
+        $productsData = $this->orderRepository->getProductsSoldByCategories((int)$selectedYear, (int)$selectedMonth);
 
         $chart3 = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
 

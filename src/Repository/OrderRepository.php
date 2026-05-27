@@ -106,15 +106,18 @@ class OrderRepository extends ServiceEntityRepository
     /**
      * @throws \Exception
      */
-    public function getProductsSoldByCategories(int $month): array
+    public function getProductsSoldByCategories(int $year, int $month): array
     {
+        if (!$year || !is_numeric($year)) {
+            $year = (new \DateTime())->format('Y');
+        }
+
         if (!$month
         || $month < 1
         || $month > 12) {
             $startDate = new \DateTime('first day of this month');
             $lastDay = new \DateTime('last day of this month');
         } else {
-            $year      = (new \DateTime())->format('Y');
             $startDate = new \DateTime("first day of $year-$month");
             $lastDay   = new \DateTime("last day of $year-$month");
         }
