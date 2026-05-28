@@ -49,16 +49,22 @@ class Product
     private ?float $weight = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    private ?int $discount = null;
+    private ?int $percentageDiscount = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    private ?int $newPrice = null;
+    private ?int $flatDiscount = null;
 
     #[ORM\Column]
     private ?int $stock = null;
 
     #[ORM\Column(length: 255)]
     private ?string $smallDescription = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $ingredients = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $benefits = null;
 
     public function __construct()
     {
@@ -204,26 +210,26 @@ class Product
         return $this;
     }
 
-    public function getDiscount(): ?int
+    public function getPercentageDiscount(): ?int
     {
-        return $this->discount;
+        return $this->percentageDiscount;
     }
 
-    public function setDiscount(?int $discount): static
+    public function setPercentageDiscount(?int $percentageDiscount): static
     {
-        $this->discount = $discount;
+        $this->percentageDiscount = $percentageDiscount;
 
         return $this;
     }
 
-    public function getNewPrice(): ?int
+    public function getFlatDiscount(): ?int
     {
-        return $this->newPrice;
+        return $this->flatDiscount;
     }
 
-    public function setNewPrice(?int $newPrice): static
+    public function setFlatDiscount(?int $flatDiscount): static
     {
-        $this->newPrice = $newPrice;
+        $this->flatDiscount = $flatDiscount;
 
         return $this;
     }
@@ -253,6 +259,30 @@ class Product
     public function setSmallDescription(string $smallDescription): static
     {
         $this->smallDescription = $smallDescription;
+
+        return $this;
+    }
+
+    public function getIngredients(): ?string
+    {
+        return $this->ingredients;
+    }
+
+    public function setIngredients(?string $ingredients): static
+    {
+        $this->ingredients = $ingredients;
+
+        return $this;
+    }
+
+    public function getBenefits(): ?string
+    {
+        return $this->benefits;
+    }
+
+    public function setBenefits(?string $benefits): static
+    {
+        $this->benefits = $benefits;
 
         return $this;
     }

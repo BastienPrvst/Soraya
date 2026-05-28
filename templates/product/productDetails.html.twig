@@ -14,11 +14,41 @@
             {{ product.description }} <br>
 
             {{ product.price }}€
+
+            <span
+                id="stock-display"
+                data-product-id="{{ product.id }}"
+                class="badge {{ product.stock > 0 ? 'bg-success' : 'bg-danger' }}"
+            >
+            {{ product.stock > 0 ? product.stock ~ ' en stock' : 'Rupture' }}
+        </span>
+
+            <button>Ajouter au panier</button>
         </div>
 
     </main>
 
 {% endblock %}
+
+{% block javascripts %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const el = document.getElementById('stock-display');
+            const stockUrl = "{{ path('api_product_stock', { product: product.id }) }}";
+
+            setInterval(async () => {
+                const res = await fetch(stockUrl);
+                const { stock, available } = await res.json();
+
+                el.textContent = available ? `${stock} en stock` : 'Rupture';
+                el.className = `badge ${available ? 'bg-success' : 'bg-danger'}`;
+            }, 5_000);
+        });
+    </script>
+
+{% endblock %}
+
 
 
 

@@ -18,7 +18,8 @@ class ShoppingCartService extends AbstractType
         private readonly ProductRepository $productRepository,
         private readonly RequestStack      $requestStack,
         private readonly EntityManagerInterface $entityManager,
-        private readonly Registry $registry
+        private readonly Registry $registry,
+        private readonly StockService $stockService
     ) {
     }
 
@@ -27,6 +28,11 @@ class ShoppingCartService extends AbstractType
         $session = $this->requestStack->getSession();
         $product = $this->productRepository->find($id);
         if ($product !== null) {
+
+            if (!$this->stockService->isAvailable($product, $quantity)) {
+                throw new \LogicException('Le produit n\'est pas disponible dans cette quantité.');
+            }
+
             if (!$session->has(SessionElements::SHOPPING_CART->value)) {
                 $session->set(SessionElements::SHOPPING_CART->value, []);
             }
@@ -61,7 +67,14 @@ class ShoppingCartService extends AbstractType
         // False = soustraction
 
         if ($action) {
-            $shoppingCart[$id] += $quantity;
+            $product = $this->productRepository->find($id);
+            if ($product !== null) {
+                if (!$this->stockService->isAvailable($product, $quantity)) {
+                    throw new \LogicException('Quantité non disponible pour ce produit.');
+                }
+                $shoppingCart[$id] += $quantity;
+            }
+
         } else {
             $shoppingCart[$id] -= $quantity;
 
@@ -149,11 +162,16 @@ class ShoppingCartService extends AbstractType
         $products = $this->productRepository->findBy(['id' => $ids]);
 
         foreach ($products as $product) {
+
             if ($product === null) {
                 continue;
             }
             $id = $product->getId();
             $quantity = $cart[$id];
+
+            if (!$this->stockService->isAvailable($product, $quantity)) {
+                continue;
+            }
 
             $updatedCart[$id] = [
                 'id' => $id,

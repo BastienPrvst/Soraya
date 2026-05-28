@@ -10,6 +10,7 @@ use App\Enum\OrderStatus;
 use App\Form\Admin\PackageType;
 use App\Repository\OrderRepository;
 use App\Service\MailerService;
+use App\Service\StockService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Attribute\AdminRoute;
@@ -139,24 +140,26 @@ class AdminController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         AdminUrlGenerator $adminUrlGenerator,
+        StockService $stockService
     ): Response {
-        $addStock = $request->request->get('add-stock');
-        $removeStock = $request->request->get('remove-stock');
-        $actualStock = $product->getStock();
+        $addQuantity = $request->request->get('add-stock');
+        $removeQuantity = $request->request->get('remove-stock');
         $url = $adminUrlGenerator
             ->setController(ProductCrudController::class)
             ->setAction('index')
             ->generateUrl();
 
-        if ($addStock && is_numeric($addStock)) {
-            $actualStock += $addStock;
-            $product->setStock($actualStock);
-            $entityManager->flush();
+        if ($addQuantity && is_numeric($addQuantity)) {
+            $stockService->add($product, (int)$addQuantity);
+            $this->addFlash('success', 'Le stock du produit ' . $product->getName() . ' a bien été modifié. Nouveau stock : ' . $product->getStock());
             return $this->redirect($url);
         }
 
-        if ($removeStock && is_numeric($removeStock)) {
-            if (($actualStock - $removeStock) < 0) {
+        if ($removeQuantity && is_numeric($removeQuantity)) {
+
+            try {
+                $stockService->remove($product, (int)$removeQuantity);
+            }catch (\Exception){
                 $this->addFlash('error', 'Le stock ne peut pas aller en dessous de 0');
                 return $this->redirect(
                     $adminUrlGenerator
@@ -165,11 +168,8 @@ class AdminController extends AbstractController
                 );
             }
 
-            $product->setStock($actualStock - $removeStock);
-            $entityManager->flush();
             return $this->redirect($url);
         }
-
 
         return $this->render('admin/stock.html.twig', [
         'product' => $product,

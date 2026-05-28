@@ -79,6 +79,9 @@ class ProductCrudController extends AbstractCrudController
     private function getIndexFields(): iterable
     {
         return [
+            IntegerField::new('id')
+                ->setLabel('ID')
+                ->setDisabled(),
             TextField::new('name')
                 ->setLabel('Nom')
                 ->setCssClass('fw-bold'),
@@ -98,10 +101,10 @@ class ProductCrudController extends AbstractCrudController
                 ->setCurrency('EUR')
                 ->setLabel('Prix')
                 ->setStoredAsCents(false),
-            PercentField::new('discount')
+            PercentField::new('percentageDiscount')
                 ->setLabel('% Reduction'),
-            MoneyField::new('newPrice')
-                ->setLabel('Nouveau prix')
+            MoneyField::new('flatDiscount')
+                ->setLabel('Reduction en €')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false),
             AssociationField::new('category')
@@ -118,6 +121,9 @@ class ProductCrudController extends AbstractCrudController
         return [
             FormField::addColumn(6),
             FormField::addFieldset(),
+            IntegerField::new('id')
+            ->setLabel('ID')
+            ->setDisabled(),
             TextField::new('name')
                 ->setLabel('Nom')
                 ->setCssClass('fw-bold')
@@ -131,17 +137,21 @@ class ProductCrudController extends AbstractCrudController
                 ->setHelp('255 caractères maximum'),
             TextEditorField::new('description')
                 ->setLabel('Description'),
+            TextEditorField::new('ingredients')
+                ->setLabel('Ingredients'),
+            TextEditorField::new('benefits')
+                ->setLabel('Bénéfices'),
             FormField::addFieldSet('Prix'),
             MoneyField::new('price')
                 ->setCurrency('EUR')
                 ->setLabel('Prix')
                 ->setStoredAsCents(false)
                 ->setColumns(4),
-            PercentField::new('discount')
+            PercentField::new('percentageDiscount')
                 ->setLabel('% Reduction')
                 ->setColumns(4),
-            MoneyField::new('newPrice')
-                ->setLabel('Nouveau prix')
+            MoneyField::new('flatDiscount')
+                ->setLabel('Reduction en €')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false)
                 ->setColumns(4),
