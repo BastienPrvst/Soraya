@@ -12,11 +12,14 @@ parameters:
     stripe.webhook_secret_key: '%env(STRIPE_WEBHOOK_SECRET)%'
     stripe.dashboard.url: '%env(STRIPE_DASHBOARD_URL)%'
     google.api.key: '%env(GOOGLE_MAP_API_KEY)%'
+    app.admin.email: '%env(ADMIN_MAIL)%'
 services:
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
         autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        bind:
+            $adminMail: 'app.admin_email'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

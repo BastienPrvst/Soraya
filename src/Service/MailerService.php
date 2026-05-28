@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Order;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use Psr\Log\LoggerInterface;
 use Random\RandomException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportException;
@@ -21,6 +22,8 @@ readonly class MailerService
         private MailerInterface       $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private EntityManagerInterface $entityManager,
+        private string $adminMail,
+        private readonly LoggerInterface $logger
     ) {
     }
 
@@ -34,6 +37,10 @@ readonly class MailerService
             return;
         }
 
+        //Mail client
+
+        //TODO Faire le corps des mails
+
         $email = (new Email())
             ->from('noreply@soraya.com')
             ->to($order->getEmail())
@@ -41,7 +48,20 @@ readonly class MailerService
             ->priority(Email::PRIORITY_HIGH)
             ->text('Votre commande à été validée!');
 
-        $this->mailer->send($email);
+        //Mail Admin
+
+        $adminEmail = (new Email())
+            ->from('noreply@soraya.com')
+            ->to($this->adminMail)
+            ->subject('Nouvelle commande ' . $order->getBetterId())
+            ->text('Nouvelle commande pour admin');
+
+        try {
+            $this->mailer->send($email);
+            $this->mailer->send($adminEmail);
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error($e->getMessage());
+        }
     }
 
     /**

@@ -305,7 +305,7 @@
 
 .crud-link-div {
     display: flex;
-    align-items: baseline;       /* aligne sur la ligne de base du texte */
+    align-items: baseline;
     justify-content: space-between;
     width: 100%;
     padding-right: 10%;
@@ -521,6 +521,35 @@
 
 
 
+/*───────────────────────Partie ORDERCRUD─────────────────────────*/
 
+.package-filter {
+    background: linear-gradient(135deg, #e0f7ef, #b2edd8);
+    color: #0a7c5c;
+}
 
+.pending-shipping-filter {
+    background: linear-gradient(135deg, #e8f0fe, #c2d4fc);
+    color: #2a52be;
+}
+
+.refund-filter {
+    background: linear-gradient(135deg, #fff4e0, #fde4b0);
+    color: #b06800;
+}
+
+.shipping-filter {
+    background: linear-gradient(135deg, #fce8f0, #f9c8df);
+    color: #a0306a;
+}
+
+.filter{
+    transition: 0.4s ease;
+}
+
+.filter:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+    transition: 0.4s ease;
+}
 

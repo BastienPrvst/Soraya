@@ -90,22 +90,22 @@ class OrderCrudController extends AbstractCrudController
             'to_prepare' => [
                 'label'     => 'A emballer',
                 'status'    => OrderStatus::TO_PREPARE,
-                'css_class' => 'btn-success'
+                'css_class' => 'package-filter filter'
             ],
             'pending_shipping' => [
                 'label'     => 'A expédier',
                 'status'    => OrderStatus::PENDING_SHIPPING,
-                'css_class' => 'btn-primary'
+                'css_class' => 'pending-shipping-filter filter'
             ],
             'shipping' => [
                 'label'     => 'En cours de livraison',
                 'status'    => OrderStatus::SHIPPING,
-                'css_class' => 'btn-secondary'
+                'css_class' => 'shipping-filter filter'
             ],
             'pending_refund' => [
                 'label'     => 'En attente de remboursement',
                 'status'    => OrderStatus::PENDING_REFUND,
-                'css_class' => 'btn-warning',
+                'css_class' => 'refund-filter filter',
             ],
         ];
 
@@ -280,6 +280,7 @@ class OrderCrudController extends AbstractCrudController
                     OrderStatus::SHIPPED->value => 'success',
                     OrderStatus::REFUND->value    => 'warning',
                     OrderStatus::CANCELLED->value  => 'danger',
+                    OrderStatus::PENDING_REFUND->value => 'warning',
                 ])
                 ->setSortable(true),
             TextField::new('deliveryModeLabel')
