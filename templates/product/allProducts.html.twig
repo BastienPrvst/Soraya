@@ -8,6 +8,10 @@
 {% block body %}
     <main>
 
+        {% for message in app.flashes('error') %}
+            <div>{{ message }}</div>
+        {% endfor %}
+
         <h1>Les Produits</h1>
 
         <section class="d-flex flex-row align-items-stretch flex-wrap w-100 mt-5 ">

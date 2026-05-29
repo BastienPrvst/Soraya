@@ -28,7 +28,6 @@ class ShoppingCartService extends AbstractType
         $session = $this->requestStack->getSession();
         $product = $this->productRepository->find($id);
         if ($product !== null) {
-
             if (!$this->stockService->isAvailable($product, $quantity)) {
                 throw new \LogicException('Le produit n\'est pas disponible dans cette quantité.');
             }
@@ -42,6 +41,9 @@ class ShoppingCartService extends AbstractType
             if (isset($shoppingCart[$id])) {
                 $this->update($id, true, $quantity);
             } else {
+                if (!$this->stockService->isAvailable($product, $quantity)) {
+                    throw new \LogicException('Le produit n\'est pas disponible dans cette quantité.');
+                }
                 $shoppingCart[$id] = $quantity;
                 $session->set(SessionElements::SHOPPING_CART->value, $shoppingCart);
             }
@@ -69,12 +71,12 @@ class ShoppingCartService extends AbstractType
         if ($action) {
             $product = $this->productRepository->find($id);
             if ($product !== null) {
-                if (!$this->stockService->isAvailable($product, $quantity)) {
+                $totalQuantity = $shoppingCart[$id] + $quantity;
+                if (!$this->stockService->isAvailable($product, $totalQuantity)) {
                     throw new \LogicException('Quantité non disponible pour ce produit.');
                 }
                 $shoppingCart[$id] += $quantity;
             }
-
         } else {
             $shoppingCart[$id] -= $quantity;
 
@@ -162,7 +164,6 @@ class ShoppingCartService extends AbstractType
         $products = $this->productRepository->findBy(['id' => $ids]);
 
         foreach ($products as $product) {
-
             if ($product === null) {
                 continue;
             }
@@ -170,13 +171,17 @@ class ShoppingCartService extends AbstractType
             $quantity = $cart[$id];
 
             if (!$this->stockService->isAvailable($product, $quantity)) {
-                continue;
+                if ($product->getStock() > 0 && $product->getStock() < $quantity) {
+                    $quantity = $product->getStock();
+                } else {
+                    continue;
+                }
             }
 
             $updatedCart[$id] = [
                 'id' => $id,
                 'name' => $product->getName(),
-                'quantity' => $cart[$id],
+                'quantity' => $quantity,
                 'price' => $product->getPrice(),
                 'totalPrice' => $product->getPrice() * $quantity,
                 'product' => $product

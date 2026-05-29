@@ -8,6 +8,10 @@
 
     <h2>PANIER</h2>
 
+    {% for message in app.flashes('error') %}
+        <div>{{ message }}</div>
+    {% endfor %}
+
 
     {% if shoppingCart is not empty %}
         <section id="cart_filled" class="d-flex flex-column align-items-center">

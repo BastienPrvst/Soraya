@@ -23,7 +23,13 @@ final class ShoppingCartController extends AbstractController
     {
         $id = $request->request->get('productId');
         $quantity = $request->request->get('quantity');
-        $this->shoppingCartService->add($id, $quantity);
+
+        try {
+            $this->shoppingCartService->add($id, $quantity);
+        } catch (\LogicException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
 
         $referer = $request->headers->get('referer');
 
@@ -42,7 +48,12 @@ final class ShoppingCartController extends AbstractController
             $request->request->get('action'),
             FILTER_VALIDATE_BOOLEAN
         );
-        $this->shoppingCartService->update($id, $action);
+        try {
+            $this->shoppingCartService->update($id, $action);
+        } catch (\LogicException $e) {
+            $this->addFlash('error', $e->getMessage());
+        }
+
         return $this->redirectToRoute('app_shopping_cart_view');
     }
 

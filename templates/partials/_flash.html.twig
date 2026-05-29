@@ -1,0 +1,20 @@
+{% set icons = {
+    'success': 'ti-circle-check',
+    'error':   'ti-alert-circle',
+    'warning': 'ti-alert-triangle',
+    'info':    'ti-info-circle',
+} %}
+
+{% for type, messages in app.flashes %}
+    {% for message in messages %}
+        <div class="flash {{ type }}">
+            <i class="ti {{ icons[type] ?? 'ti-info-circle' }}" aria-hidden="true"></i>
+            <div class="flash-body">
+                <p class="flash-msg">{{ message }}</p>
+            </div>
+            <button class="flash-close" onclick="this.closest('.flash').remove()">
+                &times;
+            </button>
+        </div>
+    {% endfor %}
+{% endfor %}

@@ -16,6 +16,9 @@
 
     <body>
         {% include 'partials/header.html.twig' %}
+        <div class="flash-wrap">
+            {{ include('partials/_flash.html.twig') }}
+        </div>
         {% block body %}{% endblock %}
         {% include 'partials/footer.html.twig' %}
     </body>
