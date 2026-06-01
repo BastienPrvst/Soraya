@@ -19,6 +19,8 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Filters;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractCrudController;
 use EasyCorp\Bundle\EasyAdminBundle\Dto\BatchActionDto;
+use EasyCorp\Bundle\EasyAdminBundle\Field\AssociationField;
+use EasyCorp\Bundle\EasyAdminBundle\Field\BooleanField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\ChoiceField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\CollectionField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\DateField;
@@ -40,6 +42,7 @@ class OrderCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly AdminUrlGenerator $adminUrlGenerator,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -61,7 +64,7 @@ class OrderCrudController extends AbstractCrudController
             ])
             ->showEntityActionsInlined()
             ->setDefaultSort(['id' => 'DESC'])
-            ->addFormTheme('admin/forms/order_items.html.twig');
+            ;
     }
 
     /**
@@ -259,9 +262,16 @@ class OrderCrudController extends AbstractCrudController
 
                     return sprintf('%s %s', $order->getFirstname(), $order->getLastname());
                 }),
-            MoneyField::new('total')
+            MoneyField::new('deliveryPrice')
+                ->setLabel('Prix livraison')
                 ->setCurrency('EUR')
-                ->setStoredAsCents(false),
+                ->setStoredAsCents(false)
+                ->setColumns(4),
+            MoneyField::new('orderTotal')
+                ->setLabel('Total commande')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->setFormTypeOption('mapped', false),
             DateField::new('creationDate')
                 ->setLabel('Date de création')
                 ->setFormat('dd/MM/YYYY')
@@ -301,8 +311,20 @@ class OrderCrudController extends AbstractCrudController
             FormField::addColumn(6),
             FormField::addFieldset(),
             MoneyField::new('total')
+                ->setLabel('Prix produit(s)')
                 ->setCurrency('EUR')
                 ->setStoredAsCents(false)
+                ->setColumns(4),
+            MoneyField::new('deliveryPrice')
+                ->setLabel('Prix livraison')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->setColumns(4),
+            MoneyField::new('orderTotal')
+                ->setLabel('Total commande')
+                ->setCurrency('EUR')
+                ->setStoredAsCents(false)
+                ->setFormTypeOption('mapped', false)
                 ->setColumns(4),
             DateField::new('creationDate')
                 ->setLabel('Date')
@@ -337,9 +359,14 @@ class OrderCrudController extends AbstractCrudController
             CollectionField::new('orderItems')
                 ->setLabel('Articles')
                 ->setEntryType(OrderItemType::class)
-                ->allowAdd(false)
-                ->allowDelete(false),
+                ->setEntryIsComplex(true)
+                ->allowAdd()
+                ->allowDelete()
+                ->renderExpanded(),
             FormField::addColumn(6),
+            AssociationField::new('user')
+                ->setLabel('Compte Client')
+                ->autocomplete(),
             FormField::addFieldset('Client')
                 ->setIcon('fa fa-user'),
             TextField::new('firstname')
@@ -358,7 +385,10 @@ class OrderCrudController extends AbstractCrudController
                 ->setIcon('fa fa-home'),
             Field::new('deliveryAddress')
                 ->setFormType(OrderAddressType::class)
+                ->setLabel('Livraison'),
+            BooleanField::new('delivery')
                 ->setLabel('Livraison')
+                ->setFormTypeOption('data', true),
         ];
     }
 
@@ -391,5 +421,28 @@ class OrderCrudController extends AbstractCrudController
                 ->setAction(Action::INDEX)
                 ->generateUrl()
         );
+    }
+
+    public function persistEntity(EntityManagerInterface $entityManager, mixed $entityInstance): void
+    {
+        $this->recalculateOrder($entityInstance);
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    public function updateEntity(EntityManagerInterface $entityManager, mixed $entityInstance): void
+    {
+        $this->recalculateOrder($entityInstance);
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    private function recalculateOrder(Order $order): void
+    {
+        $total = 0;
+        foreach ($order->getOrderItems() as $item) {
+            $item->setUnitPrice($item->getProduct()?->getPrice());
+            $item->setTotal($item->getUnitPrice() * $item->getQuantity());
+            $total += $item->getTotal();
+        }
+        $order->setTotal($total);
     }
 }

@@ -6,6 +6,7 @@ use App\Repository\OrderItemRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: OrderItemRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class OrderItem
 {
     #[ORM\Id]
@@ -69,6 +70,14 @@ class OrderItem
         $this->total = $total;
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function computePrices(): void
+    {
+        $this->unitPrice = $this->product->getPrice();
+        $this->total = $this->unitPrice * $this->quantity;
     }
 
     public function getOrder(): ?Order

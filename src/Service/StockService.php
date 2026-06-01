@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 
 class StockService
 {
@@ -19,16 +20,15 @@ class StockService
         $this->entityManager->flush();
     }
 
+    /**
+     * @param Product $product
+     * @param int $quantity
+     * @return void
+     * @return LogicException
+     */
     public function remove(Product $product, int $quantity): void
     {
-        $newStock = $product->getStock() - $quantity;
-
-        if ($newStock < 0) {
-            throw new \LogicException('Stock insuffisant.');
-        }
-
-        $product->setStock($newStock);
-        $this->entityManager->flush();
+        $this->productRepository->removeStock($product, $quantity);
     }
 
     public function isAvailable(Product $product, int $quantity = 1): bool

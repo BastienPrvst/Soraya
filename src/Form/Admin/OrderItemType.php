@@ -8,6 +8,8 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class OrderItemType extends AbstractType
@@ -17,19 +19,16 @@ class OrderItemType extends AbstractType
     {
         $builder
             ->add('product', EntityType::class, [
+                'label' => 'Produit',
                 'class' => Product::class,
                 'choice_label' => 'name',
-                'disabled' => true,
+                'attr'         => ['data-ea-widget' => 'ea-autocomplete'],
+                'placeholder'  => 'Rechercher un produit...',
             ])
             ->add('quantity', IntegerType::class, [
                 'label' => 'Quantité',
                 'attr' => ['min' => 1],
             ]);
-    }
-
-    public function getBlockPrefix(): string
-    {
-        return 'order_item';
     }
 
     public function configureOptions(OptionsResolver $resolver): void

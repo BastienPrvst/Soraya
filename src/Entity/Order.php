@@ -232,6 +232,11 @@ class Order
         return $this;
     }
 
+    public function getOrderTotal(): ?float
+    {
+        return $this->getTotal() + $this->getDeliveryPrice();
+    }
+
     public function getEmail(): ?string
     {
         return $this->email;

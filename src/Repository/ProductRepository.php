@@ -16,28 +16,20 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    //    /**
-    //     * @return Product[] Returns an array of Product objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('p.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
+    public function removeStock(Product $product, int $quantity): void
+    {
+        $updated = $this->createQueryBuilder('p')
+            ->update(Product::class, 'p')
+            ->set('p.stock', 'p.stock - :qty')
+            ->where('p.id = :id')
+            ->andWhere('p.stock >= :qty')
+            ->setParameter('qty', $quantity)
+            ->setParameter('id', $product->getId())
+            ->getQuery()
+            ->execute();
 
-    //    public function findOneBySomeField($value): ?Product
-    //    {
-    //        return $this->createQueryBuilder('p')
-    //            ->andWhere('p.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+        if ($updated === 0) {
+            throw new \LogicException('Stock insuffisant au moment du paiement.');
+        }
+    }
 }
