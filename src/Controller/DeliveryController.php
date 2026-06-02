@@ -40,6 +40,7 @@ class DeliveryController extends AbstractController
      * @param RateLimiterFactoryInterface $checkoutLimiter
      * @param Request $request
      * @return Response
+     * @throws \Exception
      */
     #[Route(path: '/paiement/livraison/{token}', name: 'checkout_delivery', methods: ['POST', 'GET'])]
     public function deliveryCreation(
@@ -77,6 +78,7 @@ class DeliveryController extends AbstractController
      * @param Request $request
      * @param DeliveryService $deliveryService
      * @return Response
+     * @throws \Exception
      */
     #[Route(path: '/paiement/livraison/home/{token}', name: 'checkout_delivery_home')]
     public function paymentDeliveryForm(

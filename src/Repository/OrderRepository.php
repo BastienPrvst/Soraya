@@ -28,8 +28,6 @@ class OrderRepository extends ServiceEntityRepository
 
     public function findValidAnonymousOrder(string $token, string $sessionKey): ?Order
     {
-        $session = $this->requestStack->getSession();
-
         return $this
             ->createQueryBuilder('o')
             ->where('o.token = :token')

@@ -45,6 +45,9 @@ final class PaymentController extends AbstractController
     ) {
     }
 
+    /**
+     * @throws \Exception
+     */
     #[Route(path: 'paiement/récapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
     public function paymentResume(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -55,6 +58,14 @@ final class PaymentController extends AbstractController
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }
+
+        $cartProducts = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
+
+        if (empty($cartProducts)) {
+            $this->orderService->cancelOrder($order);
+            return $this->redirectToRoute('app_main');
+        }
+
 
         $this->orderService->verifyOrderIntegrity($order);
         return $this->render('payment/resume.html.twig', [
@@ -77,20 +88,32 @@ final class PaymentController extends AbstractController
         $cartProducts = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
 
         $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
+
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }
 
-        if (!$this->orderService->isOrderMatchingCart($order, $cartProducts)) {
+        if (empty($cartProducts)) {
+            $this->orderService->cancelOrder($order);
+            return $this->redirectToRoute('app_main');
+        }
+
+        $isOrderMatchingCart = $this->orderService->isOrderMatchingCart($order, $cartProducts);
+
+        if (!$isOrderMatchingCart) {
+            $updatedOrder = $this->orderService->updateOrder($order, $cartProducts);
+        } else {
+            $updatedOrder = $this->orderService->checkStock($cartProducts);
+        }
+
+        if ($updatedOrder) {
             $this->orderService->updateOrder($order, $cartProducts);
-
-            //TODO Que faire si la commande est passée en annulée
-
             return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken(),
                 'order' => $order,
             ]);
         }
+
         $response = $this->render('payment/checkout.html.twig', [
             'order' => $order,
         ]);
