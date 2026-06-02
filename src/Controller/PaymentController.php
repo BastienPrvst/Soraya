@@ -65,6 +65,7 @@ final class PaymentController extends AbstractController
 
     /**
      * @throws RandomException
+     * @throws \Exception
      */
     #[Route(path: '/paiement/{token}', name: 'checkout_pay')]
     public function paymentConfirm(
@@ -73,15 +74,18 @@ final class PaymentController extends AbstractController
         Request $request
     ): Response {
         $this->orderService->verifyOrderOwnership($order);
-        $cart = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
+        $cartProducts = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
 
         $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
         }
 
-        if (!$this->orderService->isOrderMatchingCart($order, $cart)) {
-            $this->orderService->updateOrder($order);
+        if (!$this->orderService->isOrderMatchingCart($order, $cartProducts)) {
+            $this->orderService->updateOrder($order, $cartProducts);
+
+            //TODO Que faire si la commande est passée en annulée
+
             return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken(),
                 'order' => $order,

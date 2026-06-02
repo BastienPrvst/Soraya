@@ -36,8 +36,8 @@ class Order
     )]
     private Collection $orderItems;
 
-    #[ORM\Column]
-    private ?float $total = null;
+    #[ORM\Column ( nullable: true )]
+    private ?float $total = 0;
 
     #[ORM\Column(enumType: OrderStatus::class)]
     private ?OrderStatus $status = OrderStatus::CREATED;
@@ -74,7 +74,7 @@ class Order
     private ?Address $deliveryAddress = null;
 
     #[ORM\Column(nullable: true)]
-    private ?float $deliveryPrice = null;
+    private ?float $deliveryPrice = 0;
 
     #[ORM\Column(enumType: DeliveryMode::class)]
     private ?DeliveryMode $deliveryMode = null;

@@ -58,6 +58,7 @@ class DeliveryController extends AbstractController
         }
 
         $this->orderService->verifyOrderIntegrity($order);
+
         if ($order->getDeliveryMode() === DeliveryMode::RELAY) {
             return $this->redirectToRoute(
                 'checkout_delivery_relay',
@@ -105,7 +106,6 @@ class DeliveryController extends AbstractController
                     'token' => $order->getToken()
                 ]);
             }
-
         }
 
         return $this->render('payment/delivery_form.html.twig', [
@@ -126,6 +126,7 @@ class DeliveryController extends AbstractController
     ): Response {
 
         $this->orderService->verifyOrderIntegrity($order);
+
         $this->deliveryService->switchDeliverToRelay($order);
         $this->entityManager->flush();
 
@@ -142,8 +143,7 @@ class DeliveryController extends AbstractController
 
             try {
                 $this->deliveryService->createRelayAddress($order, $relayId);
-            } catch (RuntimeException|SoapFault $exception) {
-
+            } catch (RuntimeException|SoapFault) {
                 $this->addFlash('error', 'Veuillez sélectionner un point relais valide');
 
                 return $this->redirectToRoute('checkout_delivery', [
@@ -152,11 +152,11 @@ class DeliveryController extends AbstractController
             }
 
             if ($this->workflowService->canTransition($order, 'to_pending_payment')) {
-            $this->workflowService->applyTransition($order, 'to_pending_payment');
-            $this->entityManager->flush();
-            return $this->redirectToRoute('checkout_summary', [
+                $this->workflowService->applyTransition($order, 'to_pending_payment');
+                $this->entityManager->flush();
+                return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken()
-            ]);
+                ]);
             }
         }
 

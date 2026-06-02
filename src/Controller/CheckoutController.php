@@ -33,6 +33,9 @@ class CheckoutController extends AbstractController
 
     use TargetPathTrait;
 
+    /**
+     * @throws \Exception
+     */
     #[Route('/paiement/back/{token}', name: 'checkout_previous')]
     public function back(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
@@ -55,6 +58,7 @@ class CheckoutController extends AbstractController
 
     /**
      * @throws RandomException
+     * @throws \Exception
      */
     #[Route(path: '/paiement/auth', name: 'checkout_auth')]
     public function paymentAuthentification(
@@ -67,16 +71,16 @@ class CheckoutController extends AbstractController
         if (empty($cart)) {
             return $this->redirectToRoute('app_shopping_cart_view');
         }
-        $products = $this->shoppingCartService->getCartInformations($cart);
 
         /* @var Order $order */
-        $order = $this->orderService->findLatestOrderOrCreateOne($token, $products);
+        $order = $this->orderService->findLatestOrderOrCreateOne($token, $cart);
 
         if ($this->getUser()) {
             return $this->redirectToRoute('checkout_delivery', [
                 'token' => $order->getToken(),
             ]);
         }
+
         $this->saveTargetPath(
             $request->getSession(),
             'main',

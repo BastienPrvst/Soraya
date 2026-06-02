@@ -10,7 +10,10 @@ use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
+use App\Repository\ProductRepository;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Random\RandomException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -23,14 +26,16 @@ readonly class OrderService
         private EntityManagerInterface $entityManager,
         private RequestStack           $requestStack,
         private Security               $security,
-        private WorkflowService        $workflowService
+        private WorkflowService        $workflowService,
+        private StockService           $stockService,
+        private ProductRepository      $productRepository,
     ) {
     }
 
     /**
      * @throws RandomException
      */
-    public function buildOrder(array $products): Order
+    public function buildOrder(array $cartProducts): Order
     {
         /* @var User $user */
         $user = $this->security->getUser();
@@ -45,7 +50,7 @@ readonly class OrderService
             ->setFirstname($user?->getFirstname())
             ->setLastname($user?->getLastname())
             ->setPhoneNumber(null)
-            ->setCreationDate(new \DateTime())
+            ->setCreationDate(new DateTime())
             ->setDelivery(true)
             ->setEmail($user?->getEmail())
             ->setDeliveryMode(DeliveryMode::HOME)
@@ -62,7 +67,17 @@ readonly class OrderService
             }
         }
 
-        $this->createOrderItems($products, $order);
+        $isCartModified = $this->createOrderItems($cartProducts, $order);
+
+        if ($isCartModified) {
+            $session = $this->requestStack->getSession();
+            $session->set(SessionElements::SHOPPING_CART->value, $cartProducts);
+            $session->getFlashBag()->add(
+                'warning',
+                'Certains articles n\'étaient plus disponibles
+                 dans les quantités demandées. Le panier a été mit à jour.'
+            );
+        }
 
         $this->entityManager->persist($order);
         $this->entityManager->flush();
@@ -76,8 +91,9 @@ readonly class OrderService
 
     /**
      * @throws RandomException
+     * @throws Exception
      */
-    public function findLatestOrderOrCreateOne(?string $token, array $products): ?Order
+    public function findLatestOrderOrCreateOne(?string $token, array $cartProducts): ?Order
     {
         $user = $this->security->getUser();
         $orderRepository = $this->entityManager->getRepository(Order::class);
@@ -108,94 +124,59 @@ readonly class OrderService
         }
 
         if (!$order) {
-            return $this->buildOrder($products);
+            return $this->buildOrder($cartProducts);
         }
 
-        $this->updateOrder($order);
+        $this->updateOrder($order, $cartProducts);
         return $order;
     }
 
-    private function createOrderItems(array $products, Order $order): void
+    /**
+     * @throws Exception
+     * Info :
+     */
+    public function updateOrder(Order $order, array $cartProducts): bool
     {
-        $cartTotal = 0;
-        foreach ($products as $product) {
-            $orderItem = new OrderItem();
-            if (!empty($product)) {
-                $orderItem
-                    ->setProduct($product['product'])
-                    ->setQuantity($product['quantity'])
-                    ->setOrder($order)
-                    ->setUnitPrice($product['price'])
-                    ->setTotal($product['price'] * $product['quantity'])
-                ;
+        $session = $this->requestStack->getSession();
 
-                $order->addOrderItem($orderItem);
-                $this->entityManager->persist($orderItem);
-
-                $cartTotal += $orderItem->getTotal();
-            }
-        }
-
-        $order->setTotal($cartTotal);
-    }
-
-    public function updateOrder(Order $order): void
-    {
-        $cartItems = $this->requestStack
-            ->getSession()
-            ->get(SessionElements::SHOPPING_CART->value, []);
-
-        if (empty($cartItems)) {
-            if ($this->workflowService->canTransition($order, OrderStatus::CANCELLED->value)) {
-                $this->workflowService->applyTransition($order, OrderStatus::CANCELLED->value);
-            }
+        //Si panier vide, on passe la commande en annulée
+        if (empty($cartProducts)) {
+            $this->cancelOrderItems($order);
             $this->entityManager->flush();
-            return;
+            return false;
         }
 
-        $productRepo = $this->entityManager->getRepository(Product::class);
+        //On reconstruit les ordersItems en fonction du panier
+
         foreach ($order->getOrderItems() as $orderItem) {
             $this->entityManager->remove($orderItem);
         }
 
         $order->getOrderItems()->clear();
-        $total = 0;
 
-        foreach ($cartItems as $productId => $quantity) {
-            if ($quantity <= 0) {
-                continue;
-            }
+        $isCartModified = $this->createOrderItems($cartProducts, $order);
 
-            $product = $productRepo->find($productId);
-
-            if (!$product) {
-                continue;
-            }
-
-            $orderItem = new OrderItem();
-            $orderItem
-                ->setOrder($order)
-                ->setProduct($product)
-                ->setQuantity($quantity)
-                ->setUnitPrice($product->getPrice())
-                ->setTotal($product->getPrice() * $quantity);
-
-            $this->entityManager->persist($orderItem);
-            $total += $orderItem->getTotal();
+        //SI modification, on met à jour la session
+        if ($isCartModified) {
+            $session->set(SessionElements::SHOPPING_CART->value, $cartProducts);
         }
-        $order->setTotal($total);
+
         $this->entityManager->flush();
+
     }
 
+    /**
+     * @throws Exception
+     */
     public function verifyOrderIntegrity(Order $order): void
     {
         $this->verifyOrderOwnership($order);
         $session = $this->requestStack->getSession();
-        $cart = $session->get(SessionElements::SHOPPING_CART->value, []);
+        $cartProducts = $session->get(SessionElements::SHOPPING_CART->value, []);
 
-        $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cart);
+        $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cartProducts);
         if (!$isOrderMatchingCart) {
-            $this->updateOrder($order);
+            $this->updateOrder($order, $cartProducts);
         }
     }
 
@@ -232,7 +213,7 @@ readonly class OrderService
         }
 
         foreach ($orderItems as $item) {
-            $id = (string) $item->getProduct()?->getId();
+            $id = $item->getProduct()?->getId();
 
             if (!isset($cart[$id])) {
                 return false;
@@ -246,4 +227,84 @@ readonly class OrderService
         return true;
     }
 
+    private function createOrderItems(array &$cartProducts, Order $order): bool
+    {
+        $hasChanged = false;
+        $cartTotal = 0;
+        $productIds = array_keys($cartProducts);
+        $products = $this->productRepository->findBy(['id' => $productIds]);
+
+        $indexedProducts = [];
+        foreach ($products as $product) {
+            $indexedProducts[$product->getId()] = $product;
+        }
+
+        foreach ($cartProducts as $productId => $quantity) {
+            if ($quantity <= 0) {
+                unset($cartProducts[$productId]);
+                $hasChanged = true;
+                continue;
+            }
+
+            $product = $indexedProducts[$productId] ?? null;
+
+            if (!$product) {
+                unset($cartProducts[$productId]);
+                $hasChanged = true;
+                continue;
+            }
+
+            $available = $this->stockService->isAvailable($product, $quantity);
+
+            if (!$available) {
+                $stock = $product->getStock();
+                if ($stock > 0) {
+                    $quantity = $stock;
+                    $cartProducts[$productId] = $quantity;
+                } else {
+                    unset($cartProducts[$productId]);
+                }
+
+                $hasChanged = true;
+                if ($stock <= 0) {
+                    continue;
+                }
+            }
+
+            $orderItem = new OrderItem();
+
+            $orderItem
+                ->setProduct($product)
+                ->setQuantity($quantity)
+                ->setOrder($order)
+                ->setUnitPrice($product->getPrice())
+                ->setTotal($product->getPrice() * $quantity)
+            ;
+
+            $order->addOrderItem($orderItem);
+            $this->entityManager->persist($orderItem);
+
+            $cartTotal += $orderItem->getTotal();
+        }
+
+        $order->setTotal($cartTotal);
+
+        return $hasChanged;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function cancelOrderItems(Order $order): void
+    {
+        foreach ($order->getOrderItems() as $orderItem) {
+            $this->entityManager->remove($orderItem);
+        }
+        $order->getOrderItems()->clear();
+        $order->setTotal(0);
+
+        if ($this->workflowService->canTransition($order, OrderStatus::CANCELLED->value)) {
+            $this->workflowService->applyTransition($order, OrderStatus::CANCELLED->value);
+        }
+    }
 }

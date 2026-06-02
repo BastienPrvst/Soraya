@@ -18,7 +18,7 @@ class ShoppingCartService extends AbstractType
         private readonly ProductRepository $productRepository,
         private readonly RequestStack      $requestStack,
         private readonly EntityManagerInterface $entityManager,
-        private readonly Registry $registry,
+        private readonly WorkflowService $workflowService,
         private readonly StockService $stockService
     ) {
     }
@@ -87,6 +87,9 @@ class ShoppingCartService extends AbstractType
         $session->set(SessionElements::SHOPPING_CART->value, $shoppingCart);
     }
 
+    /**
+     * @throws \Exception
+     */
     public function emptyCart(): void
     {
         $session = $this->requestStack->getSession();
@@ -99,16 +102,12 @@ class ShoppingCartService extends AbstractType
                 'status' => [OrderStatus::CREATED, OrderStatus::DELIVERY_CHOICE, OrderStatus::PENDING_PAYMENT]
             ]);
 
-            if ($order !== null) {
-                $workflow = $this->registry->get($order, 'order_completing');
-
-                if ($workflow->can($order, 'cancel')) {
-                    $workflow->apply($order, 'cancel');
-                    $this->entityManager->flush();
-                    $session->remove(SessionElements::ORDER_TOKEN->value);
-                    $session->remove(SessionElements::SESSION_KEY->value);
-                    $session->remove(SessionElements::CGU->value);
-                }
+            if (($order !== null) && $this->workflowService->canTransition($order, 'cancel')) {
+                $this->workflowService->applyTransition($order, 'cancel');
+                $this->entityManager->flush();
+                $session->remove(SessionElements::ORDER_TOKEN->value);
+                $session->remove(SessionElements::SESSION_KEY->value);
+                $session->remove(SessionElements::CGU->value);
             }
         }
         $session->remove(SessionElements::SHOPPING_CART->value);
