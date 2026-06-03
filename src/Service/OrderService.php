@@ -113,7 +113,7 @@ readonly class OrderService
         }
 
         //Création des orderItems + vérification du stock = mise à jour session
-        $isCartModified = $this->createAndUpdateOrderItems($cartProducts, $order);
+        $this->createAndUpdateOrderItems($cartProducts, $order);
 
         $this->entityManager->persist($order);
         $this->entityManager->flush();
@@ -129,7 +129,7 @@ readonly class OrderService
      * @throws Exception
      * Fonction garde-fou regroupant toutes les autres
      */
-    public function verifyOrderIntegrity(Order $order): void
+    public function verifyOrderIntegrity(Order $order): bool
     {
         $this->verifyOrderOwnership($order);
         $session = $this->requestStack->getSession();
@@ -137,10 +137,16 @@ readonly class OrderService
 
         $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cartProducts);
         if (!$isOrderMatchingCart) {
-            $this->updateOrder($order, $cartProducts);
+            $updated = $this->updateOrder($order, $cartProducts);
         } else {
-            $this->checkStock($cartProducts);
+            $indexedProducts = $this->getIndexedProducts($cartProducts);
+            $updated = $this->checkStock($cartProducts, $indexedProducts);
+            if ($updated) {
+                $this->updateOrder($order, $cartProducts);
+            }
         }
+
+        return $updated;
     }
 
     public function verifyOrderOwnership(Order $order): void
@@ -223,15 +229,9 @@ readonly class OrderService
         $updated = false;
 
         $cartTotal = 0;
-        $productIds = array_keys($cartProducts);
-        $products = $this->productRepository->findBy(['id' => $productIds]);
+        $indexedProducts = $this->getIndexedProducts($cartProducts);
 
-        $this->checkStock($cartProducts);
-
-        $indexedProducts = [];
-        foreach ($products as $product) {
-            $indexedProducts[$product->getId()] = $product;
-        }
+        $this->checkStock($cartProducts, $indexedProducts);
 
         foreach ($cartProducts as $productId => $quantity) {
             if ($quantity <= 0) {
@@ -269,16 +269,9 @@ readonly class OrderService
         return $updated;
     }
 
-    public function checkStock(array &$cartProducts): bool
+    private function checkStock(array &$cartProducts, array $indexedProducts): bool
     {
         $updated = false;
-        $productIds = array_keys($cartProducts);
-        $products = $this->productRepository->findBy(['id' => $productIds]);
-
-        $indexedProducts = [];
-        foreach ($products as $product) {
-            $indexedProducts[$product->getId()] = $product;
-        }
 
         foreach ($cartProducts as $productId => $quantity) {
             $product = $indexedProducts[$productId] ?? null;
@@ -335,5 +328,18 @@ readonly class OrderService
             $session->remove(SessionElements::CGU->value);
             $this->entityManager->flush();
         }
+    }
+
+    private function getIndexedProducts(array $cartProducts): array
+    {
+        $productIds = array_keys($cartProducts);
+        $products = $this->productRepository->findBy(['id' => $productIds]);
+
+        $indexedProducts = [];
+        foreach ($products as $product) {
+            $indexedProducts[$product->getId()] = $product;
+        }
+
+        return $indexedProducts;
     }
 }

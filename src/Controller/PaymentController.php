@@ -62,6 +62,7 @@ final class PaymentController extends AbstractController
         $cartProducts = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
 
         if (empty($cartProducts)) {
+            $this->addFlash('error', 'Votre panier est vide.');
             $this->orderService->cancelOrder($order);
             return $this->redirectToRoute('app_main');
         }
@@ -98,16 +99,9 @@ final class PaymentController extends AbstractController
             return $this->redirectToRoute('app_main');
         }
 
-        $isOrderMatchingCart = $this->orderService->isOrderMatchingCart($order, $cartProducts);
-
-        if (!$isOrderMatchingCart) {
-            $updatedOrder = $this->orderService->updateOrder($order, $cartProducts);
-        } else {
-            $updatedOrder = $this->orderService->checkStock($cartProducts);
-        }
+        $updatedOrder = $this->orderService->verifyOrderIntegrity($order);
 
         if ($updatedOrder) {
-            $this->orderService->updateOrder($order, $cartProducts);
             return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken(),
                 'order' => $order,
@@ -128,7 +122,7 @@ final class PaymentController extends AbstractController
 
     /**
      * @throws ApiErrorException
-     * @throws \JsonException
+     * @throws \Exception
      */
     #[Route(path: '/checkout/pay/{token}', name: 'checkout_stripe')]
     public function generateSession(
@@ -142,7 +136,14 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $this->orderService->verifyOrderOwnership($order);
+        $updated = $this->orderService->verifyOrderIntegrity($order);
+
+        if ($updated) {
+            return $this->redirectToRoute('checkout_summary', [
+                'token' => $order->getToken(),
+                'order' => $order,
+            ]);
+        }
 
         if ($order->getStatus() === OrderStatus::PENDING_PAYMENT) {
             $clientSecret = $this->stripePaymentService->createPayment($order);
@@ -163,6 +164,7 @@ final class PaymentController extends AbstractController
     /**
      * @throws TransportExceptionInterface
      * @throws ExceptionInterface
+     * @throws \Exception
      */
     #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
     public function index(
