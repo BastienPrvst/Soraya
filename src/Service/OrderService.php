@@ -129,24 +129,37 @@ readonly class OrderService
      * @throws Exception
      * Fonction garde-fou regroupant toutes les autres
      */
-    public function verifyOrderIntegrity(Order $order): bool
+    public function verifyOrderIntegrity(Order $order): array
     {
         $this->verifyOrderOwnership($order);
         $session = $this->requestStack->getSession();
         $cartProducts = $session->get(SessionElements::SHOPPING_CART->value, []);
 
         $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cartProducts);
+
+        /**
+         * On update l'order si :
+         * - Le cart en session ne correspond pas à l'order
+         * - Les stocks des produits dans le panier ne sont pas suffisants
+         **/
+
         if (!$isOrderMatchingCart) {
-            $updated = $this->updateOrder($order, $cartProducts);
+            $returnData = $this->updateOrder($order, $cartProducts);
         } else {
             $indexedProducts = $this->getIndexedProducts($cartProducts);
-            $updated = $this->checkStock($cartProducts, $indexedProducts);
-            if ($updated) {
-                $this->updateOrder($order, $cartProducts);
+            $returnData = $this->checkStock(
+                $order,
+                $cartProducts,
+                $indexedProducts
+            );
+            if ($returnData['updated'] === true) {
+                $updateData = $this->updateOrder($order, $cartProducts);
+                $returnData['canceled'] = $updateData['canceled'];
+                $returnData['cartProducts'] = $updateData['cartProducts'];
             }
         }
 
-        return $updated;
+        return $returnData;
     }
 
     public function verifyOrderOwnership(Order $order): void
@@ -200,13 +213,20 @@ readonly class OrderService
      * @throws Exception
      * Info :
      */
-    public function updateOrder(Order $order, array $cartProducts): bool
+    public function updateOrder(Order $order, array $cartProducts): array
     {
+        $returnData = [
+            'updated' => false,
+            'canceled' => false,
+            'errors' => [],
+            'cartProducts' => $cartProducts,
+        ];
 
         //Si panier vide, on annule la commande
         if (empty($cartProducts)) {
             $this->cancelOrder($order);
-            return true;
+            $returnData['canceled'] = true;
+            return $returnData;
         }
 
         //On reconstruit les ordersItems en fonction du panier
@@ -217,21 +237,22 @@ readonly class OrderService
 
         $order->getOrderItems()->clear();
 
-        $updated = $this->createAndUpdateOrderItems($cartProducts, $order);
+        $returnData = $this->createAndUpdateOrderItems($cartProducts, $order);
 
         $this->entityManager->flush();
 
-        return $updated;
+        return $returnData;
     }
 
-    private function createAndUpdateOrderItems(array &$cartProducts, Order $order): bool
+    /**
+     * @throws Exception
+     */
+    private function createAndUpdateOrderItems(array &$cartProducts, Order $order): array
     {
         $updated = false;
-
         $cartTotal = 0;
         $indexedProducts = $this->getIndexedProducts($cartProducts);
-
-        $this->checkStock($cartProducts, $indexedProducts);
+        $returnData = $this->checkStock($order, $cartProducts, $indexedProducts);
 
         foreach ($cartProducts as $productId => $quantity) {
             if ($quantity <= 0) {
@@ -264,14 +285,31 @@ readonly class OrderService
             $cartTotal += $orderItem->getTotal();
         }
 
-        $order->setTotal($cartTotal);
 
-        return $updated;
+        if (empty($cartProducts)) {
+            $this->cancelOrder($order);
+            $returnData['canceled'] = true;
+            return $returnData;
+        }
+
+        if ($updated) {
+            $returnData['updated'] = true;
+        }
+
+        $order->setTotal($cartTotal);
+        return $returnData;
     }
 
-    private function checkStock(array &$cartProducts, array $indexedProducts): bool
-    {
+    /**
+     * @throws Exception
+     */
+    private function checkStock(
+        Order $order,
+        array &$cartProducts,
+        array $indexedProducts
+    ): array {
         $updated = false;
+        $errors = [];
 
         foreach ($cartProducts as $productId => $quantity) {
             $product = $indexedProducts[$productId] ?? null;
@@ -287,24 +325,31 @@ readonly class OrderService
                 $stock = $product->getStock();
                 if ($stock > 0) {
                     $cartProducts[$productId] = $stock;
+                    $errors [] =
+                        'Le produit '
+                        . $product->getName()
+                        . ' n\'est pas disponible dans la quantité souhaitée. Stock : '
+                        . $stock;
                 } else {
+                    $errors [] = 'Le produit ' . $product->getName() . ' n\'est pas disponible en stock';
                     unset($cartProducts[$productId]);
                 }
                 $updated = true;
             }
         }
 
-        if ($updated) {
-            $session = $this->requestStack->getSession();
-            $session->set(SessionElements::SHOPPING_CART->value, $cartProducts);
-            $session->getFlashBag()->add(
-                'warning',
-                'Certains articles n\'étaient plus disponibles dans les quantités demandées.
-                 Le panier a été mis à jour.'
-            );
+        if (empty($cartProducts)) {
+            $this->cancelOrder($order);
+            $returnData['canceled'] = true;
+            return $returnData;
         }
 
-        return $updated;
+        return [
+            'updated' => $updated,
+            'canceled' => false,
+            'errors' => $errors,
+            'cartProducts' => $cartProducts
+        ];
     }
 
     /**

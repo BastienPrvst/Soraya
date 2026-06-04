@@ -68,6 +68,7 @@ final readonly class CheckoutRedirectListener
             : 'checkout_summary',
             OrderStatus::PAID, OrderStatus::PENDING_SHIPPING => 'checkout_success',
             default => null,
+            OrderStatus::CANCELLED => 'app_main',
         };
 
         if (!$route) {

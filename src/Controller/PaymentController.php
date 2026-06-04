@@ -11,12 +11,11 @@ use App\Service\ShoppingCartService;
 use App\Service\StripePaymentService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Psr\Log\LoggerInterface;
-use Random\RandomException;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Target;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -25,7 +24,6 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
@@ -46,7 +44,8 @@ final class PaymentController extends AbstractController
     }
 
     /**
-     * @throws \Exception
+     * @throws Exception
+     * FallBack si changement order
      */
     #[Route(path: 'paiement/récapitulatif-de-la-commande/{token}', name: 'checkout_summary')]
     public function paymentResume(
@@ -59,16 +58,10 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $cartProducts = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
+        $integrityInfos = $this->orderService->verifyOrderIntegrity($order);
 
-        if (empty($cartProducts)) {
-            $this->addFlash('error', 'Votre panier est vide.');
-            $this->orderService->cancelOrder($order);
-            return $this->redirectToRoute('app_main');
-        }
+        $this->manageIntegrityInfos($integrityInfos, $request);
 
-
-        $this->orderService->verifyOrderIntegrity($order);
         return $this->render('payment/resume.html.twig', [
             'order' => $order,
             'token' => $order->getToken(),
@@ -76,8 +69,7 @@ final class PaymentController extends AbstractController
     }
 
     /**
-     * @throws RandomException
-     * @throws \Exception
+     * @throws Exception
      */
     #[Route(path: '/paiement/{token}', name: 'checkout_pay')]
     public function paymentConfirm(
@@ -86,7 +78,6 @@ final class PaymentController extends AbstractController
         Request $request
     ): Response {
         $this->orderService->verifyOrderOwnership($order);
-        $cartProducts = $request->getSession()->get(SessionElements::SHOPPING_CART->value);
 
         $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
 
@@ -94,14 +85,10 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        if (empty($cartProducts)) {
-            $this->orderService->cancelOrder($order);
-            return $this->redirectToRoute('app_main');
-        }
+        $integrityInfos = $this->orderService->verifyOrderIntegrity($order);
+        $this->manageIntegrityInfos($integrityInfos, $request);
 
-        $updatedOrder = $this->orderService->verifyOrderIntegrity($order);
-
-        if ($updatedOrder) {
+        if ($integrityInfos['updated'] === true) {
             return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken(),
                 'order' => $order,
@@ -122,7 +109,7 @@ final class PaymentController extends AbstractController
 
     /**
      * @throws ApiErrorException
-     * @throws \Exception
+     * @throws Exception
      */
     #[Route(path: '/checkout/pay/{token}', name: 'checkout_stripe')]
     public function generateSession(
@@ -132,17 +119,9 @@ final class PaymentController extends AbstractController
     ): Response {
 
         $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
+
         if (false === $limiter->consume(1)->isAccepted()) {
             throw new TooManyRequestsHttpException();
-        }
-
-        $updated = $this->orderService->verifyOrderIntegrity($order);
-
-        if ($updated) {
-            return $this->redirectToRoute('checkout_summary', [
-                'token' => $order->getToken(),
-                'order' => $order,
-            ]);
         }
 
         if ($order->getStatus() === OrderStatus::PENDING_PAYMENT) {
@@ -164,7 +143,7 @@ final class PaymentController extends AbstractController
     /**
      * @throws TransportExceptionInterface
      * @throws ExceptionInterface
-     * @throws \Exception
+     * @throws Exception
      */
     #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
     public function index(
@@ -223,5 +202,21 @@ final class PaymentController extends AbstractController
         return $this->json([
             'status' => $order->getStatus()
         ]);
+    }
+
+    private function manageIntegrityInfos(array $integrityInfos, Request $request): void
+    {
+        $session = $request->getSession();
+
+        if (!empty($integrityInfos['errors'])) {
+            $errors = $integrityInfos['errors'];
+            foreach ($errors as $error) {
+                $this->addFlash('error', $error);
+            }
+        }
+
+        if ($integrityInfos['updated'] === true) {
+            $session->set(SessionElements::SHOPPING_CART->value, $integrityInfos['cartProducts']);
+        }
     }
 }

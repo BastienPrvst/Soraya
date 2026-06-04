@@ -42,7 +42,6 @@ class OrderCrudController extends AbstractCrudController
 {
     public function __construct(
         private readonly AdminUrlGenerator $adminUrlGenerator,
-        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 
@@ -263,11 +262,6 @@ class OrderCrudController extends AbstractCrudController
 
                     return sprintf('%s %s', $order->getFirstname(), $order->getLastname());
                 }),
-            MoneyField::new('deliveryPrice')
-                ->setLabel('Prix livraison')
-                ->setCurrency('EUR')
-                ->setStoredAsCents(false)
-                ->setColumns(4),
             MoneyField::new('orderTotal')
                 ->setLabel('Total commande')
                 ->setCurrency('EUR')
