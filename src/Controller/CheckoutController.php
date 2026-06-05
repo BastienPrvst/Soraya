@@ -74,6 +74,9 @@ class CheckoutController extends AbstractController
 
         /* @var Order $order */
         $order = $this->orderService->findLatestOrderOrCreateOne($token, $cart);
+        $session->set(SessionElements::ORDER_TOKEN->value, $order->getToken());
+        $session->set(SessionElements::SESSION_KEY->value, $order->getSessionKey());
+
 
         if ($this->getUser()) {
             return $this->redirectToRoute('checkout_delivery', [

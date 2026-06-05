@@ -5,7 +5,7 @@ namespace App\Service;
 use App\Entity\Address;
 use App\Entity\Order;
 use App\Entity\OrderItem;
-use App\Entity\Product;
+use App\DTO\OrderIntegrityResult;
 use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
@@ -17,7 +17,6 @@ use Exception;
 use Random\RandomException;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\RequestStack;
-use Symfony\Component\Routing\Exception\InvalidArgumentException;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 readonly class OrderService
@@ -68,20 +67,33 @@ readonly class OrderService
             }
         }
 
+        $orderIntegrityResult = new OrderIntegrityResult(
+            false,
+            false,
+            [],
+            $cartProducts
+        );
+
         //Si pas de commande trouvée, construction
         if (!$order) {
-            return $this->buildOrder($cartProducts);
+            return $this->buildOrder($cartProducts, $orderIntegrityResult);
         }
+
         //Sinon, update pour mettre à jour les produits
-        $this->updateOrder($order, $cartProducts);
+        $indexedProducts = $this->getIndexedProducts($cartProducts);
+        $this->checkStock($order, $cartProducts, $indexedProducts, $orderIntegrityResult);
+        $this->updateOrder($order, $cartProducts, $orderIntegrityResult);
         return $order;
     }
 
     /**
      * @throws RandomException
+     * @throws Exception
      */
-    public function buildOrder(array $cartProducts): Order
-    {
+    public function buildOrder(
+        array $cartProducts,
+        OrderIntegrityResult $orderIntegrityResult
+    ): Order {
         /* @var User $user */
         $user = $this->security->getUser();
 
@@ -112,15 +124,13 @@ readonly class OrderService
             }
         }
 
-        //Création des orderItems + vérification du stock = mise à jour session
-        $this->createAndUpdateOrderItems($cartProducts, $order);
+        $indexedProducts = $this->getIndexedProducts($cartProducts);
+        $this->checkStock($order, $cartProducts, $indexedProducts, $orderIntegrityResult);
 
+        //Création des orderItems + vérification du stock = mise à jour session
+        $this->updateOrderItems($cartProducts, $order, $orderIntegrityResult);
         $this->entityManager->persist($order);
         $this->entityManager->flush();
-
-        $session = $this->requestStack->getSession();
-        $session->set(SessionElements::ORDER_TOKEN->value, $order->getToken());
-        $session->set(SessionElements::SESSION_KEY->value, $order->getSessionKey());
 
         return $order;
     }
@@ -129,7 +139,7 @@ readonly class OrderService
      * @throws Exception
      * Fonction garde-fou regroupant toutes les autres
      */
-    public function verifyOrderIntegrity(Order $order): array
+    public function verifyOrderIntegrity(Order $order): OrderIntegrityResult
     {
         $this->verifyOrderOwnership($order);
         $session = $this->requestStack->getSession();
@@ -137,29 +147,28 @@ readonly class OrderService
 
         $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cartProducts);
 
-        /**
-         * On update l'order si :
-         * - Le cart en session ne correspond pas à l'order
-         * - Les stocks des produits dans le panier ne sont pas suffisants
-         **/
+        $orderIntegrityResult = new OrderIntegrityResult(
+            false,
+            false,
+            [],
+            $cartProducts,
+        );
 
-        if (!$isOrderMatchingCart) {
-            $returnData = $this->updateOrder($order, $cartProducts);
-        } else {
-            $indexedProducts = $this->getIndexedProducts($cartProducts);
-            $returnData = $this->checkStock(
-                $order,
-                $cartProducts,
-                $indexedProducts
-            );
-            if ($returnData['updated'] === true) {
-                $updateData = $this->updateOrder($order, $cartProducts);
-                $returnData['canceled'] = $updateData['canceled'];
-                $returnData['cartProducts'] = $updateData['cartProducts'];
-            }
+        $indexedProducts = $this->getIndexedProducts($cartProducts);
+        //Check des stocks par rapport au panier session
+        $orderIntegrityResult = $this->checkStock(
+            $order,
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        );
+
+        //Update de l'order si stock != panier OU panier != orderItems
+        if (!$isOrderMatchingCart || $orderIntegrityResult->updated === true) {
+            $orderIntegrityResult = $this->updateOrder($order, $cartProducts, $orderIntegrityResult);
         }
 
-        return $returnData;
+        return $orderIntegrityResult;
     }
 
     public function verifyOrderOwnership(Order $order): void
@@ -213,23 +222,37 @@ readonly class OrderService
      * @throws Exception
      * Info :
      */
-    public function updateOrder(Order $order, array $cartProducts): array
-    {
-        $returnData = [
-            'updated' => false,
-            'canceled' => false,
-            'errors' => [],
-            'cartProducts' => $cartProducts,
-        ];
+    public function updateOrder(
+        Order $order,
+        array $cartProducts,
+        OrderIntegrityResult $orderIntegrityResult
+    ): OrderIntegrityResult {
 
         //Si panier vide, on annule la commande
         if (empty($cartProducts)) {
             $this->cancelOrder($order);
-            $returnData['canceled'] = true;
-            return $returnData;
+            $orderIntegrityResult->canceled = true;
+            return $orderIntegrityResult;
         }
 
-        //On reconstruit les ordersItems en fonction du panier
+        $orderIntegrityResult = $this->updateOrderItems($cartProducts, $order, $orderIntegrityResult);
+
+        $this->entityManager->flush();
+
+        return $orderIntegrityResult;
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function updateOrderItems(
+        array &$cartProducts,
+        Order $order,
+        OrderIntegrityResult $orderIntegrityResult
+    ): OrderIntegrityResult {
+
+        $cartTotal = 0;
+        $indexedProducts = $this->getIndexedProducts($cartProducts);
 
         foreach ($order->getOrderItems() as $orderItem) {
             $this->entityManager->remove($orderItem);
@@ -237,27 +260,10 @@ readonly class OrderService
 
         $order->getOrderItems()->clear();
 
-        $returnData = $this->createAndUpdateOrderItems($cartProducts, $order);
-
-        $this->entityManager->flush();
-
-        return $returnData;
-    }
-
-    /**
-     * @throws Exception
-     */
-    private function createAndUpdateOrderItems(array &$cartProducts, Order $order): array
-    {
-        $updated = false;
-        $cartTotal = 0;
-        $indexedProducts = $this->getIndexedProducts($cartProducts);
-        $returnData = $this->checkStock($order, $cartProducts, $indexedProducts);
-
         foreach ($cartProducts as $productId => $quantity) {
             if ($quantity <= 0) {
                 unset($cartProducts[$productId]);
-                $updated = true;
+                $orderIntegrityResult->updated = true;
                 continue;
             }
 
@@ -265,7 +271,7 @@ readonly class OrderService
 
             if (!$product) {
                 unset($cartProducts[$productId]);
-                $updated = true;
+                $orderIntegrityResult->updated = true;
                 continue;
             }
 
@@ -285,19 +291,14 @@ readonly class OrderService
             $cartTotal += $orderItem->getTotal();
         }
 
-
         if (empty($cartProducts)) {
             $this->cancelOrder($order);
-            $returnData['canceled'] = true;
-            return $returnData;
-        }
-
-        if ($updated) {
-            $returnData['updated'] = true;
+            $orderIntegrityResult->canceled = true;
+            return $orderIntegrityResult;
         }
 
         $order->setTotal($cartTotal);
-        return $returnData;
+        return $orderIntegrityResult;
     }
 
     /**
@@ -306,9 +307,10 @@ readonly class OrderService
     private function checkStock(
         Order $order,
         array &$cartProducts,
-        array $indexedProducts
-    ): array {
-        $updated = false;
+        array $indexedProducts,
+        OrderIntegrityResult $orderIntegrityResult
+    ): OrderIntegrityResult {
+
         $errors = [];
 
         foreach ($cartProducts as $productId => $quantity) {
@@ -316,7 +318,7 @@ readonly class OrderService
 
             if (!$product) {
                 unset($cartProducts[$productId]);
-                $updated = true;
+                $orderIntegrityResult->updated = true;
                 continue;
             }
 
@@ -334,22 +336,19 @@ readonly class OrderService
                     $errors [] = 'Le produit ' . $product->getName() . ' n\'est pas disponible en stock';
                     unset($cartProducts[$productId]);
                 }
-                $updated = true;
+                $orderIntegrityResult->updated = true;
             }
         }
 
         if (empty($cartProducts)) {
             $this->cancelOrder($order);
-            $returnData['canceled'] = true;
-            return $returnData;
+            $orderIntegrityResult->canceled = true;
+            return $orderIntegrityResult;
         }
 
-        return [
-            'updated' => $updated,
-            'canceled' => false,
-            'errors' => $errors,
-            'cartProducts' => $cartProducts
-        ];
+        $orderIntegrityResult->errors = array_merge($orderIntegrityResult->errors, $errors);
+
+        return $orderIntegrityResult;
     }
 
     /**
@@ -359,18 +358,6 @@ readonly class OrderService
     {
         if ($this->workflowService->canTransition($order, OrderStatus::CANCELLED->value)) {
             $this->workflowService->applyTransition($order, OrderStatus::CANCELLED->value);
-
-            foreach ($order->getOrderItems() as $orderItem) {
-                $this->entityManager->remove($orderItem);
-            }
-            $order->getOrderItems()->clear();
-            $order->setTotal(0);
-
-            $session = $this->requestStack->getSession();
-            $session->remove(SessionElements::SESSION_KEY->value);
-            $session->remove(SessionElements::ORDER_TOKEN->value);
-            $session->remove(SessionElements::SHOPPING_CART->value);
-            $session->remove(SessionElements::CGU->value);
             $this->entityManager->flush();
         }
     }

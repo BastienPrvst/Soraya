@@ -67,8 +67,8 @@ final readonly class CheckoutRedirectListener
             ? $request->attributes->get('_route')
             : 'checkout_summary',
             OrderStatus::PAID, OrderStatus::PENDING_SHIPPING => 'checkout_success',
-            default => null,
             OrderStatus::CANCELLED => 'app_main',
+            default => null,
         };
 
         if (!$route) {

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\DTO\OrderIntegrityResult;
 use App\Entity\Order;
 use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
@@ -59,8 +60,12 @@ final class PaymentController extends AbstractController
         }
 
         $integrityInfos = $this->orderService->verifyOrderIntegrity($order);
-
         $this->manageIntegrityInfos($integrityInfos, $request);
+        if ($integrityInfos->canceled === true) {
+            return $this->redirectToRoute('app_main');
+
+
+        }
 
         return $this->render('payment/resume.html.twig', [
             'order' => $order,
@@ -87,6 +92,10 @@ final class PaymentController extends AbstractController
 
         $integrityInfos = $this->orderService->verifyOrderIntegrity($order);
         $this->manageIntegrityInfos($integrityInfos, $request);
+
+        if ($integrityInfos->canceled === true) {
+            return $this->redirectToRoute('app_main'); //
+        }
 
         if ($integrityInfos['updated'] === true) {
             return $this->redirectToRoute('checkout_summary', [
@@ -204,19 +213,26 @@ final class PaymentController extends AbstractController
         ]);
     }
 
-    private function manageIntegrityInfos(array $integrityInfos, Request $request): void
+    private function manageIntegrityInfos(OrderIntegrityResult $orderIntegrityResult, Request $request): void
     {
         $session = $request->getSession();
 
-        if (!empty($integrityInfos['errors'])) {
-            $errors = $integrityInfos['errors'];
+        if ($orderIntegrityResult->canceled === true) {
+            $session->remove(SessionElements::SESSION_KEY->value);
+            $session->remove(SessionElements::ORDER_TOKEN->value);
+            $session->remove(SessionElements::SHOPPING_CART->value);
+            $session->remove(SessionElements::CGU->value);
+        }
+
+        $errors = $orderIntegrityResult->errors;
+        if (!empty($errors)) {
             foreach ($errors as $error) {
                 $this->addFlash('error', $error);
             }
         }
 
-        if ($integrityInfos['updated'] === true) {
-            $session->set(SessionElements::SHOPPING_CART->value, $integrityInfos['cartProducts']);
+        if ($orderIntegrityResult->updated === true) {
+            $session->set(SessionElements::SHOPPING_CART->value, $orderIntegrityResult->cartProducts);
         }
     }
 }
