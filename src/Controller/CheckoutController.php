@@ -68,11 +68,12 @@ class CheckoutController extends AbstractController
         $session = $request->getSession();
         $cart = $session->get(SessionElements::SHOPPING_CART->value, []);
         $token = $session->get(SessionElements::ORDER_TOKEN->value);
+        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
         if (empty($cart)) {
             return $this->redirectToRoute('app_shopping_cart_view');
         }
 
-        $orderIntegrityResult = $this->orderService->findLatestOrderOrCreateOne($token, $cart);
+        $orderIntegrityResult = $this->orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cart);
 
         if ($orderIntegrityResult->canceled === true) {
             return $this->redirectToRoute('app_shopping_cart_view');
@@ -82,6 +83,8 @@ class CheckoutController extends AbstractController
             foreach ($orderIntegrityResult->errors as $error) {
                 $this->addFlash('error', $error);
             }
+
+            $session->set(SessionElements::SHOPPING_CART->value, $orderIntegrityResult->cartProducts);
         }
 
         $order = $orderIntegrityResult->order;

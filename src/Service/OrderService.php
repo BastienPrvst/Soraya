@@ -9,21 +9,18 @@ use App\DTO\OrderIntegrityResult;
 use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
-use App\Enum\SessionElements;
 use App\Repository\ProductRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Random\RandomException;
 use Symfony\Bundle\SecurityBundle\Security;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 readonly class OrderService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private RequestStack           $requestStack,
         private Security               $security,
         private WorkflowService        $workflowService,
         private StockService           $stockService,
@@ -35,7 +32,11 @@ readonly class OrderService
      * @throws RandomException
      * @throws Exception
      */
-    public function findLatestOrderOrCreateOne(?string $token, array $cartProducts): OrderIntegrityResult
+    public function findLatestOrderOrCreateOne(
+        ?string $token,
+        string $sessionKey,
+        array $cartProducts
+    ): OrderIntegrityResult
     {
         $user = $this->security->getUser();
         $orderRepository = $this->entityManager->getRepository(Order::class);
@@ -57,12 +58,10 @@ readonly class OrderService
                     ['creationDate' => 'DESC']
                 );
             } else {
-                $session = $this->requestStack->getSession();
-
                 $order =
                     $orderRepository->findValidAnonymousOrder(
                         $token,
-                        $session->get(SessionElements::SESSION_KEY->value)
+                        $sessionKey
                     );
             }
         }
@@ -145,12 +144,15 @@ readonly class OrderService
             $orderIntegrityResult
         );
 
+
         //Création des orderItems + vérification du stock = mise à jour session
         $orderIntegrityResult = $this->updateOrderItems(
             $cartProducts,
             $indexedProducts,
             $orderIntegrityResult
         );
+
+        $orderIntegrityResult->cartProducts = $cartProducts;
         $this->entityManager->persist($order);
         $this->entityManager->flush();
 
@@ -161,11 +163,9 @@ readonly class OrderService
      * @throws Exception
      * Fonction garde-fou regroupant toutes les autres
      */
-    public function verifyOrderIntegrity(Order $order): OrderIntegrityResult
+    public function verifyOrderIntegrity(Order $order, array $cartProducts, string $token, string $sessionKey): OrderIntegrityResult
     {
-        $this->verifyOrderOwnership($order);
-        $session = $this->requestStack->getSession();
-        $cartProducts = $session->get(SessionElements::SHOPPING_CART->value, []);
+        $this->verifyOrderOwnership($order, $token, $sessionKey);
 
         $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cartProducts);
 
@@ -197,10 +197,9 @@ readonly class OrderService
         return $orderIntegrityResult;
     }
 
-    public function verifyOrderOwnership(Order $order): void
+    public function verifyOrderOwnership(Order $order, ?string $token, ?string $sessionKey): void
     {
         $user = $this->security->getUser();
-        $session = $this->requestStack->getSession();
 
         if ($order->getUser() !== null) {
             if (!$user || $order->getUser() !== $user) {
@@ -208,9 +207,6 @@ readonly class OrderService
             }
             return;
         }
-
-        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
-        $token = $session->get(SessionElements::ORDER_TOKEN->value);
 
         if (!$token || !hash_equals($order->getToken(), $token)) {
             throw new AccessDeniedException();

@@ -59,7 +59,12 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $integrityInfos = $this->orderService->verifyOrderIntegrity($order);
+        $session = $request->getSession();
+        $cartProducts = $session->get(SessionElements::SHOPPING_CART->value);
+        $token = $session->get(SessionElements::ORDER_TOKEN->value);
+        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
+
+        $integrityInfos = $this->orderService->verifyOrderIntegrity($order, $cartProducts, $token, $sessionKey);
         $this->manageIntegrityInfos($integrityInfos, $request);
         if ($integrityInfos->canceled === true) {
             return $this->redirectToRoute('app_main');
@@ -87,7 +92,12 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $integrityInfos = $this->orderService->verifyOrderIntegrity($order);
+        $session = $request->getSession();
+        $cartProducts = $session->get(SessionElements::SHOPPING_CART->value);
+        $token = $session->get(SessionElements::ORDER_TOKEN->value);
+        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
+
+        $integrityInfos = $this->orderService->verifyOrderIntegrity($order, $cartProducts, $token, $sessionKey);
         $this->manageIntegrityInfos($integrityInfos, $request);
 
         if ($integrityInfos->canceled === true) {
