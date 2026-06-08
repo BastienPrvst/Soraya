@@ -72,8 +72,20 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_shopping_cart_view');
         }
 
-        /* @var Order $order */
-        $order = $this->orderService->findLatestOrderOrCreateOne($token, $cart);
+        $orderIntegrityResult = $this->orderService->findLatestOrderOrCreateOne($token, $cart);
+
+        if ($orderIntegrityResult->canceled === true) {
+            return $this->redirectToRoute('app_shopping_cart_view');
+        }
+
+        if ($orderIntegrityResult->updated === true) {
+            foreach ($orderIntegrityResult->errors as $error) {
+                $this->addFlash('error', $error);
+            }
+        }
+
+        $order = $orderIntegrityResult->order;
+
         $session->set(SessionElements::ORDER_TOKEN->value, $order->getToken());
         $session->set(SessionElements::SESSION_KEY->value, $order->getSessionKey());
 
@@ -108,5 +120,4 @@ class CheckoutController extends AbstractController
             'order' => $order,
         ]);
     }
-
 }

@@ -63,8 +63,6 @@ final class PaymentController extends AbstractController
         $this->manageIntegrityInfos($integrityInfos, $request);
         if ($integrityInfos->canceled === true) {
             return $this->redirectToRoute('app_main');
-
-
         }
 
         return $this->render('payment/resume.html.twig', [
@@ -82,7 +80,6 @@ final class PaymentController extends AbstractController
         RateLimiterFactoryInterface $checkoutLimiter,
         Request $request
     ): Response {
-        $this->orderService->verifyOrderOwnership($order);
 
         $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
 
@@ -97,7 +94,7 @@ final class PaymentController extends AbstractController
             return $this->redirectToRoute('app_main'); //
         }
 
-        if ($integrityInfos['updated'] === true) {
+        if ($integrityInfos->updated === true) {
             return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken(),
                 'order' => $order,

@@ -35,7 +35,7 @@ readonly class OrderService
      * @throws RandomException
      * @throws Exception
      */
-    public function findLatestOrderOrCreateOne(?string $token, array $cartProducts): ?Order
+    public function findLatestOrderOrCreateOne(?string $token, array $cartProducts): OrderIntegrityResult
     {
         $user = $this->security->getUser();
         $orderRepository = $this->entityManager->getRepository(Order::class);
@@ -67,23 +67,30 @@ readonly class OrderService
             }
         }
 
-        $orderIntegrityResult = new OrderIntegrityResult(
-            false,
-            false,
-            [],
-            $cartProducts
-        );
-
         //Si pas de commande trouvée, construction
         if (!$order) {
-            return $this->buildOrder($cartProducts, $orderIntegrityResult);
+            return $this->buildOrder($cartProducts);
         }
 
         //Sinon, update pour mettre à jour les produits
         $indexedProducts = $this->getIndexedProducts($cartProducts);
-        $this->checkStock($order, $cartProducts, $indexedProducts, $orderIntegrityResult);
-        $this->updateOrder($order, $cartProducts, $orderIntegrityResult);
-        return $order;
+        $orderIntegrityResult = new OrderIntegrityResult(
+            false,
+            false,
+            [],
+            $cartProducts,
+            $order
+        );
+        $orderIntegrityResult = $this->checkStock(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        );
+        return $this->updateOrder(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        );
     }
 
     /**
@@ -92,8 +99,7 @@ readonly class OrderService
      */
     public function buildOrder(
         array $cartProducts,
-        OrderIntegrityResult $orderIntegrityResult
-    ): Order {
+    ): OrderIntegrityResult {
         /* @var User $user */
         $user = $this->security->getUser();
 
@@ -113,6 +119,14 @@ readonly class OrderService
             ->setDeliveryMode(DeliveryMode::HOME)
         ;
 
+        $orderIntegrityResult = new OrderIntegrityResult(
+            false,
+            false,
+            [],
+            $cartProducts,
+            $order
+        );
+
         if ($user) {
             $address = $this->entityManager->getRepository(Address::class)->findOneBy([
                 'user' => $user,
@@ -125,14 +139,22 @@ readonly class OrderService
         }
 
         $indexedProducts = $this->getIndexedProducts($cartProducts);
-        $this->checkStock($order, $cartProducts, $indexedProducts, $orderIntegrityResult);
+        $orderIntegrityResult = $this->checkStock(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        );
 
         //Création des orderItems + vérification du stock = mise à jour session
-        $this->updateOrderItems($cartProducts, $order, $orderIntegrityResult);
+        $orderIntegrityResult = $this->updateOrderItems(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        );
         $this->entityManager->persist($order);
         $this->entityManager->flush();
 
-        return $order;
+        return $orderIntegrityResult;
     }
 
     /**
@@ -152,12 +174,12 @@ readonly class OrderService
             false,
             [],
             $cartProducts,
+            $order
         );
 
         $indexedProducts = $this->getIndexedProducts($cartProducts);
         //Check des stocks par rapport au panier session
         $orderIntegrityResult = $this->checkStock(
-            $order,
             $cartProducts,
             $indexedProducts,
             $orderIntegrityResult
@@ -165,7 +187,11 @@ readonly class OrderService
 
         //Update de l'order si stock != panier OU panier != orderItems
         if (!$isOrderMatchingCart || $orderIntegrityResult->updated === true) {
-            $orderIntegrityResult = $this->updateOrder($order, $cartProducts, $orderIntegrityResult);
+            $orderIntegrityResult = $this->updateOrder(
+                $cartProducts,
+                $indexedProducts,
+                $orderIntegrityResult
+            );
         }
 
         return $orderIntegrityResult;
@@ -223,19 +249,23 @@ readonly class OrderService
      * Info :
      */
     public function updateOrder(
-        Order $order,
         array $cartProducts,
+        array $indexedProducts,
         OrderIntegrityResult $orderIntegrityResult
     ): OrderIntegrityResult {
 
         //Si panier vide, on annule la commande
         if (empty($cartProducts)) {
-            $this->cancelOrder($order);
+            $this->cancelOrder($orderIntegrityResult->order);
             $orderIntegrityResult->canceled = true;
             return $orderIntegrityResult;
         }
 
-        $orderIntegrityResult = $this->updateOrderItems($cartProducts, $order, $orderIntegrityResult);
+        $orderIntegrityResult = $this->updateOrderItems(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        );
 
         $this->entityManager->flush();
 
@@ -247,13 +277,12 @@ readonly class OrderService
      */
     private function updateOrderItems(
         array &$cartProducts,
-        Order $order,
+        array $indexedProducts,
         OrderIntegrityResult $orderIntegrityResult
     ): OrderIntegrityResult {
 
         $cartTotal = 0;
-        $indexedProducts = $this->getIndexedProducts($cartProducts);
-
+        $order = $orderIntegrityResult->order;
         foreach ($order->getOrderItems() as $orderItem) {
             $this->entityManager->remove($orderItem);
         }
@@ -305,7 +334,6 @@ readonly class OrderService
      * @throws Exception
      */
     private function checkStock(
-        Order $order,
         array &$cartProducts,
         array $indexedProducts,
         OrderIntegrityResult $orderIntegrityResult
@@ -317,6 +345,12 @@ readonly class OrderService
             $product = $indexedProducts[$productId] ?? null;
 
             if (!$product) {
+                unset($cartProducts[$productId]);
+                $orderIntegrityResult->updated = true;
+                continue;
+            }
+
+            if ($quantity <= 0) {
                 unset($cartProducts[$productId]);
                 $orderIntegrityResult->updated = true;
                 continue;
@@ -341,7 +375,7 @@ readonly class OrderService
         }
 
         if (empty($cartProducts)) {
-            $this->cancelOrder($order);
+            $this->cancelOrder($orderIntegrityResult->order);
             $orderIntegrityResult->canceled = true;
             return $orderIntegrityResult;
         }
