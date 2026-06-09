@@ -36,8 +36,18 @@ readonly class OrderService
         ?string $token,
         string $sessionKey,
         array $cartProducts
-    ): OrderIntegrityResult
-    {
+    ): OrderIntegrityResult {
+
+        if (empty($cartProducts)) {
+            return new OrderIntegrityResult(
+                true,
+                true,
+                ['Impossible de créer une commande, le panier est vide.'],
+                [],
+                null
+            );
+        }
+
         $user = $this->security->getUser();
         $orderRepository = $this->entityManager->getRepository(Order::class);
         $order = null;
@@ -163,11 +173,13 @@ readonly class OrderService
      * @throws Exception
      * Fonction garde-fou regroupant toutes les autres
      */
-    public function verifyOrderIntegrity(Order $order, array $cartProducts, string $token, string $sessionKey): OrderIntegrityResult
-    {
+    public function verifyOrderIntegrity(
+        Order $order,
+        array $cartProducts,
+        string $token,
+        string $sessionKey
+    ): OrderIntegrityResult {
         $this->verifyOrderOwnership($order, $token, $sessionKey);
-
-        $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cartProducts);
 
         $orderIntegrityResult = new OrderIntegrityResult(
             false,
@@ -177,6 +189,14 @@ readonly class OrderService
             $order
         );
 
+        if (empty($cartProducts)) {
+            $this->cancelOrder($order);
+            $orderIntegrityResult->canceled = true;
+            return $orderIntegrityResult;
+        }
+
+        $isOrderMatchingCart = $this->isOrderMatchingCart($order, $cartProducts);
+
         $indexedProducts = $this->getIndexedProducts($cartProducts);
         //Check des stocks par rapport au panier session
         $orderIntegrityResult = $this->checkStock(
@@ -184,6 +204,10 @@ readonly class OrderService
             $indexedProducts,
             $orderIntegrityResult
         );
+
+        if ($orderIntegrityResult->canceled === true) {
+            return $orderIntegrityResult;
+        }
 
         //Update de l'order si stock != panier OU panier != orderItems
         if (!$isOrderMatchingCart || $orderIntegrityResult->updated === true) {
@@ -250,6 +274,10 @@ readonly class OrderService
         OrderIntegrityResult $orderIntegrityResult
     ): OrderIntegrityResult {
 
+        if ($orderIntegrityResult->canceled === true) {
+            return $orderIntegrityResult;
+        }
+
         //Si panier vide, on annule la commande
         if (empty($cartProducts)) {
             $this->cancelOrder($orderIntegrityResult->order);
@@ -276,6 +304,10 @@ readonly class OrderService
         array $indexedProducts,
         OrderIntegrityResult $orderIntegrityResult
     ): OrderIntegrityResult {
+
+        if ($orderIntegrityResult->canceled === true) {
+            return $orderIntegrityResult;
+        }
 
         $cartTotal = 0;
         $order = $orderIntegrityResult->order;
@@ -319,8 +351,11 @@ readonly class OrderService
         if (empty($cartProducts)) {
             $this->cancelOrder($order);
             $orderIntegrityResult->canceled = true;
+            $orderIntegrityResult->cartProducts = $cartProducts;
             return $orderIntegrityResult;
         }
+
+        $orderIntegrityResult->cartProducts = $cartProducts;
 
         $order->setTotal($cartTotal);
         return $orderIntegrityResult;
@@ -334,6 +369,10 @@ readonly class OrderService
         array $indexedProducts,
         OrderIntegrityResult $orderIntegrityResult
     ): OrderIntegrityResult {
+
+        if ($orderIntegrityResult->canceled === true) {
+            return $orderIntegrityResult;
+        }
 
         $errors = [];
 
@@ -372,11 +411,13 @@ readonly class OrderService
 
         if (empty($cartProducts)) {
             $this->cancelOrder($orderIntegrityResult->order);
+            $orderIntegrityResult->cartProducts = $cartProducts;
             $orderIntegrityResult->canceled = true;
             return $orderIntegrityResult;
         }
 
         $orderIntegrityResult->errors = array_merge($orderIntegrityResult->errors, $errors);
+        $orderIntegrityResult->cartProducts = $cartProducts;
 
         return $orderIntegrityResult;
     }

@@ -11,7 +11,7 @@ class OrderIntegrityResult
         public bool $canceled,
         public array $errors,
         public array $cartProducts,
-        public Order $order
+        public ?Order $order
     ) {
     }
 }

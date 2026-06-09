@@ -4,11 +4,18 @@ namespace Service;
 
 use App\DTO\OrderIntegrityResult;
 use App\Entity\Order;
+use App\Entity\OrderItem;
 use App\Entity\Product;
+use App\Entity\User;
+use App\Enum\DeliveryMode;
+use App\Enum\OrderStatus;
+use App\Repository\OrderRepository;
 use App\Repository\ProductRepository;
 use App\Service\OrderService;
 use App\Service\StockService;
 use App\Service\WorkflowService;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\MockObject\Exception;
@@ -19,6 +26,139 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class OrderServiceTest extends TestCase
 {
+    /**
+     * @throws Exception|RandomException
+     */
+    public function testFindLatestOrderOrCreateOneWithUser(): void
+    {
+        $products = $this->createProductsStubs();
+
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+        $order = $this->createStub(Order::class);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $orderRepository = $this->createStub(OrderRepository::class);
+        $orderRepository->method('findOneBy')->willReturn($order);
+        $orderRepository->method('findValidAnonymousOrder')->willReturn($order);
+
+        $user = $this->createUserStub();
+
+        $orderService = $this->constructOrderService($products, null, $orderRepository, $user);
+        //Normal
+        $cartProducts1 = [
+            $products[0]->getId() => 10,
+            $products[1]->getId() => 2,
+        ];
+
+        //A update
+        $cartProducts2 = [
+            $products[0]->getId() => 3,
+            $products[1]->getId() => 4,
+            $products[2]->getId() => 5,
+            $products[3]->getId() => 6,
+        ];
+
+        //A cancel
+        $cartProducts3 = [];
+
+
+        //test 1 normal
+
+        $test1 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts1);
+
+        $this->assertInstanceOf(Order::class, $test1->order);
+        $this->assertEquals($token, $test1->order->getToken());
+        $this->assertFalse($test1->updated);
+        $this->assertFalse($test1->canceled);
+
+        //Test 2 update
+
+        $test2 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts2);
+
+        $this->assertInstanceOf(Order::class, $test1->order);
+        $this->assertArrayNotHasKey($products[3]->getId(), $test2->cartProducts);
+        $this->assertEquals($token, $test2->order->getToken());
+        $this->assertTrue($test2->updated);
+        $this->assertFalse($test2->canceled);
+
+        $test3 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts3);
+
+        $this->assertTrue($test3->canceled);
+    }
+
+    /**
+     * @throws RandomException
+     * @throws Exception
+     */
+    public function testFindLatestOrderOrCreateOneWithoutUser(): void
+    {
+        $products = $this->createProductsStubs();
+
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+        $order = $this->createStub(Order::class);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $orderRepository = $this->createStub(OrderRepository::class);
+        $orderRepository->method('findOneBy')->willReturn($order);
+        $orderRepository->method('findValidAnonymousOrder')->willReturn($order);
+
+        $orderService = $this->constructOrderService($products, null, $orderRepository, null);
+        //Normal
+        $cartProducts1 = [
+            $products[0]->getId() => 10,
+            $products[1]->getId() => 2,
+        ];
+
+        //A update
+        $cartProducts2 = [
+            $products[0]->getId() => 3,
+            $products[1]->getId() => 4,
+            $products[2]->getId() => 5,
+            $products[3]->getId() => 6,
+        ];
+
+        //A cancel
+        $cartProducts3 = [];
+
+
+        //test 1 normal
+
+        $test1 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts1);
+
+        $this->assertInstanceOf(Order::class, $test1->order);
+        $this->assertEquals($token, $test1->order->getToken());
+        $this->assertFalse($test1->updated);
+        $this->assertFalse($test1->canceled);
+
+        //Test 2 update
+
+        $test2 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts2);
+
+        $this->assertInstanceOf(Order::class, $test1->order);
+        $this->assertArrayNotHasKey($products[3]->getId(), $test2->cartProducts);
+        $this->assertEquals($token, $test2->order->getToken());
+        $this->assertTrue($test2->updated);
+        $this->assertFalse($test2->canceled);
+
+        //Canceled
+
+        $test3 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts3);
+
+        $this->assertTrue($test3->canceled);
+
+        //Create Order
+
+        $orderService = $this->constructOrderService($products);
+        $test4 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts1);
+        $this->assertInstanceOf(Order::class, $order);
+        $this->assertEquals($token, $order->getToken());
+        $this->assertFalse($test4->updated);
+        $this->assertFalse($test4->canceled);
+    }
 
     /**
      * @throws Exception
@@ -26,71 +166,312 @@ class OrderServiceTest extends TestCase
      */
     public function testBuildOrder(): void
     {
+        $products = $this->createProductsStubs();
+
+        $cartProducts = [
+            $products[0]->getId() => 12,
+            $products[1]->getId() => 3,
+            $products[2]->getId() => 15,
+            $products[3]->getId() => 4,
+        ];
+
+        $user = $this->createUserStub();
+
+        $orderService = $this->constructOrderService($products, null, null, $user);
+
+        $orderIntegrityResult = $orderService->buildOrder($cartProducts);
+        $order = $orderIntegrityResult->order;
+        $newCart = $orderIntegrityResult->cartProducts;
+
+        $this->assertTrue($orderIntegrityResult->updated);
+        $this->assertEquals($newCart[$products[0]->getId()], $cartProducts[$products[0]->getId()]);
+        $this->assertEquals($newCart[$products[1]->getId()], $cartProducts[$products[1]->getId()]);
+        $this->assertEquals(10, $newCart[$products[2]->getId()]);
+        $this->assertArrayNotHasKey($products[3]->getId(), $newCart);
+
+        $this->assertInstanceOf(Order::class, $order);
+        $this->assertEquals(OrderStatus::CREATED, $order->getStatus());
+        $this->assertEquals(DeliveryMode::HOME, $order->getDeliveryMode());
+        $this->assertEquals('John', $order->getFirstName());
+        $this->assertEqualsWithDelta(
+            new \DateTime(),
+            $order->getCreationDate(),
+            1
+        );
+    }
+
+    /**
+     * @throws RandomException
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function testIntegrityOrderOk(): void
+    {
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn(null);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $products = $this->createProductsStubs();
+
+        $cartProducts = [
+            $products[0]->getId() => 12,
+            $products[1]->getId() => 3,
+            $products[2]->getId() => 5,
+        ];
+
+        $orderService = $this->constructOrderService($products);
+
+        $orderIntegrityResult = $orderService->verifyOrderIntegrity(
+            $order,
+            $cartProducts,
+            $token,
+            $sessionKey
+        );
+
+        $this->assertFalse($orderIntegrityResult->updated);
+        $this->assertFalse($orderIntegrityResult->canceled);
+        $this->assertEquals($cartProducts, $orderIntegrityResult->cartProducts);
+    }
+
+    /**
+     * @throws RandomException
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function testIntegrityOrderUpdated(): void
+    {
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn(null);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $products = $this->createProductsStubs();
+
+        $cartProducts = [
+            $products[0]->getId() => 12,
+            $products[1]->getId() => 3,
+            $products[2]->getId() => 5,
+            $products[3]->getId() => 6,
+        ];
+
+        $orderService = $this->constructOrderService($products);
+
+        $orderIntegrityResult = $orderService->verifyOrderIntegrity(
+            $order,
+            $cartProducts,
+            $token,
+            $sessionKey
+        );
+
+        $this->assertTrue($orderIntegrityResult->updated);
+        $this->assertFalse($orderIntegrityResult->canceled);
+
+        $this->assertArrayNotHasKey($products[3]->getId(), $orderIntegrityResult->cartProducts);
+    }
+
+    /**
+     * @throws Exception
+     * @throws RandomException
+     * @throws \Exception
+     */
+    public function testIntegrityOrderCanceledFromStart(): void
+    {
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn(null);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $products = $this->createProductsStubs();
+
+        $cartProducts = [];
+
+        $workflowService = $this->createMock(WorkflowService::class);
+        $workflowService->method('canTransition')->willReturn(true);
+        $workflowService->expects($this->once())
+            ->method('applyTransition')
+            ->with($order, OrderStatus::CANCELLED->value);
+
+        $orderService = $this->constructOrderService($products, $workflowService);
+
+        $orderIntegrityResult = $orderService->verifyOrderIntegrity(
+            $order,
+            $cartProducts,
+            $token,
+            $sessionKey
+        );
+
+        $this->assertTrue($orderIntegrityResult->canceled);
+        $this->assertFalse($orderIntegrityResult->updated);
+        $this->assertEmpty($orderIntegrityResult->cartProducts);
+    }
+
+    /**
+     * @throws Exception
+     * @throws RandomException
+     * @throws \Exception
+     */
+    public function testIntegrityOrderCanceledDuringProcess(): void
+    {
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn(null);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $products = $this->createProductsStubs();
+
+        $cartProducts = [
+            $products[3]->getId() => 2,
+        ];
+
+        $workflowService = $this->createMock(WorkflowService::class);
+        $workflowService->method('canTransition')->willReturn(true);
+        $workflowService->expects($this->once())
+            ->method('applyTransition')
+            ->with($order, OrderStatus::CANCELLED->value);
+
+        $orderService = $this->constructOrderService($products, $workflowService);
+
+        $orderIntegrityResult = $orderService->verifyOrderIntegrity(
+            $order,
+            $cartProducts,
+            $token,
+            $sessionKey
+        );
+
+        $this->assertTrue($orderIntegrityResult->canceled);
+        $this->assertTrue($orderIntegrityResult->updated);
+        $this->assertEmpty($orderIntegrityResult->cartProducts);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testIsOrderMatchingCart(): void
+    {
+        $products = $this->createProductsStubs();
+
+        $orderService = $this->constructOrderService($products);
+
+        // Prépare les orderItems stubs
+        $item1 = $this->createStub(OrderItem::class);
+        $item1->method('getProduct')->willReturn($products[0]);
+        $item1->method('getQuantity')->willReturn(10);
+
+        $item2 = $this->createStub(OrderItem::class);
+        $item2->method('getProduct')->willReturn($products[1]);
+        $item2->method('getQuantity')->willReturn(5);
+
+        $orderItems = new ArrayCollection([$item1, $item2]);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getOrderItems')->willReturn($orderItems);
+
+        // Cas 1 — cart identique à l'order
+        $cart = [1 => 10, 2 => 5];
+        $this->assertTrue($orderService->isOrderMatchingCart($order, $cart));
+
+        // Cas 2 — quantité différente
+        $cart = [1 => 10, 2 => 99];
+        $this->assertFalse($orderService->isOrderMatchingCart($order, $cart));
+
+        // Cas 3 — produit manquant dans le cart
+        $cart = [1 => 10];
+        $this->assertFalse($orderService->isOrderMatchingCart($order, $cart));
+
+        // Cas 4 — produit en plus dans le cart
+        $cart = [1 => 10, 2 => 5, 3 => 2];
+        $this->assertFalse($orderService->isOrderMatchingCart($order, $cart));
+
+        // Cas 5 — cart vide
+        $this->assertFalse($orderService->isOrderMatchingCart($order, []));
+
+        //Cas 6 - un id manque
+        $cart = [1 => 10, 99 => 5];
+        $this->assertFalse($orderService->isOrderMatchingCart($order, $cart));
+    }
+
+    /**
+     * @throws Exception
+     */
+    private function createProductsStubs(): array
+    {
         $products = [];
 
-        $product1 = $this->createMock(Product::class);
+        $product1 = $this->createStub(Product::class);
         $product1->method('getName')->willReturn('Product 1 test');
         $product1->method('getStock')->willReturn(1000);
         $product1->method('getId')->willReturn(1);
         $product1->method('getPrice')->willReturn(10.0);
         $products[] = $product1;
 
-        $product2 = $this->createMock(Product::class);
+        $product2 = $this->createStub(Product::class);
         $product2->method('getName')->willReturn('Product 2 test');
         $product2->method('getStock')->willReturn(666);
         $product2->method('getId')->willReturn(2);
         $product2->method('getPrice')->willReturn(10.0);
         $products[] = $product2;
 
-        $product3 = $this->createMock(Product::class);
+        $product3 = $this->createStub(Product::class);
         $product3->method('getName')->willReturn('Product 3 test');
         $product3->method('getStock')->willReturn(10);
         $product3->method('getId')->willReturn(3);
         $product3->method('getPrice')->willReturn(10.0);
         $products[] = $product3;
 
-        $product4 = $this->createMock(Product::class);
+        $product4 = $this->createStub(Product::class);
         $product4->method('getName')->willReturn('Product 4 test');
         $product4->method('getStock')->willReturn(0);
         $product4->method('getId')->willReturn(4);
         $product4->method('getPrice')->willReturn(10.0);
         $products[] = $product4;
 
-        $cartProducts = [
-            $product1->getId() => 12,
-            $product2->getId() => 3,
-            $product3->getId() => 15,
-            $product4->getId() => 4,
-        ];
-
-
-
-        $orderService = $this->constructOrderService($products);
-
-        $orderIntegrityResult = $orderService->buildOrder($cartProducts);
-        $order = $orderIntegrityResult->order;
-        $newCart = $orderIntegrityResult->cartProducts;
-
-        $this->assertEquals($newCart[$product1->getId()], $cartProducts[$product1->getId()]);
-        $this->assertEquals($newCart[$product2->getId()], $cartProducts[$product2->getId()]);
-        $this->assertNotEquals($newCart[$product3->getId()], $cartProducts[$product3->getId()]);
-        $this->assertNull($newCart[$product4->getId()]);
-
-        $this->assertInstanceOf(Order::class, $order);
-        $this->assertTrue($orderIntegrityResult->updated);
-
+        return $products;
     }
 
     /**
      * @throws Exception
      */
-    private function constructOrderService(array $products): OrderService
-    {
-        $entityManager = $this->createMock(EntityManagerInterface::class);
-        $security = $this->createMock(Security::class);
-        $workflowService = $this->createMock(WorkflowService::class);
-        $productRepository = $this->createMock(ProductRepository::class);
+    private function constructOrderService(
+        array $products,
+        ?WorkflowService $workflowService = null,
+        ?OrderRepository $orderRepository = null,
+        ?User $user = null
+    ): OrderService {
+
+        $entityManager = $this->createStub(EntityManagerInterface::class);
+
+        if ($orderRepository !== null) {
+            $entityManager->method('getRepository')->willReturn($orderRepository);
+        }
+
+        $security = $this->createStub(Security::class);
+
+        if ($user) {
+            $security->method('getUser')->willReturn($user);
+        } else {
+            $security->method('getUser')->willReturn(null);
+        }
+
+        $workflowService ??= $this->createStub(WorkflowService::class);
+        $workflowService->method('canTransition')->willReturn(true);
+
+        $productRepository = $this->createStub(ProductRepository::class);
         $productRepository->method('findBy')->willReturn($products);
+
+        //Instanciation du stock service, car besoin d'etre testé aussi
         $stockService = new StockService($entityManager, $productRepository);
 
         return new OrderService(
@@ -102,4 +483,16 @@ class OrderServiceTest extends TestCase
         );
     }
 
+    /**
+     * @throws Exception
+     */
+    private function createUserStub(): User
+    {
+        $user = $this->createStub(User::class);
+        $user->method('getFirstname')->willReturn('John');
+        $user->method('getLastname')->willReturn('Doe');
+        $user->method('getEmail')->willReturn('john.doe@example.com');
+
+        return $user;
+    }
 }
