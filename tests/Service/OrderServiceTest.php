@@ -36,9 +36,7 @@ class OrderServiceTest extends TestCase
 
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-        $order = $this->createStub(Order::class);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order = $this->createOrderStub($token, $sessionKey);
 
         $orderRepository = $this->createStub(OrderRepository::class);
         $orderRepository->method('findOneBy')->willReturn($order);
@@ -99,9 +97,7 @@ class OrderServiceTest extends TestCase
 
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-        $order = $this->createStub(Order::class);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order = $this->createOrderStub($token, $sessionKey);
 
         $orderRepository = $this->createStub(OrderRepository::class);
         $orderRepository->method('findOneBy')->willReturn($order);
@@ -127,7 +123,6 @@ class OrderServiceTest extends TestCase
 
 
         //test 1 normal
-
         $test1 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts1);
 
         $this->assertInstanceOf(Order::class, $test1->order);
@@ -155,7 +150,6 @@ class OrderServiceTest extends TestCase
 
         $orderService = $this->constructOrderService($products);
         $test4 = $orderService->findLatestOrderOrCreateOne($token, $sessionKey, $cartProducts1);
-        $this->assertInstanceOf(Order::class, $order);
         $this->assertEquals($token, $order->getToken());
         $this->assertFalse($test4->updated);
         $this->assertFalse($test4->canceled);
@@ -220,12 +214,7 @@ class OrderServiceTest extends TestCase
     {
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-
-        $order = $this->createStub(Order::class);
-        $order->method('getUser')->willReturn(null);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
-
+        $order = $this->createOrderStub($token, $sessionKey);
         $products = $this->createProductsStubs();
 
         $cartProducts = [
@@ -257,11 +246,7 @@ class OrderServiceTest extends TestCase
     {
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-
-        $order = $this->createStub(Order::class);
-        $order->method('getUser')->willReturn(null);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order = $this->createOrderStub($token, $sessionKey);
 
         $products = $this->createProductsStubs();
         $orderService = $this->constructOrderService($products);
@@ -300,10 +285,7 @@ class OrderServiceTest extends TestCase
     {
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-        $order = $this->createStub(Order::class);
-        $order->method('getUser')->willReturn(null);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order = $this->createOrderStub($token, $sessionKey);
         $products = $this->createProductsStubs();
         $orderService = $this->constructOrderService($products);
         $cartProducts = [];
@@ -329,14 +311,8 @@ class OrderServiceTest extends TestCase
     {
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-
-        $order = $this->createStub(Order::class);
-        $order->method('getUser')->willReturn(null);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
-
+        $order = $this->createOrderStub($token, $sessionKey);
         $products = $this->createProductsStubs();
-
         $cartProducts = [];
 
         $workflowService = $this->createMock(WorkflowService::class);
@@ -368,12 +344,7 @@ class OrderServiceTest extends TestCase
     {
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-
-        $order = $this->createStub(Order::class);
-        $order->method('getUser')->willReturn(null);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
-
+        $order = $this->createOrderStub($token, $sessionKey);
         $products = $this->createProductsStubs();
 
         $cartProducts = [
@@ -408,12 +379,9 @@ class OrderServiceTest extends TestCase
     {
         $products = $this->createProductsStubs();
         $orderService = $this->constructOrderService($products);
-        $order = $this->createStub(Order::class);
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-        $order->method('getUser')->willReturn(null);
-        $order->method('getSessionKey')->willReturn($sessionKey);
-        $order->method('getToken')->willReturn($token);
+        $order = $this->createOrderStub($token, $sessionKey);
 
         //No user + good tokens
 
@@ -436,10 +404,7 @@ class OrderServiceTest extends TestCase
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
 
-        $order = $this->createStub(Order::class);
-        $order->method('getUser')->willReturn(null);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order = $this->createOrderStub($token, $sessionKey);
 
         $this->expectException(AccessDeniedException::class);
         $orderService->verifyOrderOwnership($order, 'mauvais_token', $sessionKey);
@@ -454,11 +419,7 @@ class OrderServiceTest extends TestCase
         $orderService = $this->constructOrderService($this->createProductsStubs());
         $token = bin2hex(random_bytes(32));
         $sessionKey = bin2hex(random_bytes(32));
-
-        $order = $this->createStub(Order::class);
-        $order->method('getUser')->willReturn(null);
-        $order->method('getToken')->willReturn($token);
-        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order = $this->createOrderStub($token, $sessionKey);
 
         $this->expectException(AccessDeniedException::class);
         $orderService->verifyOrderOwnership($order, $token, 'mauvaise_session_key');
@@ -666,6 +627,23 @@ class OrderServiceTest extends TestCase
     /**
      * @throws Exception
      */
+    private function createOrderStub(
+        ?string $token = null,
+        ?string $sessionKey = null,
+        ?User $user = null,
+    ): Order {
+        $order = $this->createStub(Order::class);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order->method('getUser')->willReturn($user);
+
+
+        return $order;
+    }
+
+    /**
+     * @throws Exception
+     */
     private function constructOrderService(
         array $products,
         ?WorkflowService $workflowService = null,
@@ -680,12 +658,7 @@ class OrderServiceTest extends TestCase
         }
 
         $security = $this->createStub(Security::class);
-
-        if ($user) {
-            $security->method('getUser')->willReturn($user);
-        } else {
-            $security->method('getUser')->willReturn(null);
-        }
+        $security->method('getUser')->willReturn($user);
 
         $workflowService ??= $this->createStub(WorkflowService::class);
         $workflowService->method('canTransition')->willReturn(true);
