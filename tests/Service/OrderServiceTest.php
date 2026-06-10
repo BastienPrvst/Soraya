@@ -15,6 +15,7 @@ use App\Service\OrderService;
 use App\Service\StockService;
 use App\Service\WorkflowService;
 use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
@@ -198,6 +199,16 @@ class OrderServiceTest extends TestCase
             $order->getCreationDate(),
             1
         );
+
+        //Test panier qui se vide
+
+        $cartProducts = [
+            $products[3]->getId() => 12,
+        ];
+
+        $orderIntegrityResult = $orderService->buildOrder($cartProducts);
+
+        $this->assertTrue($orderIntegrityResult->canceled);
     }
 
     /**
@@ -253,15 +264,17 @@ class OrderServiceTest extends TestCase
         $order->method('getSessionKey')->willReturn($sessionKey);
 
         $products = $this->createProductsStubs();
+        $orderService = $this->constructOrderService($products);
 
         $cartProducts = [
             $products[0]->getId() => 12,
-            $products[1]->getId() => 3,
+            $products[1]->getId() => 0,
             $products[2]->getId() => 5,
             $products[3]->getId() => 6,
+            99 => 10,
+
         ];
 
-        $orderService = $this->constructOrderService($products);
 
         $orderIntegrityResult = $orderService->verifyOrderIntegrity(
             $order,
@@ -274,6 +287,37 @@ class OrderServiceTest extends TestCase
         $this->assertFalse($orderIntegrityResult->canceled);
 
         $this->assertArrayNotHasKey($products[3]->getId(), $orderIntegrityResult->cartProducts);
+        $this->assertArrayNotHasKey(99, $orderIntegrityResult->cartProducts);
+        $this->assertArrayNotHasKey($products[1]->getId(), $orderIntegrityResult->cartProducts);
+    }
+
+    /**
+     * @throws RandomException
+     * @throws Exception
+     * @throws \Exception
+     */
+    public function testIntegrityOrderCanceled(): void
+    {
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn(null);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+        $products = $this->createProductsStubs();
+        $orderService = $this->constructOrderService($products);
+        $cartProducts = [];
+
+
+        $orderIntegrityResult = $orderService->verifyOrderIntegrity(
+            $order,
+            $cartProducts,
+            $token,
+            $sessionKey
+        );
+
+        $this->assertTrue($orderIntegrityResult->canceled);
+        $this->assertEmpty($orderIntegrityResult->cartProducts);
     }
 
     /**
@@ -357,6 +401,101 @@ class OrderServiceTest extends TestCase
     }
 
     /**
+     * @throws RandomException
+     * @throws Exception
+     */
+    public function testVerifyOrderOwnerShipNoUserGoodToken(): void
+    {
+        $products = $this->createProductsStubs();
+        $orderService = $this->constructOrderService($products);
+        $order = $this->createStub(Order::class);
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+        $order->method('getUser')->willReturn(null);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+        $order->method('getToken')->willReturn($token);
+
+        //No user + good tokens
+
+        $orderService->verifyOrderOwnership(
+            $order,
+            $token,
+            $sessionKey
+        );
+
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @throws RandomException
+     * @throws Exception
+     */
+    public function testVerifyOrderOwnershipNoUserBadToken(): void
+    {
+        $orderService = $this->constructOrderService($this->createProductsStubs());
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn(null);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $this->expectException(AccessDeniedException::class);
+        $orderService->verifyOrderOwnership($order, 'mauvais_token', $sessionKey);
+    }
+
+    /**
+     * @throws Exception
+     * @throws RandomException
+     */
+    public function testVerifyOrderOwnershipNoUserBadSessionKey(): void
+    {
+        $orderService = $this->constructOrderService($this->createProductsStubs());
+        $token = bin2hex(random_bytes(32));
+        $sessionKey = bin2hex(random_bytes(32));
+
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn(null);
+        $order->method('getToken')->willReturn($token);
+        $order->method('getSessionKey')->willReturn($sessionKey);
+
+        $this->expectException(AccessDeniedException::class);
+        $orderService->verifyOrderOwnership($order, $token, 'mauvaise_session_key');
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testVerifyOrderOwnershipWithMatchingUser(): void
+    {
+        $user = $this->createStub(User::class);
+        $orderService = $this->constructOrderService($this->createProductsStubs(), null, null, $user);
+
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn($user);
+
+        $orderService->verifyOrderOwnership($order, null, null);
+        $this->addToAssertionCount(1);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function testVerifyOrderOwnershipWithWrongUser(): void
+    {
+        $notOrderUser = $this->createStub(User::class);
+        $orderService = $this->constructOrderService($this->createProductsStubs(), null, null, $notOrderUser);
+
+        $orderUser = $this->createStub(User::class);
+        $order = $this->createStub(Order::class);
+        $order->method('getUser')->willReturn($orderUser);
+
+        $this->expectException(AccessDeniedException::class);
+        $orderService->verifyOrderOwnership($order, null, null);
+    }
+
+    /**
      * @throws Exception
      */
     public function testIsOrderMatchingCart(): void
@@ -405,6 +544,89 @@ class OrderServiceTest extends TestCase
 
     /**
      * @throws Exception
+     * @throws \Exception
+     */
+    public function testUpdateOrder(): void
+    {
+        $products = $this->createProductsStubs();
+        $orderService = $this->constructOrderService($products);
+        $order = $this->createStub(Order::class);
+        $orderIntegrityResult = new OrderIntegrityResult(
+            false,
+            false,
+            [],
+            [],
+            $order
+        );
+
+        //Test normal
+        $cartProducts = [
+            $products[1]->getId() => 2,
+        ];
+        $indexedProducts = [
+            $products[1]->getId() => $products[3],
+        ];
+
+        $this->assertFalse($orderService->updateOrder(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        )->updated);
+
+        //Test updated
+
+        $cartProducts = [
+            2 => 2,
+            99 => 2,
+            1 => 0
+        ];
+
+        $product2 = $this->createStub(Product::class);
+        $product2->method('getPrice')->willReturn(10.0);
+
+        $product1 = $this->createStub(Product::class);
+        $product1->method('getPrice')->willReturn(10.0);
+
+        $indexedProducts = [
+            2 => $product2,
+            1 => $product1,
+        ];
+
+        $this->assertTrue($orderService->updateOrder(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        )->updated);
+
+        //Test canceled
+
+        $cartProducts = [];
+        $indexedProducts = [];
+        $this->assertTrue($orderService->updateOrder(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        )->canceled);
+
+        //Test orderIntegrityCanceled
+
+        $orderIntegrityResult->canceled = true;
+        $cartProducts = [
+            $products[1]->getId() => 2,
+        ];
+        $indexedProducts = [
+            $products[1]->getId() => $products[3],
+        ];
+
+        $this->assertTrue($orderService->updateOrder(
+            $cartProducts,
+            $indexedProducts,
+            $orderIntegrityResult
+        )->canceled);
+    }
+
+    /**
+     * @throws Exception
      */
     private function createProductsStubs(): array
     {
@@ -448,7 +670,7 @@ class OrderServiceTest extends TestCase
         array $products,
         ?WorkflowService $workflowService = null,
         ?OrderRepository $orderRepository = null,
-        ?User $user = null
+        ?User $user = null,
     ): OrderService {
 
         $entityManager = $this->createStub(EntityManagerInterface::class);

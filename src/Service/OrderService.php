@@ -370,10 +370,6 @@ readonly class OrderService
         OrderIntegrityResult $orderIntegrityResult
     ): OrderIntegrityResult {
 
-        if ($orderIntegrityResult->canceled === true) {
-            return $orderIntegrityResult;
-        }
-
         $errors = [];
 
         foreach ($cartProducts as $productId => $quantity) {
