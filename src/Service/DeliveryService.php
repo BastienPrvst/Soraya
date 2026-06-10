@@ -8,22 +8,27 @@ use App\Entity\User;
 use App\Enum\DeliveryMode;
 use App\Repository\AddressRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use SoapFault;
 
-class DeliveryService
+readonly class DeliveryService
 {
     public function __construct(
-        private readonly AddressRepository      $addressRepository,
-        private readonly MondialRelayService $mondialRelayService,
-        private readonly EntityManagerInterface $entityManager
+        private AddressRepository      $addressRepository,
+        private MondialRelayService    $mondialRelayService,
+        private EntityManagerInterface $entityManager
     ) {
     }
 
     public function switchRelayToDeliver(Order $order, ?User $user = null): void
     {
-        $favAddress = $this->addressRepository->findOneBy([
-            'user' => $user,
-            'isActive' => true
-        ]);
+        $favAddress = null;
+
+        if ($user) {
+            $favAddress = $this->addressRepository->findOneBy([
+                'user' => $user,
+                'isActive' => true
+            ]);
+        }
 
         $order->setDeliveryMode(DeliveryMode::HOME);
 
@@ -43,18 +48,16 @@ class DeliveryService
      * @param Order $order
      * @param string $relayId
      * @return void
-     * @throws \SoapFault
+     * @throws SoapFault
      */
     public function createRelayAddress(Order $order, string $relayId): void
     {
         $address = $this->mondialRelayService->getRelayAddress($relayId);
-
         if (empty($address)) {
             throw new \RuntimeException('Invalid relay');
         }
 
         $order->setRelayId($relayId);
-
 
         $orderAddress = new Address();
         $orderAddress

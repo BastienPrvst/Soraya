@@ -5,6 +5,7 @@ namespace App\Service\Admin;
 use App\Repository\OrderRepository;
 use Doctrine\DBAL\Exception;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
 use Symfony\UX\Chartjs\Model\Chart;
 
@@ -54,6 +55,10 @@ readonly class DashboardService
         ];
 
         $request = $this->requestStack->getCurrentRequest();
+
+        if ($request === null) {
+            throw new NotFoundHttpException();
+        }
 
         $currentYear = (int) date('Y');
         $currentMonth = (int) date('m');
