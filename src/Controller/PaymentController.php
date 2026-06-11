@@ -188,7 +188,7 @@ final class PaymentController extends AbstractController
                 $this->workflowService->applyTransition($order, 'to_pending_delivery');
                 $this->entityManager->flush();
             }
-            $mailerService->sendConfirmationEmail($order);
+            $mailerService->sendOrderConfirmationEmail($order);
         }
 
         $session = $request->getSession();

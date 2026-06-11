@@ -8,10 +8,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
 use Random\RandomException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\Mailer\Exception\TransportException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -23,15 +21,13 @@ readonly class MailerService
         private UrlGeneratorInterface $urlGenerator,
         private EntityManagerInterface $entityManager,
         private string $adminMail,
-        private readonly LoggerInterface $logger
+        private LoggerInterface $logger,
     ) {
     }
 
     /**
-     * @throws TransportExceptionInterface
-     * @throws ExceptionInterface
      */
-    public function sendConfirmationEmail(Order $order): void
+    public function sendOrderConfirmationEmail(Order $order): void
     {
         if (!$order->getEmail()) {
             return;
@@ -66,6 +62,34 @@ readonly class MailerService
 
     /**
      * @throws RandomException
+     * @throws TransportExceptionInterface
+     */
+    public function sendAccountConfirmationEmail(string $email): void
+    {
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return;
+        }
+
+        $token = bin2hex(random_bytes(32));
+        $url = $this->urlGenerator->generate('accountConfirmation', ['token' => $token]);
+
+        $email = (new Email())
+            ->from('noreply@soraya.com')
+            ->to($email)
+            ->subject('Création de votre compte')
+            ->priority(Email::PRIORITY_HIGH)
+            ->text('Test')
+            ->context([
+                'data' => [
+                    'url' => $url,
+                ]
+            ]);;
+
+        $this->mailer->send($email);
+
+    }
+
+    /**
      * @throws TransportExceptionInterface
      * @throws \JsonException
      */

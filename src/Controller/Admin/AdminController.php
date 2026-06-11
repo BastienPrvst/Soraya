@@ -47,7 +47,7 @@ class AdminController extends AbstractController
         Request $request
     ): Response {
         if ($order->getStatus()?->isAtLeast(OrderStatus::PAID)) {
-            $mailerService->sendConfirmationEmail($order);
+            $mailerService->sendOrderConfirmationEmail($order);
         }
         return $this->redirect($request->headers->get('referer'));
     }

@@ -5,58 +5,24 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ModifyProfileType;
 use App\Form\MailToChangePasswordType;
-use App\Form\UserType;
+use App\Form\RegistrationFormType;
 use App\Repository\OrderRepository;
 use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
-use Psr\Log\LoggerInterface;
-use Random\RandomException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class UserController extends AbstractController
 {
     public function __construct(
-        private readonly LoggerInterface $logger,
         private readonly EntityManagerInterface $entityManager,
         private readonly MailerService $mailerService,
     ) {
-    }
-
-    #[Route('/inscription', name: 'app_register')]
-    public function index(
-        Request $request,
-        UserPasswordHasherInterface $passwordHasher,
-        EntityManagerInterface $entityManager,
-    ): Response {
-        $user = new User();
-        $form = $this->createForm(UserType::class, $user);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $user->setPassword($passwordHasher->hashPassword($user, $form->get('plainPassword')->getData()));
-                $entityManager->persist($user);
-                $entityManager->flush();
-                return $this->redirectToRoute('app_login');
-            } catch (\Exception $e) {
-                $this->logger->error(
-                    $e->getMessage(),
-                    [$e->getCode()]
-                );
-            }
-        }
-
-        return $this->render('user/register.html.twig', [
-            'form' => $form,
-        ]);
     }
 
     #[Route(path: '/mon-profil', name: 'app_profile')]
@@ -90,7 +56,6 @@ final class UserController extends AbstractController
 
     /**
      * @throws TransportExceptionInterface
-     * @throws RandomException
      * @throws \JsonException
      */
     #[Route(path: '/mot-de-passe-oublié', name: 'app_password_forgot')]
@@ -117,7 +82,6 @@ final class UserController extends AbstractController
 
     /**
      * @throws TransportExceptionInterface
-     * @throws RandomException
      * @throws \JsonException
      */
     #[Route(path: '/mon-profil/changer-de-mot-de-passe', name: 'app_password_change')]
