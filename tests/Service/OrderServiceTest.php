@@ -667,7 +667,7 @@ class OrderServiceTest extends TestCase
         $productRepository->method('findBy')->willReturn($products);
 
         //Instanciation du stock service, car besoin d'etre testé aussi
-        $stockService = new StockService($entityManager, $productRepository);
+        $stockService = new StockService($productRepository);
 
         return new OrderService(
             $entityManager,

@@ -173,6 +173,7 @@ class AdminController extends AbstractController
                     ' a bien été modifié. Nouveau stock : ' .
                     $product->getStock()
                 );
+                $entityManager->flush();
             } catch (\Exception) {
                 $this->addFlash('error', 'Le stock ne peut pas aller en dessous de 0');
                 return $this->redirect(

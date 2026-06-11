@@ -4,20 +4,18 @@ namespace App\Service;
 
 use App\Entity\Product;
 use App\Repository\ProductRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 
-class StockService
+readonly class StockService
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager,
-        private ProductRepository               $productRepository,
-    ) {}
+        private ProductRepository      $productRepository,
+    ) {
+    }
 
     public function add(Product $product, int $quantity): void
     {
         $product->setStock($product->getStock() + $quantity);
-        $this->entityManager->flush();
     }
 
     /**
