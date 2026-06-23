@@ -6,7 +6,6 @@ use App\Entity\Order;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
-use Random\RandomException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
@@ -58,35 +57,6 @@ readonly class MailerService
         } catch (TransportExceptionInterface $e) {
             $this->logger->error($e->getMessage());
         }
-    }
-
-    /**
-     * @throws RandomException
-     * @throws TransportExceptionInterface
-     */
-    public function sendAccountConfirmationEmail(string $email): void
-    {
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            return;
-        }
-
-        $token = bin2hex(random_bytes(32));
-        $url = $this->urlGenerator->generate('accountConfirmation', ['token' => $token]);
-
-        $email = (new Email())
-            ->from('noreply@soraya.com')
-            ->to($email)
-            ->subject('Création de votre compte')
-            ->priority(Email::PRIORITY_HIGH)
-            ->text('Test')
-            ->context([
-                'data' => [
-                    'url' => $url,
-                ]
-            ]);;
-
-        $this->mailer->send($email);
-
     }
 
     /**

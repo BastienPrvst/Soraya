@@ -3,8 +3,9 @@
 namespace App\Controller;
 
 use App\Enum\SessionElements;
+use App\Form\ContactFormType;
+use App\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -38,5 +39,18 @@ final class MainController extends AbstractController
         return $this->render('main/session.html.twig');
     }
 
-
+    #[Route(path: '/aide', name: 'app-frequent-question')]
+    public function frequentQuestion(
+        Request $request,
+        MailerService $mailerService,
+    ): Response {
+        $form = $this->createForm(ContactFormType::class);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $mailerService->sendContactMail($form->getData());
+        }
+        return $this->render('main/faq.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
 }

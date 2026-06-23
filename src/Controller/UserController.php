@@ -5,7 +5,6 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Form\ModifyProfileType;
 use App\Form\MailToChangePasswordType;
-use App\Form\RegistrationFormType;
 use App\Repository\OrderRepository;
 use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
