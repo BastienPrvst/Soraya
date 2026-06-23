@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
-use App\Entity\Address;
 use App\Entity\Order;
 use App\Enum\DeliveryMode;
 use App\Enum\SessionElements;
-use App\Form\AddressType;
 use App\Form\DeliveryOrderType;
 use App\Form\RelayOrderType;
 use App\Service\DeliveryService;
-use App\Service\OrderService;
+use App\Service\OrderIntegrityManager;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
 use RuntimeException;
@@ -29,7 +27,7 @@ class DeliveryController extends AbstractController
 {
     public function __construct(
         private readonly WorkflowService $workflowService,
-        private readonly OrderService $orderService,
+        private readonly OrderIntegrityManager $orderIntegrityManager,
         private readonly EntityManagerInterface $entityManager,
         private readonly DeliveryService $deliveryService,
     ) {
@@ -58,7 +56,14 @@ class DeliveryController extends AbstractController
             $this->workflowService->applyTransition($order, 'to_delivery_choice');
         }
 
-        $this->orderService->verifyOrderIntegrity($order);
+        $result = $this->orderIntegrityManager->manage($order, $request);
+        foreach ($result->errors as $error) {
+            $this->addFlash('error', $error);
+        }
+
+        if ($result->canceled === true) {
+            return $this->redirectToRoute('app_main');
+        }
 
         if ($order->getDeliveryMode() === DeliveryMode::RELAY) {
             return $this->redirectToRoute(
@@ -86,7 +91,16 @@ class DeliveryController extends AbstractController
         Request $request,
         DeliveryService $deliveryService,
     ): Response {
-        $this->orderService->verifyOrderIntegrity($order);
+
+        $result = $this->orderIntegrityManager->manage($order, $request);
+        foreach ($result->errors as $error) {
+            $this->addFlash('error', $error);
+        }
+
+        if ($result->canceled === true) {
+            return $this->redirectToRoute('app_main');
+        }
+
         $deliveryService->switchRelayToDeliver($order, $this->getUser());
         $this->entityManager->flush();
 
@@ -120,6 +134,7 @@ class DeliveryController extends AbstractController
      * @param Order $order
      * @param Request $request
      * @return Response
+     * @throws \Exception
      */
     #[Route(path: '/paiement/livraison/relay/{token}', name: 'checkout_delivery_relay')]
     public function paymentRelayForm(
@@ -127,7 +142,14 @@ class DeliveryController extends AbstractController
         Request $request,
     ): Response {
 
-        $this->orderService->verifyOrderIntegrity($order);
+        $result = $this->orderIntegrityManager->manage($order, $request);
+        foreach ($result->errors as $error) {
+            $this->addFlash('error', $error);
+        }
+
+        if ($result->canceled === true) {
+            return $this->redirectToRoute('app_main');
+        }
 
         $this->deliveryService->switchDeliverToRelay($order);
         $this->entityManager->flush();

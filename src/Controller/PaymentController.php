@@ -7,6 +7,7 @@ use App\Entity\Order;
 use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
 use App\Service\MailerService;
+use App\Service\OrderIntegrityManager;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
 use App\Service\StripePaymentService;
@@ -23,8 +24,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
@@ -39,6 +38,7 @@ final class PaymentController extends AbstractController
         private readonly RequestStack           $requestStack,
         private readonly ShoppingCartService    $shoppingCartService,
         private readonly OrderService           $orderService,
+        private readonly OrderIntegrityManager $orderIntegrityManager,
         private readonly LoggerInterface        $logger,
         private readonly WorkflowService        $workflowService,
     ) {
@@ -59,14 +59,12 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $session = $request->getSession();
-        $cartProducts = $session->get(SessionElements::SHOPPING_CART->value);
-        $token = $session->get(SessionElements::ORDER_TOKEN->value);
-        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
+        $result = $this->orderIntegrityManager->manage($order, $request);
+        foreach ($result->errors as $error) {
+            $this->addFlash('error', $error);
+        }
 
-        $integrityInfos = $this->orderService->verifyOrderIntegrity($order, $cartProducts, $token, $sessionKey);
-        $this->manageIntegrityInfos($integrityInfos, $request);
-        if ($integrityInfos->canceled === true) {
+        if ($result->canceled === true) {
             return $this->redirectToRoute('app_main');
         }
 
@@ -92,19 +90,16 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $session = $request->getSession();
-        $cartProducts = $session->get(SessionElements::SHOPPING_CART->value);
-        $token = $session->get(SessionElements::ORDER_TOKEN->value);
-        $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
-
-        $integrityInfos = $this->orderService->verifyOrderIntegrity($order, $cartProducts, $token, $sessionKey);
-        $this->manageIntegrityInfos($integrityInfos, $request);
-
-        if ($integrityInfos->canceled === true) {
-            return $this->redirectToRoute('app_main'); //
+        $result = $this->orderIntegrityManager->manage($order, $request);
+        foreach ($result->errors as $error) {
+            $this->addFlash('error', $error);
         }
 
-        if ($integrityInfos->updated === true) {
+        if ($result->canceled === true) {
+            return $this->redirectToRoute('app_main');
+        }
+
+        if ($result->updated === true) {
             return $this->redirectToRoute('checkout_summary', [
                 'token' => $order->getToken(),
                 'order' => $order,
@@ -157,8 +152,6 @@ final class PaymentController extends AbstractController
 
 
     /**
-     * @throws TransportExceptionInterface
-     * @throws ExceptionInterface
      * @throws Exception
      */
     #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
@@ -218,28 +211,5 @@ final class PaymentController extends AbstractController
         return $this->json([
             'status' => $order->getStatus()
         ]);
-    }
-
-    private function manageIntegrityInfos(OrderIntegrityResult $orderIntegrityResult, Request $request): void
-    {
-        $session = $request->getSession();
-
-        if ($orderIntegrityResult->canceled === true) {
-            $session->remove(SessionElements::SESSION_KEY->value);
-            $session->remove(SessionElements::ORDER_TOKEN->value);
-            $session->remove(SessionElements::SHOPPING_CART->value);
-            $session->remove(SessionElements::CGU->value);
-        }
-
-        $errors = $orderIntegrityResult->errors;
-        if (!empty($errors)) {
-            foreach ($errors as $error) {
-                $this->addFlash('error', $error);
-            }
-        }
-
-        if ($orderIntegrityResult->updated === true) {
-            $session->set(SessionElements::SHOPPING_CART->value, $orderIntegrityResult->cartProducts);
-        }
     }
 }
