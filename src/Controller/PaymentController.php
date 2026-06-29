@@ -10,6 +10,7 @@ use App\Service\MailerService;
 use App\Service\OrderIntegrityManager;
 use App\Service\OrderService;
 use App\Service\ShoppingCartService;
+use App\Service\StockService;
 use App\Service\StripePaymentService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -159,6 +160,7 @@ final class PaymentController extends AbstractController
         #[MapEntity(mapping: ['token' => 'token'])] ?Order $order,
         Request $request,
         MailerService $mailerService,
+        StockService $stockService,
     ): Response {
 
         if (!$order) {
@@ -177,11 +179,12 @@ final class PaymentController extends AbstractController
         }
 
         if ($order->getStatus() === OrderStatus::PAID) {
+            $mailerService->sendOrderConfirmationEmail($order);
+            $stockService->removeByOrder($order);
             if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
                 $this->workflowService->applyTransition($order, 'to_pending_delivery');
-                $this->entityManager->flush();
             }
-            $mailerService->sendOrderConfirmationEmail($order);
+            $this->entityManager->flush();
         }
 
         $session = $request->getSession();

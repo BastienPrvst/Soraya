@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Order;
 use App\Entity\Product;
 use App\Repository\ProductRepository;
 use LogicException;
@@ -24,9 +25,22 @@ readonly class StockService
      * @return void
      * @return LogicException
      */
-    public function remove(Product $product, int $quantity): void
+    public function removeStock(Product $product, int $quantity): void
     {
-        $this->productRepository->removeStock($product, $quantity);
+        $this->productRepository->removeProductStock($product, $quantity);
+    }
+
+    /**
+     * @param Order $order
+     * @return void
+     * @info Le check des stocks sur le tunnel de paiement garantie un stock valide sauf achat au meme moment.
+     */
+    public function removeByOrder(Order $order): void
+    {
+        foreach ($order->getOrderItems() as $orderItem) {
+            $quantity = $orderItem->getQuantity();
+            $this->productRepository->removeProductStock($orderItem->getProduct(), $quantity);
+        }
     }
 
     public function isAvailable(Product $product, int $quantity = 1): bool

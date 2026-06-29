@@ -16,7 +16,7 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
-    public function removeStock(Product $product, int $quantity): void
+    public function removeProductStock(Product $product, int $quantity): void
     {
         $updated = $this->createQueryBuilder('p')
             ->update(Product::class, 'p')

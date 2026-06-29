@@ -34,7 +34,7 @@ readonly class OrderService
      */
     public function findLatestOrderOrCreateOne(
         ?string $token,
-        string $sessionKey,
+        ?string $sessionKey,
         array $cartProducts
     ): OrderIntegrityResult {
 
@@ -53,7 +53,7 @@ readonly class OrderService
         $order = null;
 
         //Si le token de session est mis, on récupere la commande liée
-        if ($token !== null) {
+        if ($token !== null && $sessionKey !== null) {
             if ($user) {
                 $order = $orderRepository->findOneBy(
                     [
