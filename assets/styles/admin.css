@@ -320,25 +320,41 @@
     align-self: center;
 }
 
-.other-links {
+.user-info{
     width: 100%;
     height: 100%;
     background: white;
     border: none;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    grid-column: span 1;
+    grid-column: span 2;
     grid-row: 3;
     border-radius: 16px;
     padding: 20px;
+    display: flex;
+    transition: 0.4s ease;
 }
 
-.other-links > p {
+.user-info:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+
+.other-links, .parameters {
+    width: 50%;
+    padding: 20px;
+}
+
+.other-links > p,
+.parameters > p {
     font-size: 20px;
     font-weight: 700;
     color: #888;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: 12px;
+}
+
+.other-links {
+    border-right: solid 1px #bbbaba;
 }
 
 .other-links > div {
@@ -348,15 +364,10 @@
     width: 100%;
     border-radius: 10px;
     padding: 0 10px;
-    transition: background 0.2s ease;
     margin-bottom: 4px;
 }
 
-.other-links > div:hover {
-    background: #f5f7fa;
-}
-
-.other-links a {
+.other-links a{
     font-size: 0.95rem;
     font-weight: 500;
     color: #333;
@@ -366,6 +377,26 @@
 
 .other-links a:hover {
     color: #20c997;
+}
+
+.parameters {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.parameters span {
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: #333;
+    text-decoration: none;
+    margin-bottom: 12px;
+}
+
+.parameters a {
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
 
 .link-logos {

@@ -41,6 +41,7 @@
 
                 </div>
 
+                <div class="user-info">
                     <div class="other-links">
                         <p>Liens</p>
 
@@ -60,10 +61,24 @@
                             <a href="#">Colissimo</a>
 
                             <span class="link-logos"><img src="{{ asset('icons/Colissimo_Logo.svg') }}" alt="logo colissimo">
-                    </span>
+                            </span>
                         </div>
 
                     </div>
+
+                    <div class="parameters">
+                        <p>Paramètres</p>
+
+                        <span>Adresse mail admin : {{ parameters.adminMail ?? 'Non renseignée' }}</span>
+
+                        <span>Stock critique : {{ parameters.criticalStock }}</span>
+
+                        <a href="#"><i class="fa-solid fa-gear"></i></a>
+
+                    </div>
+                </div>
+
+
 
 
                 <div class="year-select">
