@@ -30,8 +30,6 @@ readonly class StripePaymentService
         private EntityManagerInterface $entityManager,
         private Registry               $workflowRegistry,
         private UrlGeneratorInterface  $urlGenerator,
-        private ShoppingCartService $shoppingCartService,
-        private MailerService $mailerService,
     ) {
     }
 
@@ -108,11 +106,11 @@ readonly class StripePaymentService
                     'name'    => $order->getFirstname() . ' ' . $order->getLastname(),
                     'phone'   => $order->getPhoneNumber(),
                     'address' => [
-                        'line1'       => $order->getDeliveryAddress()?->getStreet1(),
-                        'line2'       => $order->getDeliveryAddress()?->getStreet2(),
-                        'city'        => $order->getDeliveryAddress()?->getCity(),
-                        'postal_code' => $order->getDeliveryAddress()?->getZipCode(),
-                        'country'     => $order->getDeliveryAddress()?->getCountry(),
+                        'line1'       => $order->getActiveAddress()?->getStreet1(),
+                        'line2'       => $order->getActiveAddress()?->getStreet2(),
+                        'city'        => $order->getActiveAddress()?->getCity(),
+                        'postal_code' => $order->getActiveAddress()?->getZipCode(),
+                        'country'     => $order->getActiveAddress()?->getCountry(),
                     ],
                 ],
             ]
