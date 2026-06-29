@@ -159,12 +159,13 @@ class AdminController extends AbstractController
                 ' a bien été modifié. Nouveau stock : ' .
                 $product->getStock()
             );
+            $entityManager->flush();
             return $this->redirect($url);
         }
 
         if ($removeQuantity && is_numeric($removeQuantity)) {
             try {
-                $stockService->remove($product, (int)$removeQuantity);
+                $stockService->removeStock($product, (int)$removeQuantity);
                 $entityManager->refresh($product);
                 $this->addFlash(
                     'info',

@@ -51,6 +51,7 @@ readonly class MailerService
             ->subject('Nouvelle commande ' . $order->getBetterId())
             ->text('Nouvelle commande pour admin');
 
+
         try {
             $this->mailer->send($email);
             $this->mailer->send($adminEmail);
