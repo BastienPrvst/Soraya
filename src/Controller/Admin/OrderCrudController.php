@@ -418,36 +418,4 @@ class OrderCrudController extends AbstractCrudController
         );
     }
 
-//    public function persistEntity(EntityManagerInterface $entityManager, mixed $entityInstance): void
-//    {
-//        $this->recalculateOrder($entityInstance);
-//        parent::persistEntity($entityManager, $entityInstance);
-//    }
-//
-//    public function updateEntity(EntityManagerInterface $entityManager, mixed $entityInstance): void
-//    {
-//        $this->recalculateOrder($entityInstance);
-//        parent::updateEntity($entityManager, $entityInstance);
-//    }
-//
-//    private function recalculateOrder(Order $order): void
-//    {
-//        $total = 0;
-//        foreach ($order->getOrderItems() as $item) {
-//            $item->setUnitPrice($item->getProduct()?->getPrice());
-//            $item->setTotal($item->getUnitPrice() * $item->getQuantity());
-//            $total += $item->getTotal();
-//        }
-//        $order->setTotal($total);
-//    }
-//
-//    private function createTokens(Order $order)
-//    {
-//        $token1 = bin2hex(random_bytes(32));
-//        $token2 = bin2hex(random_bytes(32));
-//
-//        $order->setToken($token1);
-//        $order->setSessionKey($token2);
-//
-//    }
 }

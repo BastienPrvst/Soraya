@@ -1,0 +1,30 @@
+{% extends '@EasyAdmin/page/content.html.twig' %}
+
+{% block content %}
+
+    <main>
+        <div class="stock-page">
+
+            <h1>Gestion des paramètres</h1>
+
+            <div class="stock-form-card">
+
+                {{ form_start(form, {'attr': {'class': 'd-flex flex-column align-items-center'}}) }}
+
+                <div class="stock-field">
+                    {{ form_row(form.adminMail, {'attr': {'class': 'd-flex flex colum align-item-center'}}) }}
+                </div>
+
+                <div class="stock-field">
+                    {{ form_row(form.criticalStock, {'attr': {'class': 'd-flex flex colum align-item-center'}}) }}
+                </div>
+
+                {{ form_row(form.submit) }}
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </main>
+
+{% endblock %}
+

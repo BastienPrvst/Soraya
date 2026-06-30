@@ -69,11 +69,11 @@
                     <div class="parameters">
                         <p>Paramètres</p>
 
-                        <span>Adresse mail admin : {{ parameters.adminMail ?? 'Non renseignée' }}</span>
+                        <span>Adresse mail admin : {{ parameter.adminMail ?? 'Non renseignée' }}</span>
 
-                        <span>Stock critique : {{ parameters.criticalStock }}</span>
+                        <span>Stock critique : {{ parameter.criticalStock }}</span>
 
-                        <a href="#"><i class="fa-solid fa-gear"></i></a>
+                        <a href="{{ path('admin_parameters', { parameter: parameter.id }) }}"><i class="fa-solid fa-gear"></i></a>
 
                     </div>
                 </div>

@@ -97,7 +97,7 @@ class DashboardController extends AbstractDashboardController
             'currentMonth' => $data['currentMonth'],
             'months' => $months,
             'years' => range(2025, $data['currentYear']),
-            'parameters' => $data['parameters']
+            'parameter' => $data['parameter']
         ]);
     }
 

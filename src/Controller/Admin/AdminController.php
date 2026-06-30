@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace App\Controller\Admin;
 
 use App\Entity\Order;
+use App\Entity\Parameter;
 use App\Entity\Product;
 use App\Enum\OrderStatus;
 use App\Form\Admin\PackageType;
+use App\Form\ParameterType;
 use App\Repository\OrderRepository;
+use App\Repository\ParameterRepository;
 use App\Service\MailerService;
 use App\Service\StockService;
 use App\Service\WorkflowService;
@@ -19,6 +22,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
 use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
+use PHPUnit\Framework\MockObject\Rule\Parameters;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,6 +30,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Generator\UrlGenerator;
 
 class AdminController extends AbstractController
 {
@@ -191,6 +196,31 @@ class AdminController extends AbstractController
 
         return $this->render('admin/stock.html.twig', [
         'product' => $product,
+        ]);
+    }
+
+    #[AdminRoute(path: 'parameters/{parameter}', name: 'parameters')]
+    public function manageParameters(
+        Parameter $parameter,
+        AdminUrlGenerator $adminUrlGenerator,
+        Request $request,
+        EntityManagerInterface $entityManager,
+    ): Response {
+
+        $form = $this->createForm(ParameterType::class, $parameter);
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $redirectUrl = $adminUrlGenerator
+                ->setController(DashboardController::class)
+                ->setAction(Action::INDEX)
+                ->generateUrl();
+            $entityManager->flush();
+            $this->addFlash('success', 'Les paramètres ont bien été modifiés');
+            return $this->redirect($redirectUrl);
+        }
+
+        return $this->render('admin/parameter.html.twig', [
+            'form' => $form->createView(),
         ]);
     }
 

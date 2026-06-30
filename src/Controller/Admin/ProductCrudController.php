@@ -4,6 +4,7 @@ namespace App\Controller\Admin;
 
 use App\Entity\Product;
 use App\Form\Admin\ImageType;
+use App\Repository\ParameterRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\ActionGroup;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -21,6 +22,12 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
 
 class ProductCrudController extends AbstractCrudController
 {
+    public function __construct(
+        private ParameterRepository $parameterRepository,
+    )
+    {
+    }
+
     public static function getEntityFqcn(): string
     {
         return Product::class;
@@ -78,6 +85,7 @@ class ProductCrudController extends AbstractCrudController
 
     private function getIndexFields(): iterable
     {
+        $parameters = $this->parameterRepository->findOneBy([]);
         return [
             IntegerField::new('id')
                 ->setLabel('ID')
@@ -88,10 +96,10 @@ class ProductCrudController extends AbstractCrudController
             IntegerField::new('stock')
                 ->setLabel('Stock')
                 ->setCssClass('fw-bold')
-                ->formatValue(function ($value, Product $product) {
+                ->formatValue(function ($value, Product $product) use ($parameters) {
                     $stock = $product->getStock();
 
-                    if ($stock < 20) {
+                    if ($stock < $parameters->getCriticalStock()) {
                         return sprintf('<span style="color: red; font-weight: 800; background: #F9D4D4; padding: 0 5px; border-radius: 5px">%d</span><span style="font-size: 24px;">⚠️</span>', $stock);
                     }
 
@@ -163,7 +171,7 @@ class ProductCrudController extends AbstractCrudController
                     }
                     return null;
                 })
-                ->onlyOnDetail()
+                ->onlyOnForms()
             ,
             AssociationField::new('category')
                 ->setLabel('Catégories')

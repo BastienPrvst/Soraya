@@ -7,7 +7,6 @@ use App\Repository\OrderRepository;
 use App\Repository\ParameterRepository;
 use Doctrine\DBAL\Exception;
 use Doctrine\ORM\EntityManagerInterface;
-use PHPUnit\Framework\MockObject\Rule\Parameters;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
@@ -222,11 +221,11 @@ readonly class DashboardService
             ]
         ]);
 
-        $parameters = $this->parameterRepository->findOneBy([]);
+        $parameter = $this->parameterRepository->findOneBy([]);
 
-        if (!$parameters) {
-            $parameters = new Parameter();
-            $this->entityManager->persist($parameters);
+        if (!$parameter) {
+            $parameter = new Parameter();
+            $this->entityManager->persist($parameter);
             $this->entityManager->flush();
         }
 
@@ -242,7 +241,7 @@ readonly class DashboardService
             'selectedMonth' => $selectedMonth,
             'currentMonth' => $currentMonth,
             'currentYear' => $currentYear,
-            'parameters' => $parameters,
+            'parameter' => $parameter,
         ];
     }
 }
