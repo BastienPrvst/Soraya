@@ -6,6 +6,5 @@ import './js/delivery.js';
  * This file will be included onto the page via the importmap() Twig function,
  * which should already be in your base.html.twig.
  */
-import './css/bootstrap.css';
 import './styles/app.css';
 import './css/styles.css';

@@ -2,96 +2,124 @@
 
 {% block content %}
 
-    <main class="container-fluid main-dashboard">
-        <div class="row admin-wrapper">
+    <main class="w-full px-4 main-dashboard">
+        <div class="flex flex-wrap admin-wrapper">
             <h1 class="admin-title mt-3">Bonjour, {{ app.user.firstname|capitalize }}</h1>
 
-                <div class="crud-links">
-                    <div class="quick-crud">
-                        <a href="{{ toPrepareUrl }}">
-                            <p class="crud-link-label">À emballer</p>
-                            <p class="crud-link-number">{{ countPrepare }}</p>
-                        </a>
-                    </div>
-
-                    <div class="quick-crud">
-                        <a href="{{ toShipUrl }}">
-                            <p class="crud-link-label">À expédier</p>
-                            <p class="crud-link-number">{{ countPendingShipping }}</p>
-                        </a>
-                    </div>
-
-                    <div class="quick-crud">
-                        <a href="{{ toRefundUrl }}">
-                            <p class="crud-link-label">Remboursements</p>
-                            <p class="crud-link-number">{{ countRefunded }}</p>
-                        </a>
-                    </div>
-
-                    <div class="quick-crud">
-                        <a href="{{ toCancelUrl }}">
-                            <p class="crud-link-label">Annulées</p>
-                            <div class="crud-link-div">
-                                <p class="crud-link-number">{{ countCancelled }}</p>
-                                <p class="crud-link-text">Cette semaine</p>
-                            </div>
-
-                        </a>
-                    </div>
-
+            <div class="crud-links">
+                <div class="quick-crud">
+                    <a href="{{ toPrepareUrl }}">
+                        <p class="crud-link-label">À emballer</p>
+                        <p class="crud-link-number">{{ countPrepare }}</p>
+                    </a>
                 </div>
 
-                <div class="user-info">
-                    <div class="other-links">
-                        <p>Liens</p>
+                <div class="quick-crud">
+                    <a href="{{ toShipUrl }}">
+                        <p class="crud-link-label">À expédier</p>
+                        <p class="crud-link-number">{{ countPendingShipping }}</p>
+                    </a>
+                </div>
 
-                        <div>
-                            <a href="{{ stripe_dashboard_url }}" target="_blank"> Dashboard Stripe </a>
+                <div class="quick-crud">
+                    <a href="{{ toRefundUrl }}">
+                        <p class="crud-link-label">Remboursements</p>
+                        <p class="crud-link-number">{{ countRefunded }}</p>
+                    </a>
+                </div>
 
-                            <span class="link-logos"><img src="{{ asset('icons/stripe.svg') }}" alt="logo stripe"></span>
+                <div class="quick-crud">
+                    <a href="{{ toCancelUrl }}">
+                        <p class="crud-link-label">Annulées</p>
+                        <div class="crud-link-div">
+                            <p class="crud-link-number">{{ countCancelled }}</p>
+                            <p class="crud-link-text">Cette semaine</p>
                         </div>
 
-                        <div>
-                            <a href="#">Mondial Relay</a>
+                    </a>
+                </div>
 
-                            <span class="link-logos"><img src="{{ asset('icons/mondial_relay.svg') }}" alt="logo mondial relay"></span>
-                        </div>
+            </div>
 
-                        <div>
-                            <a href="#">Colissimo</a>
+            <div class="user-info">
+                <div class="other-links">
+                    <p>Liens</p>
 
-                            <span class="link-logos"><img src="{{ asset('icons/Colissimo_Logo.svg') }}" alt="logo colissimo">
+                    <div>
+                        <a href="{{ stripe_dashboard_url }}" target="_blank"> Dashboard Stripe </a>
+
+                        <span class="link-logos"><img src="{{ asset('icons/stripe.svg') }}" alt="logo stripe"></span>
+                    </div>
+
+                    <div>
+                        <a href="#">Mondial Relay</a>
+
+                        <span class="link-logos"><img src="{{ asset('icons/mondial_relay.svg') }}" alt="logo mondial relay"></span>
+                    </div>
+
+                    <div>
+                        <a href="#">Colissimo</a>
+
+                        <span class="link-logos"><img src="{{ asset('icons/Colissimo_Logo.svg') }}" alt="logo colissimo">
                             </span>
-                        </div>
-
                     </div>
 
-                    <div class="parameters">
-                        <p>Paramètres</p>
-
-                        <span>Adresse mail admin : {{ parameters.adminMail ?? 'Non renseignée' }}</span>
-
-                        <span>Stock critique : {{ parameters.criticalStock }}</span>
-
-                        <a href="#"><i class="fa-solid fa-gear"></i></a>
-
-                    </div>
                 </div>
 
+                <div class="parameters">
+                    <p>Paramètres</p>
+
+                    <span>Adresse mail admin : {{ parameters.adminMail ?? 'Non renseignée' }}</span>
+
+                    <span>Stock critique : {{ parameters.criticalStock }}</span>
+
+                    <a href="#"><i class="fa-solid fa-gear"></i></a>
+
+                </div>
+            </div>
 
 
+
+
+            <div class="year-select">
+                <div class="dropdown-years relative" data-controller="dropdown">
+                    <button class="px-3 py-2 bg-gray-500 text-white rounded-md" type="button" data-action="click->dropdown#toggle">
+                        {{ selectedYear }}
+                    </button>
+                    <ul class="hidden absolute mt-1 bg-white border border-gray-200 rounded-md shadow-lg" data-dropdown-target="menu">
+                        {% for year in years %}
+                            <li>
+                                <a class="block px-4 py-2 hover:bg-gray-100 {{ year == selectedYear ? 'bg-gray-100 font-semibold' : '' }}"
+                                   href="{{ path('admin', { year: year }) }}">
+                                    {{ year }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chart1 chart-container">
+                {{ render_chart(chart) }}
+            </div>
+
+            <div class="chart2 chart-container">
+                {{ render_chart(chart2) }}
+            </div>
+
+            <div class="chart3 chart-container">
 
                 <div class="year-select">
-                    <div class="dropdown-years">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                            {{ selectedYear }}
+                    <div class="dropdown-years relative" data-controller="dropdown">
+                        <button class="px-3 py-2 bg-gray-500 text-white rounded-md" type="button" data-action="click->dropdown#toggle">
+                            {{ months[selectedMonth] }}
                         </button>
-                        <ul class="dropdown-menu">
-                            {% for year in years %}
+                        <ul class="hidden absolute mt-1 bg-white border border-gray-200 rounded-md shadow-lg" data-dropdown-target="menu">
+                            {% for value, label in months %}
                                 <li>
-                                    <a class="dropdown-item {{ year == selectedYear ? 'active' : '' }}"
-                                       href="{{ path('admin', { year: year }) }}">
-                                        {{ year }}
+                                    <a class="block px-4 py-2 hover:bg-gray-100 {{ value == selectedMonth ? 'bg-gray-100 font-semibold' : '' }}"
+                                       href="{{ path('admin', { year: selectedYear, month: value }) }}">
+                                        {{ label }}
                                     </a>
                                 </li>
                             {% endfor %}
@@ -99,36 +127,8 @@
                     </div>
                 </div>
 
-                <div class="chart1 chart-container">
-                    {{ render_chart(chart) }}
-                </div>
-
-                <div class="chart2 chart-container">
-                    {{ render_chart(chart2) }}
-                </div>
-
-                <div class="chart3 chart-container">
-
-                    <div class="year-select">
-                        <div class="dropdown-years">
-                            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                {{ months[selectedMonth] }}
-                            </button>
-                            <ul class="dropdown-menu">
-                                {% for value, label in months %}
-                                    <li>
-                                        <a class="dropdown-item {{ value == selectedMonth ? 'active' : '' }}"
-                                           href="{{ path('admin', { year: selectedYear, month: value }) }}">
-                                            {{ label }}
-                                        </a>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-
-                    {{ render_chart(chart3) }}
-                </div>
+                {{ render_chart(chart3) }}
+            </div>
 
         </div>
 
@@ -138,4 +138,3 @@
 
 
 {% endblock %}
-

@@ -6,10 +6,10 @@
 
 {% block body %}
 
-    <main class="container-fluid d-flex flex-row">
-        <div class="row w-100">
-            <section class="d-flex flex-row">
-                <div class="left ms-3 col-7">
+    <main class="w-full px-4 flex flex-row">
+        <div class="flex flex-wrap w-full">
+            <section class="flex flex-row">
+                <div class="left ml-3 w-7/12">
                     <h2>Résumé de votre commande</h2>
                     <div>
                         <br>
@@ -17,7 +17,7 @@
                         <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
 
 
-                        <div class="user-info d-flex flex-row align-items-center justify-content-center flex-column">
+                        <div class="user-info flex flex-row items-center justify-center flex-col">
 
                             <div>
                                 <h3>Adresse de livraison</h3>
@@ -50,7 +50,7 @@
 
                 <hr>
 
-                <div class="col-5">
+                <div class="w-5/12">
                     Total produit (TVA incluse) {{ order.total }}€
                     <br>
                     <span>
@@ -59,8 +59,8 @@
                 </div>
             </section>
 
-            <section class="w-100">
-                <a class="btn btn-primary" href="{{ path('checkout_pay', { token: order.token }) }}">Procéder au paiement</a>
+            <section class="w-full">
+                <a class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" href="{{ path('checkout_pay', { token: order.token }) }}">Procéder au paiement</a>
             </section>
         </div>
 
@@ -70,7 +70,3 @@
 
 {% block javascripts %}
 {% endblock %}
-
-
-
-

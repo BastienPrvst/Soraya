@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const zone = document.querySelector('#Zone_Widget');
             if (zone) {
-                zone.classList.remove('d-none');
+                zone.classList.remove('hidden');
             }
         });
     }

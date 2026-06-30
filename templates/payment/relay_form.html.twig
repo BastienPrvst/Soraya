@@ -12,10 +12,10 @@
 
 
 {% block body %}
-    <main class="container-fluid d-flex flex-row">
-        <div class="row w-100">
-            <section class="left ms-3 col-7">
-                <div class="h-75">
+    <main class="w-full px-4 flex flex-row">
+        <div class="flex flex-wrap w-full">
+            <section class="left ml-3 w-7/12">
+                <div class="h-3/4">
 
                     {% if app.user is null %}
                         <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
@@ -36,7 +36,7 @@
                 </div>
             </section>
 
-            <section id="order_details" class="col-4 ms-3">
+            <section id="order_details" class="w-1/3 ml-3">
                 <div>
                     Total produit (TVA incluse) {{ order.total }}€
                     <br>
@@ -48,10 +48,10 @@
 
 
             <section id="delivery-content">
-                <div class="w-100">
+                <div class="w-full">
 
                     {% for message in app.flashes('error') %}
-                        <div class="text-danger">
+                        <div class="text-red-600">
                             {{ message }}
                         </div>
 
@@ -82,7 +82,7 @@
                         <div id="Zone_Widget"></div>
                     {% else %}
 
-                        <div id="relay_info" class="bg-light p-2 mb-3 rounded-2">
+                        <div id="relay_info" class="bg-gray-100 p-2 mb-3 rounded">
 
                             <p>{{ order.relayAddress.street1 }}
                                 <br>
@@ -95,11 +95,11 @@
                                 {{ order.relayAddress.country }}
                             </p>
 
-                            <button class="btn-primary btn change_relay">Modifier</button>
+                            <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 change_relay">Modifier</button>
 
                         </div>
 
-                        <div id="Zone_Widget" class="d-none"></div>
+                        <div id="Zone_Widget" class="hidden"></div>
 
                     {% endif %}
 
@@ -129,6 +129,3 @@
 
     <script src="{{ asset('js/relay.js') }}"></script>
 {% endblock %}
-
-
-

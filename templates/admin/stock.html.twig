@@ -12,7 +12,7 @@
                     action="{{ path('admin_product_stock', { product: product.id }) }}"
                     method="post"
                     id="stock-form"
-                    class="d-flex flex-column"
+                    class="flex flex-col"
                 >
                     <p class="stock-current">Stock actuel : {{ product.stock }}</p>
 
@@ -29,9 +29,9 @@
                     </div>
 
                     <button type="button"
-                            data-bs-toggle="modal"
-                            data-bs-target="#confirm-stock-modal"
-                            class="btn btn-primary align-self-center mt-2 px-4">
+                            data-action="click->modal#open"
+                            data-modal-id-param="confirm-stock-modal"
+                            class="self-center mt-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                         Valider
                     </button>
 
@@ -39,29 +39,27 @@
             </div>
 
             {# Modale de confirmation #}
-            <div class="modal fade" id="confirm-stock-modal" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
+            <div class="hidden fixed inset-0 z-50 items-center justify-center bg-black/50" id="confirm-stock-modal" data-controller="modal">
+                <div class="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto">
 
-                        <div class="modal-header">
-                            <h5 class="modal-title">Confirmer la modification du stock</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-
-                        <div class="modal-body">
-                            Êtes-vous sûr de vouloir modifier le stock de <strong>{{ product.name }}</strong> ?
-                        </div>
-
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                Annuler
-                            </button>
-                            <button type="submit" form="stock-form" class="btn btn-primary">
-                                Confirmer
-                            </button>
-                        </div>
-
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-200">
+                        <h5 class="text-lg font-semibold">Confirmer la modification du stock</h5>
+                        <button type="button" class="text-2xl leading-none text-gray-500 hover:text-gray-800" data-action="click->modal#close">&times;</button>
                     </div>
+
+                    <div class="px-4 py-4">
+                        Êtes-vous sûr de vouloir modifier le stock de <strong>{{ product.name }}</strong> ?
+                    </div>
+
+                    <div class="flex justify-end gap-2 px-4 py-3 border-t border-gray-200">
+                        <button type="button" class="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600" data-action="click->modal#close">
+                            Annuler
+                        </button>
+                        <button type="submit" form="stock-form" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                            Confirmer
+                        </button>
+                    </div>
+
                 </div>
             </div>
 
@@ -70,5 +68,3 @@
 
 
 {% endblock %}
-
-

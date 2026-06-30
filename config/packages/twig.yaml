@@ -5,7 +5,7 @@ twig:
         google_api_key: '%google.api.key%'
         stripe_dashboard_url: '%stripe.dashboard.url%'
     form_themes:
-        ['bootstrap_5_layout.html.twig']
+      [ 'form_div_layout.html.twig' ]
 
 when@test:
     twig:

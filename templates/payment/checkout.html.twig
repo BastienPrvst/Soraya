@@ -6,10 +6,10 @@
 
 {% block body %}
 
-    <main class="container-fluid d-flex flex-row">
-        <div class="row w-100">
-            <section class="d-flex flex-row">
-                <div class="left ms-3 col-7">
+    <main class="w-full px-4 flex flex-row">
+        <div class="flex flex-wrap w-full">
+            <section class="flex flex-row">
+                <div class="left ml-3 w-7/12">
                     <h2>Paiement</h2>
                     <div>
                         <h3>Résumé</h3>
@@ -19,7 +19,7 @@
                         <a href="{{ path('checkout_summary', { token:order.token }) }}">Retour</a>
 
 
-                        <div class="user-info d-flex align-items-center justify-content-center flex-column">
+                        <div class="user-info flex items-center justify-center flex-col">
 
                             <div>
                                 <span>{{ order.firstname }} {{ order.lastname }}</span><br>
@@ -53,7 +53,7 @@
 
                 <hr>
 
-                <div class="col-5">
+                <div class="w-5/12">
                     Total produit (TVA incluse) {{ order.total }}€
                     <br>
                     <span>
@@ -66,7 +66,7 @@
             <section class="mt-5">
                 <h2>Paiement</h2>
 
-                <div id="checkout" class="col-12">
+                <div id="checkout" class="w-full">
                 </div>
             </section>
 
@@ -85,7 +85,3 @@
         const stripePublicKey = '{{ stripe_public_key }}'
     </script>
 {% endblock %}
-
-
-
-
