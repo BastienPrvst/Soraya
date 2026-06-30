@@ -2,19 +2,19 @@
 
 {% block content %}
 
-    <main class="package-page w-full px-4">
-        <div class="flex flex-wrap gap-4">
-            <h1 class="mb-0 w-full">Emballer la commande {{ order.betterId }}</h1>
-            <div class="w-full flex flex-wrap items-end">
+    <main class="package-page container-fluid">
+        <div class="row g-4">
+            <h1 class="mb-0">Emballer la commande {{ order.betterId }}</h1>
+            <div class="col-12 d-flex flex-wrap align-items-end">
 
-                <small class="text-gray-500">{{ order.totalQuantity }} produit(s) à emballer</small>
-                <small class="ml-auto text-gray-500">{{ numberToPrepare > 0 ? numberToPrepare ~ ' commandes restantes' : 'Dernière commande à préparer' }}</small>
+                <small class="text-muted">{{ order.totalQuantity }} produit(s) à emballer</small>
+                <small class="ms-auto text-muted">{{ numberToPrepare > 0 ? numberToPrepare ~ ' commandes restantes' : 'Dernière commande à préparer' }}</small>
             </div>
 
             {# Infos commande #}
-            <section class="w-full lg:w-5/12">
+            <section class="col-12 col-lg-5">
                 <div class="order-info-card">
-                    <h2 class="text-lg mb-3">Informations commande</h2>
+                    <h2 class="fs-5 mb-3">Informations commande</h2>
                     <ul>
                         <li><strong>Livraison</strong> : {{ order.deliveryMode.value|capitalize }}</li>
                         <li><strong>Prix livraison</strong> : {{ order.deliveryPrice > 0 ? order.deliveryPrice ~ ' €' : 'Gratuite' }}</li>
@@ -32,11 +32,11 @@
                         {{ order.activeAddress.fullCountry }}
                         <br>
 
-                        <div class="w-full flex justify-center mt-3">
+                        <div class="w-100 d-flex justify-content-center mt-3">
                             <a href="#"
                                target="_blank"
-                               class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                                <i class="fa fa-print mr-2 mx-auto"></i>Imprimer l'étiquette
+                               class="btn btn-primary">
+                                <i class="fa fa-print me-2 mx-auto"></i>Imprimer l'étiquette
                             </a>
                         </div>
 
@@ -46,10 +46,10 @@
             </section>
 
             {# Formulaire produits #}
-            <section class="w-full lg:w-7/12">
+            <section class="col-12 col-lg-7">
                 {{ form_start(form) }}
 
-                <div class="flex flex-col gap-3 mb-4">
+                <div class="d-flex flex-column gap-3 mb-4">
                     {% for field in form %}
                         {% if field.vars.name starts with 'item_' %}
                             <div>
@@ -75,7 +75,7 @@
                     {% endfor %}
                 </div>
 
-                <div class="flex justify-center gap-3 mb-5">
+                <div class="d-flex justify-content-center gap-3 mb-5">
                     {{ form_widget(form.validate) }}
                     {{ form_widget(form.validate_continue) }}
                 </div>
@@ -87,3 +87,4 @@
     </main>
 
 {% endblock %}
+

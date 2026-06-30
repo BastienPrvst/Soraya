@@ -518,7 +518,7 @@
         margin-bottom: 20px;
     }
 
-    .other-links {
+    .user-info {
         grid-column: span 4;
         grid-row: 3;
     }
@@ -580,4 +580,3 @@
     box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     transition: 0.4s ease;
 }
-
