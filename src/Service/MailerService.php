@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Order;
+use App\Entity\Parameter;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -19,7 +20,6 @@ readonly class MailerService
         private MailerInterface       $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private EntityManagerInterface $entityManager,
-        private string $adminMail,
         private LoggerInterface $logger,
     ) {
     }
@@ -45,18 +45,29 @@ readonly class MailerService
 
         //Mail Admin
 
+        $adminMailTarget = $this->getAdminMail();
+
         $adminEmail = (new Email())
             ->from('noreply@soraya.com')
-            ->to($this->adminMail)
+            ->to($adminMailTarget)
             ->subject('Nouvelle commande ' . $order->getBetterId())
             ->text('Nouvelle commande pour admin');
 
 
         try {
             $this->mailer->send($email);
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error('Erreur mail client: ' . $e->getMessage());
+        }
+
+        if (($_ENV['APP_ENV']) === 'dev') {
+            usleep(10000000);
+        }
+
+        try {
             $this->mailer->send($adminEmail);
         } catch (TransportExceptionInterface $e) {
-            $this->logger->error($e->getMessage());
+            $this->logger->error('Erreur mail admin: ' . $e->getMessage());
         }
     }
 
@@ -129,5 +140,36 @@ readonly class MailerService
 
 
         return true;
+    }
+
+    public function sendContactMail(mixed $data): void
+    {
+        $adminMailTarget = $this->getAdminMail();
+
+        $adminEmail = (new TemplatedEmail())
+            ->from($data['email_address'])
+            ->to($adminMailTarget)
+            ->subject('Contact Client')
+            ->htmlTemplate('mail/contact.html.twig')
+            ->locale('FR')
+            ->context($data);
+
+        try {
+            $this->mailer->send($adminEmail);
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error('Erreur mail client: ' . $e->getMessage());
+        }
+    }
+
+    private function getAdminMail(): string
+    {
+        $parameterRepository = $this->entityManager->getRepository(Parameter::class);
+        $parameter = $parameterRepository->findOneBy([]);
+        $adminMailTarget = $parameter ? $parameter->getAdminMail() : null;
+        if (empty($adminMailTarget)) {
+            $adminMailTarget = 'admin@soraya.com';
+        }
+
+        return $adminMailTarget;
     }
 }

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Enum\SessionElements;
 use App\Form\ContactFormType;
+use App\Repository\OrderRepository;
 use App\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -52,5 +53,16 @@ final class MainController extends AbstractController
         return $this->render('main/faq.html.twig', [
             'form' => $form->createView(),
         ]);
+    }
+
+    #[Route(path: '/testmail', name: 'app_test_mail')]
+    public function testMailSend(
+        MailerService $mailerService,
+        OrderRepository $orderRepository,
+    ): Response
+    {
+        $order = $orderRepository->findOneBy([]);
+        $mailerService->sendOrderConfirmationEmail($order);
+        return $this->redirectToRoute('app_main');
     }
 }
