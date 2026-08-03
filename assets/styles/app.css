@@ -1,8 +1,13 @@
 @import "tailwindcss";
 @source not "../templates/admin";
 
+:root{
+    --brown-background: #453120;
+    --light-background: #E4D8C5;
+}
+
 body {
-    background-color: skyblue;
+    background-color: #E4D8C5;
 }
 
 /*---------------Partie messages flashs ---------------*/
@@ -59,3 +64,39 @@ body {
 .flash.error { background: #fde8e8; border-color: #cc0000; color: #cc0000; }
 .flash.warning { background: #fff4e0; border-color: #b06800; color: #b06800; }
 .flash.info    { background: #e8f0fe; border-color: #2a52be; color: #2a52be; }
+
+
+/*---------------Home ---------------*/
+
+.hero {
+    background-image: url('../images/site/est.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.home-evidence {
+    background-image: url('../images/site/pou.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+.home-button {
+    border-radius: 10px;
+    background-color: #E4D8C5;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 30%;
+    margin: auto;
+}
+
+.home-expert {
+    background-image: url('../images/site/esssfd.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    color: white;
+}

@@ -1,10 +1,14 @@
 <header>
 
-    <h1>Site Soraya</h1>
-
     <ul class="flex flex-row w-full justify-around bg-white">
         <li><a href="{{ path('app_main') }}">Accueil</a></li>
-        <li><a href="{{ path('app_products') }}">Les Produits</a></li>
+        <li><a href="{{ path('app_products') }}">Produits</a></li>
+
+        <li>
+            <a href="#">Contact</a>
+        </li>
+
+        <img src="#" alt="Logo de Lévédène">
         {% if app.user %}
             <li><a href="{{ path('app_profile') }}">Mon profil</a></li>
             <li><a href="{{ path('app_logout') }}">Se déconnecter</a></li>
@@ -15,6 +19,7 @@
         <li>
             <a href="{{ path('app_shopping_cart_view') }}"><img src="{{ asset('icons/shopping_cart_24dp_3A3A3B_FILL0_wght400_GRAD0_opsz24.svg') }}" alt=""> <span id="cart_quantity">{{ totalQuantityCart }}</span> Mon panier</a>
         </li>
+
 
     </ul>
 
