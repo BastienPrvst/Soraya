@@ -7,100 +7,104 @@
 {% block body %}
 
     <main>
-        <section class="hero h-dvh">
-            <h1 class="text-5xl">Lévédène</h1>
+        <section class="hero h-lvh flex justify-center">
+            <img class="w-[70%] h-auto self-center text-white" src="{{ asset('images/site/logo-blanc.svg') }}" alt="">
         </section>
 
-        <section class="home-evidence h-dvh">
-            <h2 class="text-5xl text-[#E4D8C5]">Là où le soin devient une évidence</h2>
+        <section class="home-evidence h-lvh">
+            <h2 class="text-4xl text-[#E4D8C5] pt-[10%] px-[5%]">Là où le soin devient une évidence</h2>
 
-            <div class="home-button">Découvrir l'univers</div>
+            <div class="home-button absolute bottom-[10%]">Découvrir l'univers</div>
         </section>
 
-        <section class="home-essential h-dvh w-full bg-[#453120]">
+        <section class="home-essential h-[140vh] w-full bg-[#453120] flex flex-col items-center">
 
-            <h2 class="text-5xl text-white">L'essentiel en un geste</h2>
+            <div class="py-[10%] px-[5%] h-[40vh] flex items-center justify-center">
+                <h2 class="text-4xl text-white">L'essentiel en un geste</h2>
+            </div>
 
-            <img class="w-4/5" src="{{ asset('images/site/rededed.png') }}" alt="">
+            <img class="w-9/10 h-[50vh]" src="{{ asset('images/site/rededed.png') }}" alt="">
 
-            <img class="w-4/5" src="{{ asset('images/site/gtgt.png') }}" alt="">
+            <img class="w-9/10 h-[50vh] mt-[2%]" src="{{ asset('images/site/gtgt.png') }}" alt="">
 
-            <div class="home-button">Découvrir la routine</div>
+            <div class="h-[40vh] w-[100%] relative">
+                <div class="home-button absolute bottom-[10%] top-[50%]">Découvrir la routine</div>
+            </div>
+
+
 
         </section>
 
-        <section class="home-expert h-dvh">
+        <section class="home-expert h-[75vh] flex align-center items-center">
 
-            <h2 class="text-5xl">Une approche experte du soin intime</h2>
+            <h2 class="text-4xl text-white px-[5%] text-center">Une approche experte du soin intime</h2>
 
         </section>
 
         <section class="home-origin-vision">
 
-            <div class="origin h-dvh">
-                <h3 class="text-5xl">Origine : </h3>
+            <div class="origin h-lvh">
+                <div class="h-[45%] pt-[30%] px-[5%]">
+                    <h3 class="text-4xl pb-[30px]">Origine : </h3>
 
-                <p>
-                    Les soins dédiés à la zone intime restent encore peu considérés dans l’univers de la cosmétique, bien que cette zone nécessite une attention particulière.
-                    <br>
-                    C’est de ce constat qu’est née Lévédène.
-                </p>
+                    <p class="text-xl">
+                        Les soins dédiés à la zone intime restent encore peu considérés dans l’univers de la cosmétique, bien que cette zone nécessite une attention particulière.
+                        <br>
+                        C’est de ce constat qu’est née Lévédène.
+                    </p>
+                </div>
 
-                <img src="{{ asset('images/site/cuisse.png') }}" alt="">
+
+                <img class="w-[100%] h-[55%] object-cover" src="{{ asset('images/site/cuisse.png') }}" alt="">
             </div>
 
-            <div class="vision h-dvh">
+            <div class="vision h-lvh">
+                <div class="h-[45%] pt-[30%] px-[5%]">
+                    <h3 class="text-4xl pb-[30px]">Vision : </h3>
 
-                <h3 class="text-5xl">Vision : </h3>
+                    <p class="text-xl">
+                        La marque développe des soins ciblés pour répondre aux problématiques les plus fréquentes de cette zone spécifique.
+                        Une approche pensée pour identifier les déséquilibres de la peau - imperfections, inconforts, irrégularités - et y apporter des solutions adaptées.
+                    </p>
+                </div>
 
-                <p>
-                    La marque développe des soins ciblés pour répondre aux problématiques les plus fréquentes de cette zone spécifique.
-                    Une approche pensée pour identifier les déséquilibres de la peau - imperfections, inconforts, irrégularités - et y apporter des solutions adaptées.
-                </p>
-
-                <img src="{{ asset('images/site/aqez.png') }}" alt="">
+                <img class="w-[100%] h-[55%] object-cover" src="{{ asset('images/site/aqez.png') }}" alt="">
 
             </div>
 
         </section>
 
-        <section class="home-universe bg-[#453120] text-white h-[120vh]">
+        <section class="home-universe bg-[#453120] text-white min-h-screen px-[5%] py-[5%] box-border">
 
-            <h2 class="text-5xl">Notre univers :</h2>
+            <h2 class="text-4xl pt-[40px]">Notre univers :</h2>
 
-            <div>
-                <h3 class="text-5xl">Expertise :</h3>
+            <div class="flex justify-center flex-col h-[25%] border-b-5 border-white py-[25px]">
+                <h3 class="text-3xl pb-[20px]">Expertise :</h3>
 
-                <p>Une approche fondée sur une connaissance approfondie de la peau et de ses mécanismes, permettant de répondre aux besoins spécifiques de la zone intime.</p>
-
-                <hr>
+                <p class="text-xl">Une approche fondée sur une connaissance approfondie de la peau et de ses mécanismes, permettant de répondre aux besoins spécifiques de la zone intime.</p>
 
             </div>
 
-            <div>
-                <h3 class="text-5xl">Qualité : </h3>
+            <div class="flex justify-center flex-col h-[25%] border-b-5 border-white py-[25px]">
+                <h3 class="text-3xl pb-[20px]">Qualité : </h3>
 
-                <p>Des soins développés avec exigences en laboratoire français, offrant performance, sécurité et tolérance.</p>
-
-                <hr>
+                <p class="text-xl">Des soins développés avec exigences en laboratoire français, offrant performance, sécurité et tolérance.</p>
 
             </div>
 
-            <div>
-                <h3 class="text-5xl">Naturalité :</h3>
+            <div class="flex justify-center flex-col h-[25%] border-b-5 border-white py-[25px]">
+                <h3 class="text-3xl pb-[20px]">Naturalité :</h3>
 
-                <p>Des formules élaborées à partir d’ingrédients d’origine naturelle, rigoureusement sélectionnée pour leur affinité avec la peau.</p>
-
-                <hr>
+                <p class="text-xl">Des formules élaborées à partir d’ingrédients d’origine naturelle, rigoureusement sélectionnée pour leur affinité avec la peau.</p>
 
             </div>
 
-            <div>
-                <h3 class="text-5xl">Bien-être</h3>
+            <div class="flex justify-center flex-col h-[25%] py-[25px]">
+                <h3 class="text-3xl pb-[20px]">Bien-être</h3>
 
-                <p>Une approche qui réconcilie, confort, confiance et intimité, dans une expérience à la fois apaisante et raffinée.</p>
+                <p class="text-xl">Une approche qui réconcilie, confort, confiance et intimité, dans une expérience à la fois apaisante et raffinée.</p>
 
-                <hr>
+
 
             </div>
 

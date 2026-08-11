@@ -1,13 +1,29 @@
 @import "tailwindcss";
 @source not "../templates/admin";
 
+@font-face {
+    font-family: Staatliches;
+    src: url('../fonts/Staatliches-Regular.ttf');
+}
+
+@font-face {
+    font-family: Iosevka;
+    src: url('../fonts/IosevkaCharonMono-Regular.ttf');
+}
+
 :root{
     --brown-background: #453120;
     --light-background: #E4D8C5;
 }
 
-body {
-    background-color: #E4D8C5;
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: Staatliches, serif;
+    text-transform: uppercase;
+}
+
+p, span, div {
+    font-family: Iosevka, serif;
 }
 
 /*---------------Partie messages flashs ---------------*/
@@ -65,6 +81,7 @@ body {
 .flash.warning { background: #fff4e0; border-color: #b06800; color: #b06800; }
 .flash.info    { background: #e8f0fe; border-color: #2a52be; color: #2a52be; }
 
+/*---------------Header/Navbar----------*/
 
 /*---------------Home ---------------*/
 
@@ -80,17 +97,27 @@ body {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
+    position: relative;
 }
 
 .home-button {
     border-radius: 10px;
     background-color: #E4D8C5;
     color: black;
+    font-size: 17px;
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 30%;
-    margin: auto;
+    width: 50%;
+    height: 60px;
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.alt-home-button{
+    background-color: #453120;
+    color: white;
 }
 
 .home-expert {
@@ -100,3 +127,4 @@ body {
     background-position: center;
     color: white;
 }
+
