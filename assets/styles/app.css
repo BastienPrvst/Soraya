@@ -2,6 +2,11 @@
 @source not "../templates/admin";
 
 @font-face {
+    font-family: Gruppo;
+    src: url('../fonts/Gruppo-Regular.ttf');
+}
+
+@font-face {
     font-family: Staatliches;
     src: url('../fonts/Staatliches-Regular.ttf');
 }
@@ -12,8 +17,12 @@
 }
 
 :root{
-    --brown-background: #453120;
+    --dark-background: #453120;
     --light-background: #E4D8C5;
+}
+
+.header-bg {
+    background-color: var(--light-background);
 }
 
 
@@ -24,6 +33,12 @@ h1, h2, h3, h4, h5, h6 {
 
 p, span, div {
     font-family: Iosevka, serif;
+}
+
+nav a, nav span {
+    font-family: Gruppo, serif;
+    font-size: 20px;
+    font-weight: bold;
 }
 
 /*---------------Partie messages flashs ---------------*/
@@ -97,25 +112,20 @@ p, span, div {
     background-repeat: no-repeat;
     background-size: cover;
     background-position: center;
-    position: relative;
 }
 
 .home-button {
     border-radius: 10px;
-    background-color: #E4D8C5;
-    color: black;
     font-size: 17px;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 50%;
     height: 60px;
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, -50%);
+    margin: 0 auto 10% auto;
 }
 
-.alt-home-button{
+.alt-home-button {
     background-color: #453120;
     color: white;
 }
@@ -126,5 +136,12 @@ p, span, div {
     background-size: cover;
     background-position: center;
     color: white;
+}
+
+@media (min-width: 768px) {
+    .home-evidence {
+        background-image: none;
+        background-color: var(--light-background);
+    }
 }
 

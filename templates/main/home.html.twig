@@ -11,40 +11,64 @@
             <img class="w-[70%] h-auto self-center text-white" src="{{ asset('images/site/logo-blanc.svg') }}" alt="">
         </section>
 
-        <section class="home-evidence h-lvh">
-            <h2 class="text-4xl text-[#E4D8C5] pt-[10%] px-[5%]">Là où le soin devient une évidence</h2>
+        <section class="home-evidence h-lvh md:h-[75vh] overflow-hidden md:flex md:flex-col md:flex-wrap">
 
-            <div class="home-button absolute bottom-[10%]">Découvrir l'univers</div>
+            <img
+                src="{{ asset('images/site/pou.png') }}"
+                alt=""
+                class="hidden md:block w-[50%] h-full object-cover"
+            >
+
+            <div class="md:w-[50%] h-full flex flex-col justify-between">
+                <h2 class="text-4xl text-[#E4D8C5] pt-[10%] px-[5%] md:px-[45px] text-center md:text-[var(--dark-background)]">
+                    Là où le soin devient une évidence
+                </h2>
+
+                <div class="home-button mb-[10%] w-[70%] md:w-[25%] bg-[var(--light-background)] text-[var(--dark-background)] md:bg-[var(--dark-background)] md:text-[var(--light-background)]">
+                    Découvrir l'univers
+                </div>
+            </div>
+
         </section>
 
-        <section class="home-essential h-[140vh] w-full bg-[#453120] flex flex-col items-center">
+        <section class="home-essential w-full bg-[#453120] flex flex-col items-center">
 
-            <div class="py-[10%] px-[5%] h-[40vh] flex items-center justify-center">
+            <div class="py-[10%] px-[5%] h-[20vh] flex items-center justify-center">
                 <h2 class="text-4xl text-white">L'essentiel en un geste</h2>
             </div>
 
-            <img class="w-9/10 h-[50vh]" src="{{ asset('images/site/rededed.png') }}" alt="">
+            <img
+                class="w-[90%] h-auto mx-auto"
+                src="{{ asset('images/site/rededed.png') }}"
+                alt=""
+            >
 
-            <img class="w-9/10 h-[50vh] mt-[2%]" src="{{ asset('images/site/gtgt.png') }}" alt="">
+            <img
+                class="w-[90%] h-auto mx-auto mt-[2%]"
+                src="{{ asset('images/site/gtgt.png') }}"
+                alt=""
+            >
 
-            <div class="h-[40vh] w-[100%] relative">
-                <div class="home-button absolute bottom-[10%] top-[50%]">Découvrir la routine</div>
+            <div class="h-[20vh] w-full flex items-center justify-center">
+                <div class="home-button">Découvrir la routine</div>
             </div>
 
 
 
         </section>
 
-        <section class="home-expert h-[75vh] flex align-center items-center">
+        <section class="home-expert w-full h-[75vh] flex items-center justify-center">
 
-            <h2 class="text-4xl text-white px-[5%] text-center">Une approche experte du soin intime</h2>
+            <h2 class="text-4xl text-white px-[5%] text-center">
+                Une approche experte du soin intime
+            </h2>
 
         </section>
 
         <section class="home-origin-vision">
 
             <div class="origin h-lvh">
-                <div class="h-[45%] pt-[30%] px-[5%]">
+                <div class="h-[45%] pt-[10%] px-[5%]">
                     <h3 class="text-4xl pb-[30px]">Origine : </h3>
 
                     <p class="text-xl">
@@ -59,7 +83,7 @@
             </div>
 
             <div class="vision h-lvh">
-                <div class="h-[45%] pt-[30%] px-[5%]">
+                <div class="h-[45%] pt-[10%] px-[5%]">
                     <h3 class="text-4xl pb-[30px]">Vision : </h3>
 
                     <p class="text-xl">
