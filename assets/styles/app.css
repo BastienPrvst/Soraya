@@ -120,9 +120,10 @@ nav a, nav span {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 50%;
+    width: 55%;
     height: 60px;
-    margin: 0 auto 10% auto;
+    padding-left: 20px;
+    padding-right: 20px;
 }
 
 .alt-home-button {
