@@ -139,10 +139,27 @@ nav a, nav span {
     color: white;
 }
 
+.pearl{
+    background-image: url('../images/site/skibidi.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
 @media (min-width: 768px) {
     .home-evidence {
         background-image: none;
         background-color: var(--light-background);
+    }
+}
+
+@media (min-width: 1024px) {
+    .hero {
+        background-image: url('../images/site/esssfd.png');
+    }
+
+    .home-expert {
+        background-image: url('../images/site/est.png');
     }
 }
 
