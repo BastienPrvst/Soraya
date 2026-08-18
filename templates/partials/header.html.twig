@@ -4,7 +4,7 @@
 
         {# Bouton burger — visible uniquement sur mobile #}
         <button id="burger-btn"
-                class="md:hidden relative z-50 text-2xl"
+                class="xl:hidden relative z-50 text-2xl"
                 aria-label="Ouvrir le menu"
                 aria-expanded="false">
 
@@ -33,14 +33,15 @@
             </svg>
         </button>
 
-        {# Nav classique — visible uniquement à partir de tablette (md) #}
-        <ul class="hidden md:flex flex-row gap-8">
+        {# Nav classique — visible uniquement à partir de desktop (md) #}
+        <ul class="hidden xl:flex flex-row gap-8">
             <li><a href="{{ path('app_main') }}" class="hover:opacity-70 transition-opacity">Accueil</a></li>
             <li><a href="{{ path('app_products') }}" class="hover:opacity-70 transition-opacity">Produits</a></li>
-            <li><a href="#" class="hover:opacity-70 transition-opacity">Contact</a></li>
+            <li><a href="#" class="hidden xl:inline hover:opacity-70 transition-opacity">Contact</a></li>
         </ul>
 
-        <img class="logo absolute left-1/2 -translate-x-1/2 h-8"
+        {# Logo #}
+        <img class="logo absolute left-1/2 -translate-x-1/2 h-8 md:h-12 xl:h-14"
              src="{{ asset('images/site/logo-blanc.svg') }}"
              data-logo-dark="{{ asset('images/site/logo.svg') }}"
              data-logo-white="{{ asset('images/site/logo-blanc.svg') }}"
@@ -48,32 +49,41 @@
 
         <div id="header-icons" class="flex items-center gap-4">
 
+            {# Compte #}
             {% if app.user %}
-                <a href="{{ path('app_profile') }}" aria-label="Mon profil" class="hidden md:inline hover:opacity-70 transition-opacity">Mon profil</a>
-                <a href="{{ path('app_logout') }}" aria-label="Se déconnecter" class="hidden md:inline hover:opacity-70 transition-opacity">Se déconnecter</a>
-                <a href="{{ path('app_profile') }}" aria-label="Mon profil" class="md:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0" />
-                    </svg>
+
+                <a href="{{ path('app_profile') }}"
+                   class="hidden xl:inline hover:opacity-70 transition-opacity">
+                    Mon profil
                 </a>
+
+                <a href="{{ path('app_logout') }}"
+                   class="hidden xl:inline hover:opacity-70 transition-opacity">
+                    Se déconnecter
+                </a>
+
             {% else %}
-                <a href="{{ path('app_register') }}" class="hidden md:inline hover:opacity-70 transition-opacity">S'inscrire</a>
-                <a href="{{ path('app_login') }}" class="hidden md:inline hover:opacity-70 transition-opacity">Se connecter</a>
-                <a href="{{ path('app_login') }}" aria-label="Se connecter" class="md:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.5 20.25a8.25 8.25 0 0115 0" />
-                    </svg>
+
+                <a href="{{ path('app_login') }}"
+                   class="hidden xl:inline hover:opacity-70 transition-opacity">
+                    Se connecter
                 </a>
+
+                <a href="{{ path('app_register') }}"
+                   class="hidden xl:inline hover:opacity-70 transition-opacity">
+                    S'inscrire
+                </a>
+
             {% endif %}
 
             <a href="{{ path('app_shopping_cart_view') }}" class="relative flex items-center gap-1 hover:opacity-70 transition-opacity" aria-label="Mon panier">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a1.125 1.125 0 00-1.087-1.462H5.106M7.5 14.25L5.106 5.272M6.75 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
                 </svg>
-                <span id="cart_quantity" class="absolute -top-2 -right-2 bg-[#453120] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center md:static md:bg-transparent md:text-current md:rounded-none md:h-auto md:w-auto">
+                <span id="cart_quantity" class="absolute -top-2 -right-2 bg-[#453120] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center xl:static xl:bg-transparent xl:text-current xl:rounded-none xl:h-auto xl:w-auto">
                     {{ totalQuantityCart }}
                 </span>
-                <span class="hidden md:inline">Mon panier</span>
+                <span class="hidden xl:inline">Mon panier</span>
             </a>
         </div>
 
@@ -81,7 +91,7 @@
 
     {# Menu plein écran mobile — arrive de la gauche #}
     <div id="mobile-menu"
-         class="md:hidden fixed inset-0 bg-[#e2d3ba] text-[#453120] z-40 px-[5%] pt-20
+         class="xl:hidden fixed inset-0 bg-[#e2d3ba] text-[#453120] z-40 px-[5%] pt-20
                 transform -translate-x-full transition-transform duration-300 ease-in-out invisible">
         <ul>
             <li class="border-b border-[#453120]">
@@ -111,14 +121,40 @@
 
             {% if app.user %}
                 <li class="border-b border-[#453120]">
+                    <a href="{{ path('app_profile') }}" class="flex items-center justify-between py-4 text-lg">
+                        Mon profil
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </li>
+                <li class="border-b border-[#453120]">
                     <a href="{{ path('app_logout') }}" class="flex items-center justify-between py-4 text-lg">
                         Se déconnecter
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
                     </a>
                 </li>
             {% else %}
                 <li class="border-b border-[#453120]">
                     <a href="{{ path('app_register') }}" class="flex items-center justify-between py-4 text-lg">
                         S'inscrire
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
+                    </a>
+                </li>
+
+                <li class="border-b border-[#453120]">
+                    <a href="{{ path('app_login') }}" class="flex items-center justify-between py-4 text-lg">
+                        Se connecter
+
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                        </svg>
                     </a>
                 </li>
             {% endif %}

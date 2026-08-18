@@ -6,14 +6,46 @@
 
 {% block body %}
 
-    <main>
+    <main class="bg-[var(--light-background)]">
 
-        <h1> {{ product.name}} </h1>
+        <section class="min-h-[100VH]">
+            <h1 class="text-center text-xl pt-[50%]"> {{ product.name|capitalize }} </h1>
+
+            {# Carousel des images du produit #}
+            <div id="product-carousel" class="relative w-full max-w-md mx-auto mt-8">
+                <div class="relative overflow-hidden rounded-lg">
+                    {% for img in product.images %}
+                        <img
+                            src="{{ vich_uploader_asset(img, 'imageFile') }}"
+                            alt="{{ product.name }} - image {{ loop.index }}"
+                            class="carousel-slide w-full h-auto object-cover {{ not loop.first ? 'hidden' }}"
+                            data-index="{{ loop.index0 }}"
+                        >
+                    {% endfor %}
+                </div>
+
+                <button
+                    id="carousel-prev"
+                    class="absolute left-2 top-1/2 -translate-y-1/2 text-3xl text-[var(--dark-text)] hover:opacity-70 transition"
+                    aria-label="Image précédente"
+                >
+                    ‹
+                </button>
+
+                <button
+                    id="carousel-next"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-3xl text-[var(--dark-text)] hover:opacity-70 transition"
+                    aria-label="Image suivante"
+                >
+                    ›
+                </button>
+            </div>
+        </section>
 
         <div>
-            {{ product.description }} <br>
+            <p>{{ product.description|raw }}</p> <br>
 
-            {{ product.price }}€
+            <span>{{ product.price }}€</span>
 
             <span
                 id="stock-display"
@@ -32,8 +64,11 @@
 
 {% block javascripts %}
 
+    {{ parent() }}
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // --- Stock en temps réel ---
             const el = document.getElementById('stock-display');
             const stockUrl = "{{ path('api_product_stock', { product: product.id }) }}";
 
@@ -44,6 +79,24 @@
                 el.textContent = available ? `${stock} en stock` : 'Rupture';
                 el.className = `badge ${available ? 'bg-success' : 'bg-danger'}`;
             }, 5_000);
+
+            // --- Carousel ---
+            const carousel = document.getElementById('product-carousel');
+            if (carousel) {
+                const slides = carousel.querySelectorAll('.carousel-slide');
+                const prevBtn = document.getElementById('carousel-prev');
+                const nextBtn = document.getElementById('carousel-next');
+                let current = 0;
+
+                const showSlide = (index) => {
+                    slides[current].classList.add('hidden');
+                    current = (index + slides.length) % slides.length;
+                    slides[current].classList.remove('hidden');
+                };
+
+                prevBtn.addEventListener('click', () => showSlide(current - 1));
+                nextBtn.addEventListener('click', () => showSlide(current + 1));
+            }
         });
     </script>
 

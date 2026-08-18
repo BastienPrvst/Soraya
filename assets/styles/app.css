@@ -153,7 +153,7 @@ nav a, nav span {
     }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1280px) {
     .hero {
         background-image: url('../images/site/esssfd.png');
     }
