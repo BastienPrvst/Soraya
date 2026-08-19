@@ -15,11 +15,19 @@
     </head>
 
     <body>
-        {% include 'partials/header.html.twig' %}
+        {% include 'partials/header.html.twig' with {
+            header_bg: header_bg|default(null),
+            header_text: header_text|default(null),
+            header_bg_scrolled: header_bg_scrolled|default(null),
+            header_text_scrolled: header_text_scrolled|default(null)
+        } %}
         <div class="flash-wrap">
             {{ include('partials/_flash.html.twig') }}
         </div>
         {% block body %}{% endblock %}
-        {% include 'partials/footer.html.twig' %}
+        {% include 'partials/footer.html.twig' with {
+            footer_bg: footer_bg|default(null),
+            footer_text: footer_text|default(null)
+        } %}
     </body>
 </html>

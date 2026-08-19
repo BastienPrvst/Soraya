@@ -1,24 +1,30 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-
+    {{ product.name|capitalize }} - Lévédène
 {% endblock %}
+
+{% set header_text = 'var(--dark-background)' %}
+{% set header_bg_scrolled = 'var(--light-background)' %}
+{% set header_logo = 'dark' %}
+{% set footer_bg = 'var(--dark-background)' %}
+{% set footer_text = 'var(--light-background)' %}
 
 {% block body %}
 
     <main class="bg-[var(--light-background)]">
 
         <section class="min-h-[100VH]">
-            <h1 class="text-center text-xl pt-[50%]"> {{ product.name|capitalize }} </h1>
+            <h1 class="text-center text-wrap text-4xl pt-[30%] px-[5%]"> {{ product.name|capitalize }} </h1>
 
             {# Carousel des images du produit #}
-            <div id="product-carousel" class="relative w-full max-w-md mx-auto mt-8">
-                <div class="relative overflow-hidden rounded-lg">
+            <div id="product-carousel" class="relative w-[95%] max-w-md mx-auto mt-8">
+                <div class="relative overflow-hidden h-[75vh]">
                     {% for img in product.images %}
                         <img
                             src="{{ vich_uploader_asset(img, 'imageFile') }}"
                             alt="{{ product.name }} - image {{ loop.index }}"
-                            class="carousel-slide w-full h-auto object-cover {{ not loop.first ? 'hidden' }}"
+                            class="carousel-slide w-full h-full object-cover {{ not loop.first ? 'hidden' }}"
                             data-index="{{ loop.index0 }}"
                         >
                     {% endfor %}

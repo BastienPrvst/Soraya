@@ -1,39 +1,22 @@
-<header class="fixed top-0 w-full bg-transparent z-50 transition-colors duration-300 text-white">
+<header class="fixed top-0 w-full z-50 transition-colors duration-300"
+        style="--header-bg: {{ header_bg|default('transparent') }};
+            --header-text: {{ header_text|default('#ffffff') }};
+            --header-bg-scrolled: {{ header_bg_scrolled|default('#ffffff') }};
+            --header-text-scrolled: {{ header_text_scrolled|default('#000000') }};">
 
-    <nav class="flex items-center justify-between px-[5%] py-4 relative">
+    <nav class="flex items-center justify-between px-[5%] py-4 relative
+                bg-[var(--header-bg)] text-[var(--header-text)] transition-colors duration-300">
 
-        {# Bouton burger — visible uniquement sur mobile #}
-        <button id="burger-btn"
-                class="xl:hidden relative z-50 text-2xl"
-                aria-label="Ouvrir le menu"
-                aria-expanded="false">
-
-            <svg id="icon-burger"
-                 xmlns="http://www.w3.org/2000/svg"
-                 class="h-6 w-6"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor"
-                 stroke-width="2">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M4 6h16M4 12h16M4 18h16" />
+        {# Bouton burger #}
+        <button id="burger-btn" class="xl:hidden relative z-50 text-2xl" aria-label="Ouvrir le menu" aria-expanded="false">
+            <svg id="icon-burger" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
-
-            <svg id="icon-close"
-                 xmlns="http://www.w3.org/2000/svg"
-                 class="h-6 w-6 hidden"
-                 fill="none"
-                 viewBox="0 0 24 24"
-                 stroke="currentColor"
-                 stroke-width="2">
-                <path stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M6 18L18 6M6 6l12 12" />
+            <svg id="icon-close" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
 
-        {# Nav classique — visible uniquement à partir de desktop (md) #}
         <ul class="hidden xl:flex flex-row gap-8">
             <li><a href="{{ path('app_main') }}" class="hover:opacity-70 transition-opacity">Accueil</a></li>
             <li><a href="{{ path('app_products') }}" class="hover:opacity-70 transition-opacity">Produits</a></li>
@@ -41,39 +24,25 @@
         </ul>
 
         {# Logo #}
-        <img class="logo absolute left-1/2 -translate-x-1/2 h-8 md:h-12 xl:h-14"
-             src="{{ asset('images/site/logo-blanc.svg') }}"
-             data-logo-dark="{{ asset('images/site/logo.svg') }}"
-             data-logo-white="{{ asset('images/site/logo-blanc.svg') }}"
-             alt="Logo de Lévédène">
+        <a href="{{ path('app_main') }}">
+            <img id="logo"
+                 class="logo absolute left-1/2 -translate-x-1/2 h-8 md:h-12 xl:h-14"
+                src="{{ header_logo|default('light') == 'dark' ? asset('images/site/logo.svg') : asset('images/site/logo-blanc.svg') }}"
+                data-logo-dark="{{ asset('images/site/logo.svg') }}"
+                data-logo-white="{{ asset('images/site/logo-blanc.svg') }}"
+                data-logo-default="{{ header_logo|default('light') }}"
+                data-logo-scrolled="{{ header_logo_scrolled|default('dark') }}"
+                alt="Logo de Lévédène">
+        </a>
 
         <div id="header-icons" class="flex items-center gap-4">
 
-            {# Compte #}
             {% if app.user %}
-
-                <a href="{{ path('app_profile') }}"
-                   class="hidden xl:inline hover:opacity-70 transition-opacity">
-                    Mon profil
-                </a>
-
-                <a href="{{ path('app_logout') }}"
-                   class="hidden xl:inline hover:opacity-70 transition-opacity">
-                    Se déconnecter
-                </a>
-
+                <a href="{{ path('app_profile') }}" class="hidden xl:inline hover:opacity-70 transition-opacity">Mon profil</a>
+                <a href="{{ path('app_logout') }}" class="hidden xl:inline hover:opacity-70 transition-opacity">Se déconnecter</a>
             {% else %}
-
-                <a href="{{ path('app_login') }}"
-                   class="hidden xl:inline hover:opacity-70 transition-opacity">
-                    Se connecter
-                </a>
-
-                <a href="{{ path('app_register') }}"
-                   class="hidden xl:inline hover:opacity-70 transition-opacity">
-                    S'inscrire
-                </a>
-
+                <a href="{{ path('app_login') }}" class="hidden xl:inline hover:opacity-70 transition-opacity">Se connecter</a>
+                <a href="{{ path('app_register') }}" class="hidden xl:inline hover:opacity-70 transition-opacity">S'inscrire</a>
             {% endif %}
 
             <a href="{{ path('app_shopping_cart_view') }}" class="relative flex items-center gap-1 hover:opacity-70 transition-opacity" aria-label="Mon panier">
@@ -164,27 +133,37 @@
 </header>
 
 <script>
-    const burgerBtn = document.getElementById('burger-btn');
-    const iconBurger = document.getElementById('icon-burger');
-    const iconClose = document.getElementById('icon-close');
-    const mobileMenu = document.getElementById('mobile-menu');
+    const burgerBtn   = document.getElementById('burger-btn');
+    const iconBurger  = document.getElementById('icon-burger');
+    const iconClose   = document.getElementById('icon-close');
+    const mobileMenu  = document.getElementById('mobile-menu');
     const headerIcons = document.getElementById('header-icons');
-    const header = document.querySelector('header');
-    const logo = document.querySelector('.logo');
+    const header      = document.querySelector('header');
+    const logo        = document.getElementById('logo');
 
-    // Fond du header au scroll
+    // Valeurs "au repos" lues une seule fois depuis les CSS vars injectées par Twig
+    const restBg   = getComputedStyle(header).getPropertyValue('--header-bg').trim();
+    const restText = getComputedStyle(header).getPropertyValue('--header-text').trim();
+    const scrolledBg   = getComputedStyle(header).getPropertyValue('--header-bg-scrolled').trim();
+    const scrolledText = getComputedStyle(header).getPropertyValue('--header-text-scrolled').trim();
+
+    function updateLogo(isScrolled) {
+        const variant = isScrolled
+            ? logo.dataset.logoScrolled  // 'dark' ou 'light'
+            : logo.dataset.logoDefault;  // 'dark' ou 'light'
+
+        logo.src = variant === 'dark' ? logo.dataset.logoDark : logo.dataset.logoWhite;
+    }
+
+    function updateHeaderColors(isScrolled) {
+        header.style.setProperty('--header-bg', isScrolled ? scrolledBg : restBg);
+        header.style.setProperty('--header-text', isScrolled ? scrolledText : restText);
+    }
+
     window.addEventListener('scroll', () => {
-        if (window.scrollY > 50) {
-            logo.src = logo.dataset.logoDark;
-
-            header.classList.add('header-bg', 'text-black');
-            header.classList.remove('bg-transparent', 'text-white');
-        } else {
-            logo.src = logo.dataset.logoWhite;
-
-            header.classList.add('bg-transparent', 'text-white');
-            header.classList.remove('header-bg', 'text-black');
-        }
+        const isScrolled = window.scrollY > 50;
+        updateHeaderColors(isScrolled);
+        updateLogo(isScrolled);
     });
 
     burgerBtn.addEventListener('click', () => {
