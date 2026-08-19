@@ -19,6 +19,7 @@ use EasyCorp\Bundle\EasyAdminBundle\Field\TextEditorField;
 use EasyCorp\Bundle\EasyAdminBundle\Field\TextField;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Field\FormField;
+use App\Controller\Admin\Fields\CKEditorField;
 
 class ProductCrudController extends AbstractCrudController
 {
@@ -140,14 +141,14 @@ class ProductCrudController extends AbstractCrudController
                 ->setLabel('Stock')
                 ->setDisabled()
                 ->setColumns(4),
-            TextEditorField::new('smallDescription')
+            CKEditorField::new('smallDescription')
                 ->setLabel('Description courte')
                 ->setHelp('255 caractères maximum'),
-            TextEditorField::new('description')
+            CKEditorField::new('description')
                 ->setLabel('Description'),
-            TextEditorField::new('ingredients')
+            CKEditorField::new('ingredients')
                 ->setLabel('Ingredients'),
-            TextEditorField::new('benefits')
+            CKEditorField::new('benefits')
                 ->setLabel('Bénéfices'),
             FormField::addFieldSet('Prix'),
             MoneyField::new('price')

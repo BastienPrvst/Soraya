@@ -26,13 +26,13 @@
         {# Logo #}
         <a href="{{ path('app_main') }}">
             <img id="logo"
-                 class="logo absolute left-1/2 -translate-x-1/2 h-8 md:h-12 xl:h-14"
-                src="{{ header_logo|default('light') == 'dark' ? asset('images/site/logo.svg') : asset('images/site/logo-blanc.svg') }}"
-                data-logo-dark="{{ asset('images/site/logo.svg') }}"
-                data-logo-white="{{ asset('images/site/logo-blanc.svg') }}"
-                data-logo-default="{{ header_logo|default('light') }}"
-                data-logo-scrolled="{{ header_logo_scrolled|default('dark') }}"
-                alt="Logo de Lévédène">
+                 class="logo absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-8 md:h-12 xl:h-14"
+                 src="{{ header_logo|default('light') == 'dark' ? asset('images/site/logo.svg') : asset('images/site/logo-blanc.svg') }}"
+                 data-logo-dark="{{ asset('images/site/logo.svg') }}"
+                 data-logo-white="{{ asset('images/site/logo-blanc.svg') }}"
+                 data-logo-default="{{ header_logo|default('light') }}"
+                 data-logo-scrolled="{{ header_logo_scrolled|default('dark') }}"
+                 alt="Logo de Lévédène">
         </a>
 
         <div id="header-icons" class="flex items-center gap-4">

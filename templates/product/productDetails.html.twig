@@ -4,22 +4,23 @@
     {{ product.name|capitalize }} - Lévédène
 {% endblock %}
 
-{% set header_text = 'var(--dark-background)' %}
-{% set header_bg_scrolled = 'var(--light-background)' %}
+{% set header_text = 'var(--dark)' %}
+{% set header_bg = 'var(--light)' %}
+{% set header_bg_scrolled = 'var(--light)' %}
 {% set header_logo = 'dark' %}
-{% set footer_bg = 'var(--dark-background)' %}
-{% set footer_text = 'var(--light-background)' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
 
 {% block body %}
 
-    <main class="bg-[var(--light-background)]">
+    <main class="bg-[var(--light)]">
 
-        <section class="min-h-[100VH]">
-            <h1 class="text-center text-wrap text-4xl pt-[30%] px-[5%]"> {{ product.name|capitalize }} </h1>
+        <section class="min-h-[80vh] mb-[5vh]">
+            <h1 class="text-center text-wrap text-4xl pt-[30%] px-[5%] text-[var(--dark)]"> {{ product.name|capitalize }} </h1>
 
             {# Carousel des images du produit #}
             <div id="product-carousel" class="relative w-[95%] max-w-md mx-auto mt-8">
-                <div class="relative overflow-hidden h-[75vh]">
+                <div class="relative overflow-hidden h-[60vh]">
                     {% for img in product.images %}
                         <img
                             src="{{ vich_uploader_asset(img, 'imageFile') }}"
@@ -32,7 +33,7 @@
 
                 <button
                     id="carousel-prev"
-                    class="absolute left-2 top-1/2 -translate-y-1/2 text-3xl text-[var(--dark-text)] hover:opacity-70 transition"
+                    class="absolute left-2 top-1/2 -translate-y-1/2 text-3xl text-[var(--dark)] hover:opacity-70 transition"
                     aria-label="Image précédente"
                 >
                     ‹
@@ -40,7 +41,7 @@
 
                 <button
                     id="carousel-next"
-                    class="absolute right-2 top-1/2 -translate-y-1/2 text-3xl text-[var(--dark-text)] hover:opacity-70 transition"
+                    class="absolute right-2 top-1/2 -translate-y-1/2 text-3xl text-[var(--dark)] hover:opacity-70 transition"
                     aria-label="Image suivante"
                 >
                     ›
@@ -48,21 +49,93 @@
             </div>
         </section>
 
-        <div>
-            <p>{{ product.description|raw }}</p> <br>
+        <section class="px-4 w-full">
+            <div class="flex flex-col border-b-2 border-[var(--dark)]">
 
-            <span>{{ product.price }}€</span>
+                <h2 class="text-[var(--dark)] text-3xl pb-3">Description :</h2>
 
-            <span
-                id="stock-display"
-                data-product-id="{{ product.id }}"
-                class="badge {{ product.stock > 0 ? 'bg-success' : 'bg-danger' }}"
-            >
-            {{ product.stock > 0 ? product.stock ~ ' en stock' : 'Rupture' }}
-        </span>
+                <p>{{ product.smallDescription|raw }}</p> <br>
 
-            <button>Ajouter au panier</button>
-        </div>
+                <div class="flex w-full justify-between items-center">
+                    <span class="border-1 rounded-xl p-1">30ml</span>
+                    <span class="text-xl">{{ product.price }}€</span>
+                </div>
+
+                {% if product.stock > 0 %}
+                    <button id="buy-button" class="self-end buy-button text-lg bg-white rounded-lg p-2 my-[25px]">Ajouter au panier</button>
+                {% else %}
+                    <button id="buy-button" class="self-end buy-button" disabled>Rupture</button>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <section class="px-4 w-full">
+
+            <div class="border-b-2 border-[var(--dark)] pb-6 mb-2">
+                <h3 class="text-xl py-5">Description :</h3>
+
+                {{ product.description|raw }}
+            </div>
+
+            <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                    <h3 class="uppercase">Ingrédients :</h3>
+                    <span class="collapse-icon shrink-0"></span>
+                </button>
+                <div class="collapse-content">
+                    <div class="collapse-inner">
+                        <p class="pb-4">{{ product.ingredients|raw }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                    <h3 class="uppercase">Conseils d'utilisation :</h3>
+                    <span class="collapse-icon shrink-0"></span>
+                </button>
+                <div class="collapse-content">
+                    <div class="collapse-inner">
+{#                        <p class="pb-4">{{ product.usageAdvice|raw }}</p>#}
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                    <h3 class="uppercase">Bienfaits :</h3>
+                    <span class="collapse-icon shrink-0"></span>
+                </button>
+                <div class="collapse-content">
+                    <div class="collapse-inner">
+                        <p class="pb-4">{{ product.benefits|raw }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                    <h3 class="uppercase">Conseils ciblés :</h3>
+                    <span class="collapse-icon shrink-0"></span>
+                </button>
+                <div class="collapse-content">
+                    <div class="collapse-inner">
+{#                        <p class="pb-4">{{ product.|raw }}</p>#}
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <section class="px-4 w-full py-[10vh]">
+            <div class="flex flex-col">
+                <img class="aspect-3/4 w-full" src="{{ asset('images/site/bottle.png') }}" alt="">
+                <img class="aspect-3/4 w-full" src="{{ asset('images/site/pile.png') }}" alt="">
+            </div>
+        </section>
+
+
 
     </main>
 
@@ -74,17 +147,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // --- Stock en temps réel ---
-            const el = document.getElementById('stock-display');
-            const stockUrl = "{{ path('api_product_stock', { product: product.id }) }}";
-
-            setInterval(async () => {
-                const res = await fetch(stockUrl);
-                const { stock, available } = await res.json();
-
-                el.textContent = available ? `${stock} en stock` : 'Rupture';
-                el.className = `badge ${available ? 'bg-success' : 'bg-danger'}`;
-            }, 5_000);
 
             // --- Carousel ---
             const carousel = document.getElementById('product-carousel');
@@ -103,6 +165,18 @@
                 prevBtn.addEventListener('click', () => showSlide(current - 1));
                 nextBtn.addEventListener('click', () => showSlide(current + 1));
             }
+
+            const collapses = document.querySelectorAll('.product-collapse');
+
+            collapses.forEach((collapse) => {
+                const trigger = collapse.querySelector('.collapse-trigger');
+
+                trigger.addEventListener('click', () => {
+                    const isOpen = collapse.classList.contains('is-open');
+                    collapse.classList.toggle('is-open', !isOpen);
+                    trigger.setAttribute('aria-expanded', String(!isOpen));
+                });
+            });
         });
     </script>
 
