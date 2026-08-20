@@ -580,3 +580,7 @@
     box-shadow: 0 6px 16px rgba(0,0,0,0.1);
     transition: 0.4s ease;
 }
+
+.dropdown-toggle{
+    padding: 6px;
+}

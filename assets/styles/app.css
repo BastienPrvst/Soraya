@@ -228,16 +228,25 @@ nav a, nav span {
     min-height: 0;
 }
 
-.product-description ul {
-    list-style: disc;
-    padding-left: 1.25rem;
+.collapse-inner {
+    overflow: hidden;
+    min-height: 0;
+    padding-bottom: 0;
+    transition: padding-bottom 0.35s ease;
 }
 
-.product-description ol {
-    list-style: decimal;
-    padding-left: 1.25rem;
+.product-collapse.is-open .collapse-inner {
+    padding-bottom: 1.5rem;
 }
 
-.product-description li {
-    margin-bottom: 0.25rem;
+.thumb-swiper .swiper-slide {
+    opacity: 0.5;
+    transition: opacity 0.2s ease;
 }
+
+.thumb-swiper .swiper-slide-thumb-active {
+    opacity: 1;
+}
+
+
+

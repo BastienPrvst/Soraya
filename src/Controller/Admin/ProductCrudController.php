@@ -141,14 +141,14 @@ class ProductCrudController extends AbstractCrudController
                 ->setLabel('Stock')
                 ->setDisabled()
                 ->setColumns(4),
-            CKEditorField::new('smallDescription')
+            TextEditorField::new('smallDescription')
                 ->setLabel('Description courte')
                 ->setHelp('255 caractères maximum'),
-            CKEditorField::new('description')
+            TextEditorField::new('description')
                 ->setLabel('Description'),
-            CKEditorField::new('ingredients')
+            TextEditorField::new('ingredients')
                 ->setLabel('Ingredients'),
-            CKEditorField::new('benefits')
+            TextEditorField::new('benefits')
                 ->setLabel('Bénéfices'),
             FormField::addFieldSet('Prix'),
             MoneyField::new('price')
