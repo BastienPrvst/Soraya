@@ -66,6 +66,15 @@ class Product
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $benefits = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $useAdvice = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $targetAdvice = null;
+
+    #[ORM\Column(length: 10)]
+    private ?string $capacity = null;
+
     public function __construct()
     {
         $this->category = new ArrayCollection();
@@ -283,6 +292,42 @@ class Product
     public function setBenefits(?string $benefits): static
     {
         $this->benefits = $benefits;
+
+        return $this;
+    }
+
+    public function getUseAdvice(): ?string
+    {
+        return $this->useAdvice;
+    }
+
+    public function setUseAdvice(?string $useAdvice): static
+    {
+        $this->useAdvice = $useAdvice;
+
+        return $this;
+    }
+
+    public function getTargetAdvice(): ?string
+    {
+        return $this->targetAdvice;
+    }
+
+    public function setTargetAdvice(?string $targetAdvice): static
+    {
+        $this->targetAdvice = $targetAdvice;
+
+        return $this;
+    }
+
+    public function getCapacity(): ?string
+    {
+        return $this->capacity;
+    }
+
+    public function setCapacity(string $capacity): static
+    {
+        $this->capacity = $capacity;
 
         return $this;
     }

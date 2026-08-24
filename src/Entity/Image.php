@@ -34,13 +34,7 @@ class Image
     private ?string $filename = null;
 
     #[ORM\Column]
-    private int $position = 0;
-
-    #[ORM\Column]
     private bool $isMain = false;
-
-    #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'images')]
     private ?Product $product = null;
@@ -72,13 +66,6 @@ class Image
         return $this;
     }
 
-    /**
-     * @return int
-     */
-    public function getPosition(): int
-    {
-        return $this->position;
-    }
 
     /**
      * @return bool
@@ -96,29 +83,6 @@ class Image
         $this->isMain = $isMain;
     }
 
-    /**
-     * @param int $position
-     */
-    public function setPosition(int $position): void
-    {
-        $this->position = $position;
-    }
-
-    /**
-     * @return \DateTimeImmutable|null
-     */
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    /**
-     * @param \DateTimeImmutable|null $updatedAt
-     */
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): void
-    {
-        $this->updatedAt = $updatedAt;
-    }
 
     public function getProduct(): ?Product
     {

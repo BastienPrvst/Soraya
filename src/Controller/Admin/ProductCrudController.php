@@ -136,16 +136,23 @@ class ProductCrudController extends AbstractCrudController
             TextField::new('name')
                 ->setLabel('Nom')
                 ->setCssClass('fw-bold')
-                ->setColumns(8),
+                ->setColumns(6),
             IntegerField::new('stock')
                 ->setLabel('Stock')
                 ->setDisabled()
-                ->setColumns(4),
+                ->setColumns(3),
+            TextField::new('capacity')
+                ->setLabel('Contenance')
+                ->setColumns(3),
             TextEditorField::new('smallDescription')
                 ->setLabel('Description courte')
                 ->setHelp('255 caractères maximum'),
             TextEditorField::new('description')
                 ->setLabel('Description'),
+            TextEditorField::new('useAdvice')
+                ->setLabel('Conseils d\'utilisation'),
+            TextEditorField::new('targetAdvice')
+                ->setLabel('Conseils ciblés'),
             TextEditorField::new('ingredients')
                 ->setLabel('Ingredients'),
             TextEditorField::new('benefits')

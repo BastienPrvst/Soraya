@@ -68,7 +68,7 @@
 
                             <p>{{ product.smallDescription|raw }}</p> <br>
                         </div>
-                        <span class="border-1 rounded-xl p-1 text-center w-min mb-8">30ml</span>
+                        <span class="border-1 rounded-xl p-1 text-center w-min mb-8">{{ product.capacity }}</span>
 
 
 
@@ -111,61 +111,73 @@
                 {{ product.description|raw }}
             </div>
 
-            <div class="product-collapse border-b-2 border-[var(--dark)]">
-                <h3 class="uppercase">
-                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
-                        Ingrédients :
-                    <span class="collapse-icon shrink-0"></span>
-                    </button>
-                </h3>
-                <div class="collapse-content">
-                    <div class="collapse-inner">
-                        {{ product.ingredients|raw }}
+            {% if product.ingredients %}
+                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                    <h3 class="uppercase">
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                            Ingrédients :
+                            <span class="collapse-icon shrink-0"></span>
+                        </button>
+                    </h3>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            {{ product.ingredients|raw }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
-            <div class="product-collapse border-b-2 border-[var(--dark)]">
-                <h3 class="uppercase">
-                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
-                        Conseils d'utilisation
-                        <span class="collapse-icon shrink-0"></span>
-                    </button>
-                </h3>
-                <div class="collapse-content">
-                    <div class="collapse-inner">
-{#                        {{ product.usageAdvice|raw }}#}
+            {% if product.useAdvice %}
+                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                    <h3 class="uppercase">
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                            Conseils d'utilisation
+                            <span class="collapse-icon shrink-0"></span>
+                        </button>
+                    </h3>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            {{ product.useAdvice|raw }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
-            <div class="product-collapse border-b-2 border-[var(--dark)]">
-                <h3 class="uppercase">
-                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
-                        Bienfaits :
-                        <span class="collapse-icon shrink-0"></span>
-                    </button>
-                </h3>
-                <div class="collapse-content">
-                    <div class="collapse-inner">
-                        {{ product.benefits|raw }}
+            {% if product.benefits %}
+                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                    <h3 class="uppercase">
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                            Bienfaits :
+                            <span class="collapse-icon shrink-0"></span>
+                        </button>
+                    </h3>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            {{ product.benefits|raw }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
 
-            <div class="product-collapse border-b-2 border-[var(--dark)]">
-                <h3 class="uppercase">
-                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
-                        Conseils ciblés :
-                        <span class="collapse-icon shrink-0"></span>
-                    </button>
-                </h3>
-                <div class="collapse-content">
-                    <div class="collapse-inner">
-{#                        {{ product.|raw }}#}
+
+
+            {% if product.targetAdvice %}
+                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                    <h3 class="uppercase">
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                            Conseils ciblés :
+                            <span class="collapse-icon shrink-0"></span>
+                        </button>
+                    </h3>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            {{ product.targetAdvice|raw }}
+                        </div>
                     </div>
                 </div>
-            </div>
+            {% endif %}
+
+
 
         </section>
 

@@ -29,12 +29,6 @@ class ImageType extends AbstractType
             ->add('isMain', CheckboxType::class, [
                 'label' => 'Image principale',
                 'required' => false,
-            ])
-
-            ->add('position', IntegerType::class, [
-                'label' => 'Ordre',
-                'required' => false,
-                'empty_data' => '0',
             ]);
     }
 
