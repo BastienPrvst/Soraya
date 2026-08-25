@@ -6,6 +6,7 @@ use App\Entity\User;
 use Doctrine\DBAL\Types\StringType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\BirthdayType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
@@ -68,19 +69,24 @@ class RegistrationFormType extends AbstractType
                     ),
                 ]
             ])
-            ->add('Firstname', TextType::class, [
+            ->add('firstname', TextType::class, [
                 'label' => 'Nom',
             ])
-            ->add('Lastname', TextType::class, [
-                'label' => 'Prenom',
+            ->add('lastname', TextType::class, [
+                'label' => 'Prénom',
             ])
-            ->add('Birthday', BirthdayType::class, [
+            ->add('birthday', BirthdayType::class, [
                 'label' => 'Date de naissance',
                 'widget' => 'single_text',
                 'required' => false,
             ])
-            ->add('Submit', SubmitType::class, [
-                'label' => 'Enregistrer',
+            ->add('cgu', CheckboxType::class, [
+                'label' => 'J\'accepte les conditions générales de vente et la politique de confidentialité.',
+                'required' => true,
+                'mapped' => false,
+            ])
+            ->add('submit', SubmitType::class, [
+                'label' => 'Créer mon compte',
             ])
         ;
     }
