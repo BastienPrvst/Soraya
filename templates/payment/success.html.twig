@@ -4,26 +4,22 @@
     Commande confirmée
 {% endblock %}
 
+{% set header_text = 'var(--light)' %}
+{% set header_bg = 'var(--dark)' %}
+{% set header_bg_scrolled = 'var(--dark)' %}
+{% set header_logo = 'light' %}
+{% set footer_bg = 'var(--light)' %}
+{% set footer_text = 'var(--dark)' %}
+
 {% block body %}
 
-    <main class="w-full h-full p-5">
-        <h2 class="text-center">Votre commande #{{ "%05d"|format(order.id) }} est confirmée !</h2>
+    <main class="w-full h-full p-5 bg-[var(--dark)] flex justify-center min-h-[100vh] pt-[10%] md:pt-[5%]">
+{#        <h1 class="text-center">Votre commande #{{ "%05d"|format(order.id) }} est confirmée !</h1>#}
 
-        <section class="p-5 text-center">
+        <section class="p-5 text-center bg-[#837261] py-[20%] md:py-[10%] px-[10%] w-[95%]">
+            <h1 class="text-center text-white text-5xl md:text-6xl mb-15">Merci pour votre commande ! Nous préparons votre colis avec le plus grand soin.</h1>
 
-            <div>
-                <p>
-                    Nous vous avons envoyé un mail récapitulatif de votre commande à l'adresse mail <strong>{{ order.email }}</strong>.
-
-                    <br>
-                    {% if order.user %}
-                        Vous pouvez également retrouver votre commande dans la section <a href="{{ path('app_profile') }}">Mon Profil</a>.
-                    {% endif %}
-
-                </p>
-
-            </div>
-
+            <button class="border-1 border-white rounded-lg px-6 py-3"><a class="text-2xl text-white" href="{{ path('app_main') }}">Retour à l'accueil</a></button>
         </section>
     </main>
 

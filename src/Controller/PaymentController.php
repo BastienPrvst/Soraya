@@ -178,6 +178,7 @@ final class PaymentController extends AbstractController
             ]);
         }
 
+        //TODO A optimiser (envois async)
         if ($order->getStatus() === OrderStatus::PAID) {
             $mailerService->sendOrderConfirmationEmail($order);
             $stockService->removeByOrder($order);
