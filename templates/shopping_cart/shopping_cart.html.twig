@@ -1,62 +1,73 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-
+    Mon panier
 {% endblock %}
+
+{% set header_text = 'var(--light)' %}
+{% set header_bg = 'var(--dark)' %}
+{% set header_bg_scrolled = 'var(--dark)' %}
+{% set header_logo = 'light' %}
+{% set footer_bg = 'var(--light)' %}
+{% set footer_text = 'var(--dark)' %}
 
 {% block body %}
 
-    <h2>PANIER</h2>
+    <main>
+        <h2>PANIER</h2>
 
-    {% for message in app.flashes('error') %}
-        <div>{{ message }}</div>
-    {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div>{{ message }}</div>
+        {% endfor %}
 
 
-    {% if shoppingCart is not empty %}
-        <section id="cart_filled" class="flex flex-col items-center">
-            {% for product in shoppingCart %}
+        {% if shoppingCart is not empty %}
+            <section id="cart_filled" class="flex flex-col items-center">
+                {% for product in shoppingCart %}
 
-                <div id="cart_product_{{product.id }}" class="w-1/2 bg-gray-100 rounded-3xl my-2 p-3">
-                    <p>{{ product.name }}</p>
+                    <div id="cart_product_{{product.id }}" class="w-1/2 bg-gray-100 rounded-3xl my-2 p-3">
+                        <p>{{ product.name }}</p>
 
-                    <div class="flex flex-row">
-                        <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                        <div class="flex flex-row">
+                            <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                                <input name="productId" type="hidden" value="{{ product.id }}">
+                                <input name="action" type="hidden" value="false">
+                                <input type="submit" value="-">
+                            </form>
+                            <span class="px-3">x {{ product.quantity }}</span>
+                            <form action="{{ path('app_shopping_cart_update') }}" method="post">
+                                <input name="productId" type="hidden" value="{{ product.id }}">
+                                <input name="action" type="hidden" value="true">
+                                <input type="submit" value="+">
+                            </form>
+                        </div>
+
+
+                        <span>Prix unitaire : {{ product.price }}€</span>
+                        <span>Sous total {{ product.totalPrice }}€</span>
+
+                        <form action="{{ path('app_shopping_cart_remove') }}" method="post">
                             <input name="productId" type="hidden" value="{{ product.id }}">
-                            <input name="action" type="hidden" value="false">
-                            <input type="submit" value="-">
+                            <input type="submit" value="Supprimer" class="bg-red-600 text-white rounded px-3 py-1">
                         </form>
-                        <span class="px-3">x {{ product.quantity }}</span>
-                        <form action="{{ path('app_shopping_cart_update') }}" method="post">
-                            <input name="productId" type="hidden" value="{{ product.id }}">
-                            <input name="action" type="hidden" value="true">
-                            <input type="submit" value="+">
-                        </form>
+
                     </div>
+                {% endfor %}
+            </section>
+            <div class="flex flex-row py-5 mx-5">
+                <span id="total_cart">Total : {{ totalCart }}€</span>
+
+                <a class="px-5" href="{{ path('checkout_auth') }}">Valider mon panier</a>
+
+                <a href="{{ path('app_shopping_cart_empty') }}">Vider le panier</a>
+            </div>
+
+        {% else %}
+            <div class="flex w-full items-center py-5">Votre panier est vide</div>
+        {% endif %}
+    </main>
 
 
-                    <span>Prix unitaire : {{ product.price }}€</span>
-                    <span>Sous total {{ product.totalPrice }}€</span>
-
-                    <form action="{{ path('app_shopping_cart_remove') }}" method="post">
-                        <input name="productId" type="hidden" value="{{ product.id }}">
-                        <input type="submit" value="Supprimer" class="bg-red-600 text-white rounded px-3 py-1">
-                    </form>
-
-                </div>
-            {% endfor %}
-        </section>
-        <div class="flex flex-row py-5 mx-5">
-            <span id="total_cart">Total : {{ totalCart }}€</span>
-
-            <a class="px-5" href="{{ path('checkout_auth') }}">Valider mon panier</a>
-
-            <a href="{{ path('app_shopping_cart_empty') }}">Vider le panier</a>
-        </div>
-
-    {% else %}
-        <div class="flex w-full items-center py-5">Votre panier est vide</div>
-    {% endif %}
 
 
 {% endblock %}

@@ -79,9 +79,9 @@
                                 <span class="text-xl w-full pl-3">{{ product.price }}€</span>
 
                                 <div class="inline-flex items-center border border-[var(--dark)] rounded-lg px-4 py-2 gap-4">
-                                    <button type="button" onclick="updateQty(-1)" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">−</button>
+                                    <button type="button" data-qty-btn="-1" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">−</button>
                                     <span id="quantity-display" class="text-base w-4 text-center leading-none">1</span>
-                                    <button type="button" onclick="updateQty(1)" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">+</button>
+                                    <button type="button" data-qty-btn="1" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">+</button>
                                 </div>
 
                                 {% if product.stock > 0 %}
@@ -198,50 +198,7 @@
 {% block javascripts %}
 
     {{ parent() }}
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const thumbSwiper = new Swiper('.thumb-swiper', {
-                slidesPerView: 3,
-                spaceBetween: 12,
-                watchSlidesProgress: true,
-            });
-
-            const mainSwiper = new Swiper('.main-swiper', {
-                spaceBetween: 0,
-                navigation: {
-                    nextEl: '.swiper-button-next',
-                    prevEl: '.swiper-button-prev',
-                },
-                thumbs: {
-                    swiper: thumbSwiper,
-                },
-            });
-
-            document.querySelector('.thumb-swiper')?.classList.remove('opacity-0');
-
-            const collapses = document.querySelectorAll('.product-collapse');
-
-            collapses.forEach((collapse) => {
-                const trigger = collapse.querySelector('.collapse-trigger');
-
-                trigger.addEventListener('click', () => {
-                    const isOpen = collapse.classList.contains('is-open');
-                    collapse.classList.toggle('is-open', !isOpen);
-                    trigger.setAttribute('aria-expanded', String(!isOpen));
-                });
-            });
-        });
-
-        function updateQty(delta) {
-            const input = document.getElementById('quantity-input');
-            const display = document.getElementById('quantity-display');
-            let value = parseInt(input.value) + delta;
-            if (value < 1) value = 1;
-            input.value = value;
-            display.textContent = value;
-        }
-    </script>
+    {{ importmap('product-swiper.js') }}
 
 {% endblock %}
 

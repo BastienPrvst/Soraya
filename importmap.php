@@ -48,4 +48,23 @@ return [
     '@symfony/ux-chartjs/controller' => [
         'path' => './vendor/symfony/ux-chartjs/assets/dist/controller.js',
     ],
+    'swiper' => [
+        'version' => '14.1.0',
+    ],
+    'swiper/modules' => [
+        'version' => '14.1.0',
+    ],
+    'swiper/css' => [
+        'version' => '14.1.0',
+    ],
+    'swiper/css/navigation' => [
+        'version' => '14.1.0',
+    ],
+    'swiper/css/thumbs' => [
+        'version' => '14.1.0',
+    ],
+    'product-swiper.js' => [
+        'path' => './assets/js/product-swiper.js',
+        'entrypoint' => true,
+    ],
 ];
