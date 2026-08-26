@@ -5,65 +5,111 @@
 {% endblock %}
 
 {% set header_text = 'var(--light)' %}
+{% set header_text_scrolled = 'var(--light)' %}
 {% set header_bg = 'var(--dark)' %}
 {% set header_bg_scrolled = 'var(--dark)' %}
 {% set header_logo = 'light' %}
+{% set header_logo_scrolled = 'light' %}
 {% set footer_bg = 'var(--light)' %}
 {% set footer_text = 'var(--dark)' %}
 
 {% block body %}
 
-    <main>
-        <h2>PANIER</h2>
+    <main class="min-h-[100vh] flex flex-col align-center pt-[15vh] bg-[var(--dark)] px-[var(--padX)]">
 
-        {% for message in app.flashes('error') %}
-            <div>{{ message }}</div>
-        {% endfor %}
+        <section class="w-full border-b-2 border-white pb-7">
+            <h1 class="text-white text-4xl">Votre panier</h1>
 
+            {% for message in app.flashes('error') %}
+                <div>{{ message }}</div>
+            {% endfor %}
+        </section>
 
         {% if shoppingCart is not empty %}
-            <section id="cart_filled" class="flex flex-col items-center">
+            <section id="cart_filled" class="flex flex-col items-center mb-8">
                 {% for product in shoppingCart %}
 
-                    <div id="cart_product_{{product.id }}" class="w-1/2 bg-gray-100 rounded-3xl my-2 p-3">
-                        <p>{{ product.name }}</p>
+                    <div class="w-full border-b border-white pb-4">
+                        <div class="flex items-start w-full mt-5 mb-12">
+                            <div class="w-[35%]">
+                                {% if product.image is not null %}
+                                    <img
+                                        src="{{ vich_uploader_asset(product.image, 'imageFile') }}"
+                                        alt="{{ product.name }} - image"
+                                        class="w-full h-full object-cover aspect-3/4 max-w-[150px]"
+                                    >
+                                {% else %}
+                                    <img
+                                        src="{{ asset('images/site/placeholder.jpg') }}"
+                                        alt=""
+                                        class="w-full h-full object-cover aspect-3/4 max-w-[150px]"
+                                    >
+                                {% endif %}
+                            </div>
 
-                        <div class="flex flex-row">
+                            <div id="cart_product_{{ product.id }}" class="px-3 text-white flex flex-col justify-between self-stretch w-[65%]">
+                                <p class="text-2xl font-semibold leading-none break-words">
+                                    {{ product.name|upper }}
+                                </p>
+
+                                <div class="flex flex-col">
+                                    <span>Prix</span>
+                                    <span>{{ product.price }}€</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between w-full text-white my-5 p-3 border border-white rounded-xl">
                             <form action="{{ path('app_shopping_cart_update') }}" method="post">
                                 <input name="productId" type="hidden" value="{{ product.id }}">
                                 <input name="action" type="hidden" value="false">
-                                <input type="submit" value="-">
+                                <input type="submit" value="-" class="ml-5">
                             </form>
-                            <span class="px-3">x {{ product.quantity }}</span>
+
+                            <span class="px-3">{{ product.quantity }}</span>
+
                             <form action="{{ path('app_shopping_cart_update') }}" method="post">
                                 <input name="productId" type="hidden" value="{{ product.id }}">
                                 <input name="action" type="hidden" value="true">
-                                <input type="submit" value="+">
+                                <input type="submit" value="+" class="mr-5">
                             </form>
                         </div>
 
-
-                        <span>Prix unitaire : {{ product.price }}€</span>
-                        <span>Sous total {{ product.totalPrice }}€</span>
-
-                        <form action="{{ path('app_shopping_cart_remove') }}" method="post">
+                        <form action="{{ path('app_shopping_cart_remove') }}" method="post" class="flex w-full justify-end">
                             <input name="productId" type="hidden" value="{{ product.id }}">
-                            <input type="submit" value="Supprimer" class="bg-red-600 text-white rounded px-3 py-1">
+                            <input type="submit" value="Supprimer" class="text-white rounded px-3 py-1 underline text-end">
                         </form>
-
                     </div>
+
                 {% endfor %}
             </section>
-            <div class="flex flex-row py-5 mx-5">
-                <span id="total_cart">Total : {{ totalCart }}€</span>
+            <div class="flex flex-col py-5 w-full">
 
-                <a class="px-5" href="{{ path('checkout_auth') }}">Valider mon panier</a>
+                <div class="text-white flex justify-between pb-4">
+                    <span>Sous total</span>
+                    <span id="total_cart"> {{ totalCart }}€</span>
+                </div>
 
-                <a href="{{ path('app_shopping_cart_empty') }}">Vider le panier</a>
+                <div class="text-white flex justify-between pb-4">
+                    <span>Frais de livraison</span>
+                    <span>À estimer</span>
+                </div>
+
+                <div class="text-white flex justify-between pb-4">
+                    <span>Total estimé</span>
+                    <span id="total_cart"> {{ totalCart }}€</span>
+                </div>
+
+                <div class="text-white flex flex-col items-center mt-5 mb-10">
+                    <a class="px-10 py-2 rounded-xl text-xl bg-white text-[var(--dark)] font-bold" href="{{ path('checkout_auth') }}">Commander</a>
+
+                </div>
+
+                <a class="underline self-end pt-[25px] text-white" href="{{ path('app_shopping_cart_empty') }}">Vider le panier</a>
             </div>
 
         {% else %}
-            <div class="flex w-full items-center py-5">Votre panier est vide</div>
+            <section class="flex w-full items-center py-5 text-white">Votre panier est vide</section>
         {% endif %}
     </main>
 

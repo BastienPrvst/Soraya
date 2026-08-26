@@ -8,6 +8,7 @@
 {% set header_bg = 'var(--light)' %}
 {% set header_bg_scrolled = 'var(--light)' %}
 {% set header_logo = 'dark' %}
+{% set header_logo_scrolled = 'dark' %}
 {% set footer_bg = 'var(--dark)' %}
 {% set footer_text = 'var(--light)' %}
 
@@ -15,7 +16,7 @@
 
     <main class="bg-[var(--light)]">
 
-        <section class="px-[clamp(1rem,3vw,4rem)] mb-[5vh] pt-[20%] md:pt-[7%] lg:pt-[5%]">
+        <section class="px-[var(--padX)] mb-[5vh] pt-[20%] md:pt-[7%] lg:pt-[5%]">
 
             <div class="md:flex md:flex-col flex-wrap md:max-h-[100vh] md:items-center">
                 <h1 class="text-center text-wrap text-4xl text-[var(--dark)] md:order-2 md:w-[45%] md:pt-[10%] md:text-start md:border-b-2 md:border-[var(--dark)] md:pb-5"> {{ product.name|capitalize }} </h1>
@@ -60,7 +61,7 @@
 
                 </div>
 
-                <div class="px-[clamp(1rem,3vw,4rem)] w-full md:min-h-[100%] md:order-3 md:w-[45%] md:px-0 md:h-[75%]">
+                <div class="px-[var(--padX)] w-full md:min-h-[100%] md:order-3 md:w-[45%] md:px-0 md:h-[75%]">
                     <div class="flex flex-col h-full md:justify-between">
 
                         <div class="md:pt-8">
@@ -181,7 +182,7 @@
 
         </section>
 
-        <section class="px-[clamp(1rem,5vw,4rem)] w-full py-[10vh]">
+        <section class="px-[var(--padX)] w-full py-[10vh]">
             <div class="flex flex-col md:flex-row">
                 <img class="aspect-3/4 w-full md:w-1/3 h-auto" src="{{ asset('images/site/bottle.png') }}" alt="">
                 <img class="aspect-3/4 w-full md:w-1/3" src="{{ asset('images/site/pile.png') }}" alt="">

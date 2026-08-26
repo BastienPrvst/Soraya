@@ -19,6 +19,7 @@
 :root{
     --dark: #453120;
     --light: #E4D8C5;
+    --padX: clamp(1rem,3vw,4rem);
 }
 
 .header-bg {

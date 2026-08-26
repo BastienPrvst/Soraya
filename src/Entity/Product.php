@@ -207,6 +207,17 @@ class Product
         return $this;
     }
 
+    public function getMainImage(): ?Image
+    {
+        foreach ($this->getImages() as $image) {
+            if ($image->isMain()) {
+                return $image;
+            }
+        }
+
+        return $this->getImages()->first() ?: null;
+    }
+
     public function getWeight(): ?float
     {
         return $this->weight;
