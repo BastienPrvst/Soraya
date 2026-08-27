@@ -234,6 +234,26 @@ nav a, nav span {
     color: #f4ede1;
 }
 
+.form-dark input:-webkit-autofill,
+.form-dark input:-webkit-autofill:hover,
+.form-dark input:-webkit-autofill:focus,
+.form-dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #4a3c2e inset !important;
+    -webkit-text-fill-color: white !important;
+    caret-color: var(--light) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.form-light input:-webkit-autofill,
+.form-light input:-webkit-autofill:hover,
+.form-light input:-webkit-autofill:focus,
+.form-light input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #f4efe2 inset !important;
+    -webkit-text-fill-color: #3b2f24 !important;
+    caret-color: var(--dark) !important;
+    transition: background-color 5000s ease-in-out 0s;
+}
+
 /*---------------Footer-----------*/
 
 .social-icon {
@@ -440,6 +460,7 @@ nav a, nav span {
 .thumb-swiper .swiper-slide-thumb-active {
     opacity: 1;
 }
+
 
 
 
