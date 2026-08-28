@@ -25,6 +25,7 @@ class ShoppingCartService extends AbstractType
 
     public function add(string $id, ?int $quantity = 1): void
     {
+        $quantity = (int) ($quantity ?? 1);
         $session = $this->requestStack->getSession();
         $product = $this->productRepository->find($id);
         if ($product !== null) {
@@ -161,18 +162,20 @@ class ShoppingCartService extends AbstractType
         $updatedCart = [];
         $ids = array_keys($cart);
         $products = $this->productRepository->findBy(['id' => $ids]);
+        $needsSync = false;
 
         foreach ($products as $product) {
-            if ($product === null) {
-                continue;
-            }
             $id = $product->getId();
             $quantity = $cart[$id];
 
             if (!$this->stockService->isAvailable($product, $quantity)) {
                 if ($product->getStock() > 0 && $product->getStock() < $quantity) {
                     $quantity = $product->getStock();
+                    $cart[$id] = $quantity;
+                    $needsSync = true;
                 } else {
+                    unset($cart[$id]);
+                    $needsSync = true;
                     continue;
                 }
             }
@@ -186,6 +189,10 @@ class ShoppingCartService extends AbstractType
                 'product' => $product,
                 'image' => $product->getMainImage()
             ];
+        }
+
+        if ($needsSync) {
+            $this->requestStack->getSession()->set(SessionElements::SHOPPING_CART->value, $cart);
         }
 
         return $updatedCart;

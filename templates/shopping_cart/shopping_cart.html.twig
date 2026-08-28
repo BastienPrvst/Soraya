@@ -74,11 +74,11 @@
 
                                         {# Sélecteur de quantité — visible uniquement en desktop ici #}
                                         <div class="hidden md:flex justify-center w-1/4 ">
-                                            <div class="hidden md:flex items-center text-white my-5 p-1 border border-white rounded-xl w-auto max-w-[100px] md:justify-center w-[100px]">
+                                            <div class="hidden md:flex items-center text-white my-5 p-1 border border-white rounded-xl w-auto max-w-[100px] md:justify-center w-[100px]  hover:bg-[var(--light)] hover:text-[var(--dark)]">
                                                 <form action="{{ path('app_shopping_cart_update') }}" method="post">
                                                     <input name="productId" type="hidden" value="{{ product.id }}">
                                                     <input name="action" type="hidden" value="false">
-                                                    <input type="submit" value="-" class="ml-1">
+                                                    <input type="submit" value="-" class="ml-1 cursor-pointer">
                                                 </form>
 
                                                 <span class="px-3">{{ product.quantity }}</span>
@@ -86,7 +86,7 @@
                                                 <form action="{{ path('app_shopping_cart_update') }}" method="post">
                                                     <input name="productId" type="hidden" value="{{ product.id }}">
                                                     <input name="action" type="hidden" value="true">
-                                                    <input type="submit" value="+" class="mr-1">
+                                                    <input type="submit" value="+" class="mr-1 cursor-pointer">
                                                 </form>
                                             </div>
                                         </div>
@@ -113,7 +113,7 @@
                                 <form action="{{ path('app_shopping_cart_update') }}" method="post">
                                     <input name="productId" type="hidden" value="{{ product.id }}">
                                     <input name="action" type="hidden" value="false">
-                                    <input type="submit" value="-" class="ml-5">
+                                    <input type="submit" value="-" class="ml-5 cursor-pointer">
                                 </form>
 
                                 <span class="px-3">{{ product.quantity }}</span>
@@ -121,7 +121,7 @@
                                 <form action="{{ path('app_shopping_cart_update') }}" method="post">
                                     <input name="productId" type="hidden" value="{{ product.id }}">
                                     <input name="action" type="hidden" value="true">
-                                    <input type="submit" value="+" class="mr-5">
+                                    <input type="submit" value="+" class="mr-5 cursor-pointer">
                                 </form>
                             </div>
 
