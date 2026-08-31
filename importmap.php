@@ -33,7 +33,7 @@ return [
         'type' => 'css',
     ],
     '@hotwired/turbo' => [
-        'version' => '7.3.0',
+        'version' => '8.0.23',
     ],
     'chart.js' => [
         'version' => '4.0.1',

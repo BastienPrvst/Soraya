@@ -1,0 +1,80 @@
+<turbo-stream action="update" target="cart_error">
+    <template>
+        {% if error %}
+            <div class="text-red-400">{{ error }}</div>
+        {% endif %}
+    </template>
+</turbo-stream>
+
+{% if stillInCart %}
+    <turbo-stream action="replace" target="cart_quantity_desktop_{{ productId }}">
+        <template>
+            <span class="px-3" id="cart_quantity_desktop_{{ product.id }}">{{ product.quantity }}</span>
+        </template>
+    </turbo-stream>
+
+    <turbo-stream action="replace" target="cart_quantity_mobile_{{ productId }}">
+        <template>
+            <span class="px-3" id="cart_quantity_mobile_{{ product.id }}">{{ product.quantity }}</span>
+        </template>
+    </turbo-stream>
+
+    <turbo-stream action="replace" target="cart_line_total_{{ productId }}">
+        <template>
+            <span id="cart_line_total_{{ product.id }}">{{ product.totalPrice }}€</span>
+        </template>
+    </turbo-stream>
+{% else %}
+    <turbo-stream action="remove" target="cart_item_{{ productId }}"></turbo-stream>
+{% endif %}
+
+{% if isEmpty %}
+    <turbo-stream action="update" target="cart_wrapper">
+        <template>
+            <section id="cart_empty_message" class="flex w-full items-center py-5 text-white box-border">
+                <p class="text-xl text-center w-full">Votre panier est vide, il est peut-être temps de vous faire plaisir.</p>
+            </section>
+        </template>
+    </turbo-stream>
+{% else %}
+    <turbo-stream action="update" target="cart_totals_block">
+        <template>
+            <div class="flex flex-col py-5 w-full box-border" id="cart_totals_block">
+
+                <div class="text-white flex justify-between pb-4">
+                    <span>Sous total</span>
+                    <span id="cart_subtotal">{{ totalCart }}€</span>
+                </div>
+
+                <div class="text-white flex justify-between pb-4">
+                    <span>Frais de livraison</span>
+                    <span>À estimer</span>
+                </div>
+
+                <div class="text-white flex justify-between pb-4">
+                    <span>Total estimé</span>
+                    <span id="cart_total">{{ totalCart }}€</span>
+                </div>
+
+                <div class="text-white flex flex-col items-center mt-5 mb-10 md:items-end">
+                    <a class="px-10 py-2 rounded-xl text-xl bg-white text-[var(--dark)] font-bold" href="{{ path('checkout_auth') }}">
+                        Commander
+                    </a>
+                </div>
+
+                <a class="underline self-end pt-[25px] text-white" href="{{ path('app_shopping_cart_empty') }}">
+                    Vider le panier
+                </a>
+            </div>
+        </template>
+    </turbo-stream>
+{% endif %}
+
+<turbo-stream action="replace" target="cart_quantity">
+    <template>
+        <span id="cart_quantity"
+              class="absolute -top-2 -right-2 bg-[#453120] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center xl:static xl:bg-transparent xl:text-current xl:rounded-none xl:h-auto xl:w-auto">
+            {{ totalQuantityCart }}
+        </span>
+    </template>
+</turbo-stream>

@@ -1,0 +1,16 @@
+<turbo-stream action="update" target="cart_error">
+    <template>
+        {% if error %}
+            <div class="text-red-400">{{ error }}</div>
+        {% endif %}
+    </template>
+</turbo-stream>
+
+<turbo-stream action="replace" target="cart_quantity">
+    <template>
+        <span id="cart_quantity"
+              class="absolute -top-2 -right-2 bg-[#453120] text-white text-xs rounded-full h-4 w-4 flex items-center justify-center xl:static xl:bg-transparent xl:text-current xl:rounded-none xl:h-auto xl:w-auto">
+            {{ totalQuantityCart }}
+        </span>
+    </template>
+</turbo-stream>
