@@ -6,11 +6,16 @@ use App\Entity\Order;
 use App\Entity\Parameter;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
+use JsonException;
 use Psr\Log\LoggerInterface;
+use Random\RandomException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class MailerService
@@ -73,10 +78,20 @@ readonly class MailerService
 
     /**
      * @throws TransportExceptionInterface
-     * @throws \JsonException
+     * @throws RandomException|JsonException
      */
-    public function sendResetPasswordEmail(string $userMail, string $type): bool
-    {
+    public function sendResetPasswordEmail(
+        string $userMail,
+        string $type,
+        RateLimiterFactoryInterface $mailSenderLimiter,
+        Request $request
+    ): bool {
+        $limiter = $mailSenderLimiter->create($request->getClientIp() . '_' . random_int(1, 100));
+
+        if (false === $limiter->consume(1)->isAccepted()) {
+            throw new TooManyRequestsHttpException();
+        }
+
         if (!filter_var($userMail, FILTER_VALIDATE_EMAIL)) {
             return false;
         }
