@@ -1,3 +1,5 @@
+import $ from 'jquery';
+
 $(document).ready(function () {
     $("#Zone_Widget").MR_ParcelShopPicker({
         Brand: "TTNTWSDB",
@@ -25,6 +27,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const zone = document.querySelector('#Zone_Widget');
+
             if (zone) {
                 zone.classList.remove('hidden');
             }

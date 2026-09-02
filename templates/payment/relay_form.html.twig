@@ -10,6 +10,10 @@
     Votre Commande
 {% endblock %}
 
+{% block body_attributes %}
+    data-turbo="false"
+{% endblock %}
+
 
 {% block body %}
     <main class="w-full px-4 flex flex-row">
@@ -122,10 +126,6 @@
 {% block javascripts %}
     {{ parent() }}
 
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js" data-turbo-eval="false"></script>
-    <script type="text/javascript" src="//unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}"></script>
-    <script src="https://widget.mondialrelay.com/parcelshop-picker/jquery.plugin.mondialrelay.parcelshoppicker.min.js" data-turbo-eval="false"></script>
-
-    <script src="{{ asset('js/relay.js') }}"></script>
 {% endblock %}

@@ -1,11 +1,15 @@
 import './stimulus_bootstrap.js';
 import './js/delivery.js';
+
+import $ from 'jquery';
+
+window.$ = $;
+window.jQuery = $;
+
 import '@hotwired/turbo';
-/*
- * Welcome to your app's main JavaScript file!
- *
- * This file will be included onto the page via the importmap() Twig function,
- * which should already be in your base.html.twig.
- */
+
 import './styles/app.css';
 import './css/styles.css';
+
+await import('./js/mondialrelay.js');
+await import('./js/relay.js');

@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
             const value = this.value.trim();
 
+            list.style.backgroundColor = '#E2D6C3'
+
             if (value.length < 3) {
                 list.innerHTML = '';
                 list.style.display = 'none';

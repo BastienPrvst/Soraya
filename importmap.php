@@ -67,4 +67,7 @@ return [
         'path' => './assets/js/product-swiper.js',
         'entrypoint' => true,
     ],
+    'jquery' => [
+        'version' => '3.7.1',
+    ],
 ];
