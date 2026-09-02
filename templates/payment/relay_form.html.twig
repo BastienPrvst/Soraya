@@ -14,45 +14,41 @@
     data-turbo="false"
 {% endblock %}
 
+{% set header_text = 'var(--dark)' %}
+{% set header_bg = 'var(--light)' %}
+{% set header_bg_scrolled = 'var(--light)' %}
+{% set header_logo = 'dark' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
+
 
 {% block body %}
-    <main class="w-full px-4 flex flex-row">
-        <div class="flex flex-wrap w-full">
-            <section class="left ml-3 w-7/12">
-                <div class="h-3/4">
+    <main class="w-[100%] flex flex-col md:flex-row">
 
-                    {% if app.user is null %}
-                        <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
-                    {% endif %}
+        <section class="pt-[100px] w-[100%] md:w-[65%] lg:w-[75%] bg-[var(--light)] px-[var(--padX)] flex flex-col box-border">
+            <div>
+
+                <a class="block md:inline underline text-[var(--dark)] my-5"
+                    href="{{ path('checkout_previous', { token:order.token }) }}">
+                    Retour
+                </a>
 
 
-                    <h2>1. Choix du mode de livraison</h2>
-                    <hr>
+                <h1 class="text-3xl text-center text-[var(--dark)]">Choix du mode de livraison</h1>
 
-                    <a href="{{ path('checkout_delivery_home', { token: order.token }) }}">
+                <div class="w-full md:w-[75%] lg:w-[50%] md:mx-auto py-5 flex">
+                    <a class="w-1/2 text-xl text-center text-[var(--dark)] py-2 cursor-pointer mr-1" href="{{ path('checkout_delivery_home', { token: order.token }) }} " data-turbo="false">
                         A domicile
                     </a>
 
-                    <a href="{{ path('checkout_delivery_relay', { token: order.token, _t: 'now'|date('U') }) }}">
+                    <a class="w-1/2 text-xl text-center bg-[var(--dark)] rounded-xl text-white py-2 cursor-pointer ml-1" href="{{ path('checkout_delivery_relay', { token: order.token, _t: 'now'|date('U') }) }}" data-turbo="false">
                         En point relais
                     </a>
-
                 </div>
-            </section>
+            </div>
 
-            <section id="order_details" class="w-1/3 ml-3">
-                <div>
-                    Total produit (TVA incluse) {{ order.total }}€
-                    <br>
-                    <span>
-                    Total {{ order.total + order.deliveryPrice }} €
-                </span>
-                </div>
-            </section>
-
-
-            <section id="delivery-content">
-                <div class="w-full">
+            <div id="delivery-content">
+                <div class="w-[100%] mx-auto flex flex-col items-center">
 
                     {% for message in app.flashes('error') %}
                         <div class="text-red-600">
@@ -61,7 +57,11 @@
 
                     {% endfor %}
 
-                    {{ form_start(form) }}
+                    {{ form_start(form, {
+                        attr: {
+                            'class' : 'form-light pb-10'
+                        }
+                    }) }}
 
                     <div>
                         {{ form_widget(form.relay_id, {'id': 'Target_Widget'}) }}
@@ -116,9 +116,62 @@
 
 
                 </div>
-            </section>
+            </div>
 
-        </div>
+        </section>
+
+        <section id="order_details" class="w-[100%] md:w-[35%] lg:w-[25%] md:pt-[120px] px-[var(--padX)] pt-12 pb-20 bg-[var(--dark)] text-white box-border">
+
+            <h2 class="text-3xl">Votre commande :</h2>
+
+            <span class="text-xl block py-7">Produits :</span>
+
+            {% for orderItem in order.orderItems %}
+                {% set product = orderItem.product %}
+                <div>
+                    <div class="flex border-b border-[var(--light)] py-4">
+                        <div class="w-[35%] max-w-[130px] shrink-0 md:max-w-[200px]">
+                            {% if product.mainImage is not null %}
+                                <img src="{{ vich_uploader_asset(product.mainImage, 'imageFile') }}"
+                                     alt="{{ product.name }} - image"
+                                     class="block w-full aspect-[3/4] object-cover">
+                            {% else %}
+                                <img src="{{ asset('images/site/placeholder.jpg') }}" alt=""
+                                     class="block w-full aspect-[3/4] object-cover">
+                            {% endif %}
+                        </div>
+
+                        <p class="px-3 break-words min-w-0">{{ product.name }}</p>
+
+                    </div>
+                    <div>
+                        <div class="flex justify-between py-2 text-l">
+                            <p>Quantité : {{ orderItem.quantity }}</p>
+                            <p>{{ orderItem.total }} €</p>
+                        </div>
+
+                    </div>
+                </div>
+
+
+            {% endfor %}
+
+            <div class="flex justify-between py-2">
+                <p>Livraison</p>
+                <p>{% if order.deliveryPrice == 0 %}
+                        Offerte
+                    {% else %}
+                        {{ order.deliveryPrice }}€
+                    {% endif %}
+                </p>
+            </div>
+
+            <div class="flex justify-between py-2">
+                <p>Total :</p>
+                <p>{{ order.orderTotal }} €</p>
+            </div>
+
+        </section>
     </main>
 
 {% endblock %}
