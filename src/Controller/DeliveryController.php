@@ -125,7 +125,7 @@ class DeliveryController extends AbstractController
         }
 
         return $this->render('payment/delivery_form.html.twig', [
-            'form' => $form->createView(),
+            'form' => $form,
             'order' => $order,
         ]);
     }
@@ -186,7 +186,7 @@ class DeliveryController extends AbstractController
 
         return $this->render('payment/relay_form.html.twig', [
             'order' => $order,
-            'form' => $form->createView(),
+            'form' => $form,
         ]);
     }
 }

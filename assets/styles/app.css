@@ -50,7 +50,7 @@ nav a, nav span {
     flex-direction: column;
     gap: 1.25rem;
     font-family: inherit;
-    max-width: 700px;
+    max-width: 800px;
 }
 
 .form-dark button,
@@ -167,6 +167,24 @@ nav a, nav span {
     font-size: 0.75rem;
     color: #f87171;
     margin-top: -0.75rem;
+}
+
+/* Texte rouge pour les erreurs */
+.form-light div > ul,
+.form-dark div > ul {
+    color: #dc2626;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    list-style: none;
+    padding-left: 0;
+}
+
+/* Bordure rouge sur l'input du champ en erreur */
+.form-light div:has(> ul) input,
+.form-light div:has(> ul) select,
+.form-dark div:has(> ul) input,
+.form-dark div:has(> ul) select {
+    border-color: #dc2626 !important;
 }
 
 /* ---------- Thème sombre ---------- */
@@ -467,6 +485,33 @@ nav a, nav span {
     opacity: 1;
 }
 
+/* Par défaut (desktop) : carte + liste côte à côte, comportement natif du widget */
 
+.MRW-ButtonCircle {
+    display: none !important;
+}
+
+@media (max-width: 767px) {
+    .MRW-Map {
+        display: none !important;
+    }
+
+    .MRW-Results {
+        display: block; /* la liste seule occupe tout l'espace */
+    }
+
+    .MRW-RList {
+        width: 100% !important;
+    }
+
+    .PR_List_Item {
+        padding: 50px !important;
+    }
+
+    /* Le bouton "afficher la liste" n'a plus d'utilité si la carte est masquée */
+    .MRW-ShowList {
+        display: none !important;
+    }
+}
 
 

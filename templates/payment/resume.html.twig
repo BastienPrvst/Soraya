@@ -1,70 +1,150 @@
 {% extends 'base.html.twig' %}
 
 {% block title %}
-    Paiement
+    Résumé de votre commande
 {% endblock %}
+
+{% set header_text = 'var(--dark)' %}
+{% set header_bg = 'var(--light)' %}
+{% set header_bg_scrolled = 'var(--light)' %}
+{% set header_logo = 'dark' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
 
 {% block body %}
 
-    <main class="w-full px-4 flex flex-row">
-        <div class="flex flex-wrap w-full">
-            <section class="flex flex-row">
-                <div class="left ml-3 w-7/12">
-                    <h2>Résumé de votre commande</h2>
-                    <div>
-                        <br>
+    <main class="w-[100%] flex flex-col md:flex-row">
 
-                        <a href="{{ path('checkout_previous', { token:order.token }) }}">Retour</a>
+        <section class="pt-[100px] w-[100%] md:w-[65%] lg:w-[75%] bg-[var(--light)] px-[var(--padX)] flex flex-col box-border">
+            <div>
 
-
-                        <div class="user-info flex flex-row items-center justify-center flex-col">
-
-                            <div>
-                                <h3>Adresse de livraison</h3>
-                                <span>{{ order.firstname }} {{ order.lastname }}</span><br>
-                                <span>{{ order.email }}</span><br>
-                                {% if order.phoneNumber %}
-                                    <span>{{ order.phoneNumber }}</span>
-                                {% endif %}
+                <a class="block md:inline underline text-[var(--dark)] my-5"
+                   href="{{ path('checkout_previous', { token:order.token }) }}">
+                    Retour
+                </a>
 
 
-                                <span>{{ order.activeAddress.street1 }}</span>
-                                {% if order.activeAddress.street2 %}
-                                    <br>
-                                    <span>{{ order.activeAddress.street2 }}</span>
-                                {% endif %}
-                                <br>
-                                <span>{{ order.activeAddress.zipcode }} {{ order.activeAddress.city }}</span>
-                                <br>
-                                <span>{{ order.activeAddress.fullCountry }}</span>
-                                <br>
-                                <span>Livraison : {{ order.deliveryMode.value == 'relay' ? 'Point relais' : ' Domicile'}}</span>
-                                <br>
-                                <a href="{{ path('checkout_previous', { token:order.token }) }}">Modifier</a>
+                <h1 class="text-3xl text-center text-[var(--dark)] py-5">Résumé de votre commande</h1>
+            </div>
 
+            <div class="w-[100%] mx-auto flex flex-col items-center pb-10 min-h-[70vh]">
+                    <div class="w-[100%] bg-[#F2EDE0] border border-[#b8a98c] p-2 mb-3 rounded-lg p-5 font-medium">
+
+                        <h2 class="pt-5">Destinataire :</h2>
+                        <hr>
+
+                        <div class="flex justify-between">
+                            <span>{{ order.firstname }} {{ order.lastname }}</span>
+                        </div>
+
+                        <h3 class="pt-5">Coordonnées</h3>
+                        <hr>
+
+                        <div class="flex justify-between">
+                            <span>Email :</span>
+                            <span>{{ order.email }}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span>Téléphone :</span>
+                            <span>{{ order.phoneNumber }}</span>
+                        </div>
+
+                        <h4 class="pt-5">Type de livraison</h4>
+                        <hr>
+                        <span>{{ order.deliveryMode.value == 'relay' ? 'Point relais' : ' Domicile'}}</span>
+
+                        <h5 class="pt-5">Adresse de livraison</h5>
+                        <hr>
+
+                        <div class="flex justify-between">
+                            <span class="w-1/3">Rue :</span>
+                            <span class="w-2/3">{{ order.activeAddress.street1 }}</span>
+                        </div>
+
+                        {% if order.activeAddress.street2 %}
+                            <div class="flex justify-between">
+                                <span>Complément de rue</span>
+                                <span>{{ order.activeAddress.street2 }}</span>
                             </div>
 
+                        {% endif %}
+
+                        <div class="flex justify-between">
+                            <span>Code postal :</span>
+                            <span>{{ order.activeAddress.zipcode }}</span>
                         </div>
+
+                        <div class="flex justify-between">
+                            <span>Ville :</span>
+                            <span> {{ order.activeAddress.city }}</span>
+                        </div>
+
+                        <div class="flex justify-between">
+                            <span>Pays :</span>
+                            <span>{{ order.activeAddress.fullCountry }}</span>
+                        </div>
+
+                    </div>
+
+                <a class="cursor-pointer p-4 my-8 py-2 bg-[var(--dark)] text-white rounded-md hover:bg-[var(--light)] change_relay" href="{{ path('checkout_pay', { token: order.token }) }}">Procéder au paiement</a>
+            </div>
+        </section>
+
+        <section id="order_details" class="w-[100%] md:w-[35%] lg:w-[25%] md:pt-[120px] px-[var(--padX)] pt-12 pb-20 bg-[var(--dark)] text-white box-border">
+
+            <h2 class="text-3xl">Votre commande :</h2>
+
+            <span class="text-xl block py-7">Produits :</span>
+
+            {% for orderItem in order.orderItems %}
+                {% set product = orderItem.product %}
+                <div>
+                    <div class="flex border-b border-[var(--light)] py-4">
+                        <div class="w-[35%] max-w-[130px] shrink-0 md:max-w-[200px]">
+                            {% if product.mainImage is not null %}
+                                <img src="{{ vich_uploader_asset(product.mainImage, 'imageFile') }}"
+                                     alt="{{ product.name }} - image"
+                                     class="block w-full aspect-[3/4] object-cover">
+                            {% else %}
+                                <img src="{{ asset('images/site/placeholder.jpg') }}" alt=""
+                                     class="block w-full aspect-[3/4] object-cover">
+                            {% endif %}
+                        </div>
+
+                        <p class="px-3 break-words min-w-0">{{ product.name }}</p>
+
+                    </div>
+                    <div>
+                        <div class="flex justify-between py-2 text-l">
+                            <p>Quantité : {{ orderItem.quantity }}</p>
+                            <p>{{ orderItem.total }} €</p>
+                        </div>
+
                     </div>
                 </div>
 
-                <hr>
 
-                <div class="w-5/12">
-                    Total produit (TVA incluse) {{ order.total }}€
-                    <br>
-                    <span>
-                    Total {{ order.total + order.deliveryPrice }} €
-                </span>
-                </div>
-            </section>
+            {% endfor %}
 
-            <section class="w-full">
-                <a class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700" href="{{ path('checkout_pay', { token: order.token }) }}">Procéder au paiement</a>
-            </section>
-        </div>
+            <div class="flex justify-between py-2">
+                <p>Livraison</p>
+                <p>{% if order.deliveryPrice == 0 %}
+                        Offerte
+                    {% else %}
+                        {{ order.deliveryPrice }}€
+                    {% endif %}
+                </p>
+            </div>
 
+            <div class="flex justify-between py-2">
+                <p>Total :</p>
+                <p>{{ order.orderTotal }} €</p>
+            </div>
+
+        </section>
     </main>
+
 
 {% endblock %}
 

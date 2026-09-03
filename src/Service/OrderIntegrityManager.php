@@ -24,6 +24,16 @@ readonly class OrderIntegrityManager
         $token = $session->get(SessionElements::ORDER_TOKEN->value);
         $sessionKey = $session->get(SessionElements::SESSION_KEY->value);
 
+        if (empty($cartProducts)) {
+            return new OrderIntegrityResult(
+                false,
+                true,
+                [],
+                [],
+                null
+            );
+        }
+
 
         $orderIntegrityResult = $this->orderService->verifyOrderIntegrity($order, $cartProducts, $token, $sessionKey);
 

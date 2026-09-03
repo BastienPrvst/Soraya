@@ -50,7 +50,7 @@ class AddressType extends AbstractType
                 'label' => 'Pays',
                 'preferred_choices' => ['FR'],
                 'choice_filter' => static function (?string $countryCode): bool {
-                    return in_array($countryCode, ['FR', 'BE', 'LU', 'MC'], true);
+                    return $countryCode === 'FR';
                 },
             ]);
 
