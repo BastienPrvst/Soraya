@@ -83,14 +83,7 @@ readonly class MailerService
     public function sendResetPasswordEmail(
         string $userMail,
         string $type,
-        RateLimiterFactoryInterface $mailSenderLimiter,
-        Request $request
     ): bool {
-        $limiter = $mailSenderLimiter->create($request->getClientIp() . '_' . random_int(1, 100));
-
-        if (false === $limiter->consume(1)->isAccepted()) {
-            throw new TooManyRequestsHttpException();
-        }
 
         if (!filter_var($userMail, FILTER_VALIDATE_EMAIL)) {
             return false;

@@ -30,6 +30,9 @@ final class UserController extends AbstractController
     ) : Response {
         $user = $this->getUser();
         /* @var User $user */
+        if (!$user instanceof User) {
+            return $this->redirectToRoute('app_login');
+        }
         $lastOrders = $orderRepository->getLastTenOrders($user);
         return $this->render('user/profil.html.twig', [
             'activeUser' => $user,

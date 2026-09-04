@@ -70,4 +70,12 @@ return [
     'jquery' => [
         'version' => '3.7.1',
     ],
+    'mondial_relay' => [
+        'path' => './assets/js/mondialrelay.js',
+        'entrypoint' => true,
+    ],
+    'relay' => [
+        'path' => './assets/js/relay.js',
+        'entrypoint' => true,
+    ]
 ];

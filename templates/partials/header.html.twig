@@ -134,71 +134,69 @@
 </header>
 
 <script>
-    const burgerBtn   = document.getElementById('burger-btn');
-    const iconBurger  = document.getElementById('icon-burger');
-    const iconClose   = document.getElementById('icon-close');
-    const mobileMenu  = document.getElementById('mobile-menu');
-    const headerIcons = document.getElementById('header-icons');
-    const header      = document.querySelector('header');
-    const logo        = document.getElementById('logo');
+    (function () {
+        // Empêche de réenregistrer le listener turbo:load à chaque exécution du script
+        if (window.__headerInit) return;
+        window.__headerInit = true;
 
-    // Valeurs "au repos" lues une seule fois depuis les CSS vars injectées par Twig
-    const restBg   = getComputedStyle(header).getPropertyValue('--header-bg').trim();
-    const restText = getComputedStyle(header).getPropertyValue('--header-text').trim();
-    const scrolledBg   = getComputedStyle(header).getPropertyValue('--header-bg-scrolled').trim();
-    const scrolledText = getComputedStyle(header).getPropertyValue('--header-text-scrolled').trim();
+        document.addEventListener('turbo:load', function () {
+            const burgerBtn   = document.getElementById('burger-btn');
+            const iconBurger  = document.getElementById('icon-burger');
+            const iconClose   = document.getElementById('icon-close');
+            const mobileMenu  = document.getElementById('mobile-menu');
+            const headerIcons = document.getElementById('header-icons');
+            const header      = document.querySelector('header');
+            const logo        = document.getElementById('logo');
 
-    function updateLogo(isScrolled) {
-        const variant = isScrolled
-            ? logo.dataset.logoScrolled  // 'dark' ou 'light'
-            : logo.dataset.logoDefault;  // 'dark' ou 'light'
+            if (!burgerBtn || !header) return; // sécurité si le header n'est pas sur la page
 
-        logo.src = variant === 'dark' ? logo.dataset.logoDark : logo.dataset.logoWhite;
-    }
+            const restBg       = getComputedStyle(header).getPropertyValue('--header-bg').trim();
+            const restText     = getComputedStyle(header).getPropertyValue('--header-text').trim();
+            const scrolledBg   = getComputedStyle(header).getPropertyValue('--header-bg-scrolled').trim();
+            const scrolledText = getComputedStyle(header).getPropertyValue('--header-text-scrolled').trim();
 
-    function updateHeaderColors(isScrolled) {
-        header.style.setProperty('--header-bg', isScrolled ? scrolledBg : restBg);
-        header.style.setProperty('--header-text', isScrolled ? scrolledText : restText);
-    }
+            function updateLogo(isScrolled) {
+                const variant = isScrolled ? logo.dataset.logoScrolled : logo.dataset.logoDefault;
+                logo.src = variant === 'dark' ? logo.dataset.logoDark : logo.dataset.logoWhite;
+            }
 
-    window.addEventListener('scroll', () => {
-        const isScrolled = window.scrollY > 50;
-        updateHeaderColors(isScrolled);
-        updateLogo(isScrolled);
-    });
+            function updateHeaderColors(isScrolled) {
+                header.style.setProperty('--header-bg', isScrolled ? scrolledBg : restBg);
+                header.style.setProperty('--header-text', isScrolled ? scrolledText : restText);
+            }
 
-    burgerBtn.addEventListener('click', () => {
-        const isOpen = mobileMenu.classList.contains('translate-x-0');
+            // Assignation directe (au lieu d'addEventListener) : remplace proprement
+            // le handler précédent à chaque turbo:load, sans accumulation de doublons.
+            window.onscroll = function () {
+                const isScrolled = window.scrollY > 50;
+                updateHeaderColors(isScrolled);
+                updateLogo(isScrolled);
+            };
 
-        if (isOpen) {
+            burgerBtn.onclick = function () {
+                const isOpen = mobileMenu.classList.contains('translate-x-0');
 
-            mobileMenu.classList.remove('translate-x-0');
-            mobileMenu.classList.add('-translate-x-full');
+                if (isOpen) {
+                    mobileMenu.classList.remove('translate-x-0');
+                    mobileMenu.classList.add('-translate-x-full');
+                    setTimeout(() => mobileMenu.classList.add('invisible'), 300);
+                } else {
+                    mobileMenu.classList.remove('invisible');
+                    void mobileMenu.offsetWidth;
+                    mobileMenu.classList.remove('-translate-x-full');
+                    mobileMenu.classList.add('translate-x-0');
+                }
 
-            setTimeout(() => {
-                mobileMenu.classList.add('invisible');
-            }, 300);
-        } else {
+                iconBurger.classList.toggle('hidden');
+                iconClose.style.stroke = '#453120';
+                iconClose.classList.toggle('hidden');
+                headerIcons.classList.toggle('hidden');
 
-            mobileMenu.classList.remove('invisible');
+                burgerBtn.setAttribute('aria-expanded', String(!isOpen));
+                burgerBtn.setAttribute('aria-label', isOpen ? 'Ouvrir le menu' : 'Fermer le menu');
 
-            void mobileMenu.offsetWidth;
-
-            mobileMenu.classList.remove('-translate-x-full');
-            mobileMenu.classList.add('translate-x-0');
-        }
-
-        iconBurger.classList.toggle('hidden');
-        iconClose.classList.toggle('hidden');
-
-        headerIcons.classList.toggle('hidden');
-
-        burgerBtn.setAttribute('aria-expanded', String(!isOpen));
-        burgerBtn.setAttribute(
-            'aria-label',
-            isOpen ? 'Ouvrir le menu' : 'Fermer le menu'
-        );
-
-        document.body.classList.toggle('overflow-hidden');
-    });
+                document.body.classList.toggle('overflow-hidden');
+            };
+        });
+    })();
 </script>

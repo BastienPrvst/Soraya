@@ -171,7 +171,8 @@
 
 {% block javascripts %}
     {{ parent() }}
-
+    {{ importmap('mondial_relay') }}
+    {{ importmap('relay') }}
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key={{ google_api_key }}"></script>
 {% endblock %}
