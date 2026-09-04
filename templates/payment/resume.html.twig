@@ -27,20 +27,20 @@
                 <h1 class="text-3xl text-center text-[var(--dark)] py-5">Résumé de votre commande</h1>
             </div>
 
-            <div class="w-[100%] mx-auto flex flex-col items-center pb-10 min-h-[70vh]">
-                    <div class="w-[100%] bg-[#F2EDE0] border border-[#b8a98c] p-2 mb-3 rounded-lg p-5 font-medium">
+            <div class="w-[100%] mx-auto flex flex-col items-center pb-15 min-h-[70vh]">
+                    <div class="w-[100%] bg-[#F2EDE0] border border-[#b8a98c] mb-3 rounded-lg p-5 font-medium md:text-lg w-[100%] max-w-[1000px]">
 
-                        <h2 class="pt-5">Destinataire :</h2>
+                        <h2 class="pt-5 text-xl">Destinataire :</h2>
                         <hr>
 
-                        <div class="flex justify-between">
+                        <div class="flex justify-between pt-3">
                             <span>{{ order.firstname }} {{ order.lastname }}</span>
                         </div>
 
-                        <h3 class="pt-5">Coordonnées</h3>
+                        <h2 class="pt-5 text-xl">Coordonnées</h2>
                         <hr>
 
-                        <div class="flex justify-between">
+                        <div class="flex justify-between pt-3">
                             <span>Email :</span>
                             <span>{{ order.email }}</span>
                         </div>
@@ -50,16 +50,16 @@
                             <span>{{ order.phoneNumber }}</span>
                         </div>
 
-                        <h4 class="pt-5">Type de livraison</h4>
+                        <h2 class="pt-5 text-xl">Type de livraison</h2>
                         <hr>
-                        <span>{{ order.deliveryMode.value == 'relay' ? 'Point relais' : ' Domicile'}}</span>
+                        <span class="block pt-3">{{ order.deliveryMode.value == 'relay' ? 'Point relais' : ' Domicile'}}</span>
 
-                        <h5 class="pt-5">Adresse de livraison</h5>
+                        <h2 class="pt-5 text-xl">Adresse de livraison</h2>
                         <hr>
 
-                        <div class="flex justify-between">
+                        <div class="flex justify-between pt-3">
                             <span class="w-1/3">Rue :</span>
-                            <span class="w-2/3">{{ order.activeAddress.street1 }}</span>
+                            <span>{{ order.activeAddress.street1 }}</span>
                         </div>
 
                         {% if order.activeAddress.street2 %}
@@ -84,6 +84,28 @@
                             <span>Pays :</span>
                             <span>{{ order.activeAddress.fullCountry }}</span>
                         </div>
+
+                        <h2 class="pt-5 text-xl">Total</h2>
+                        <hr>
+                        <div class="flex justify-between pt-3">
+                            <span>Produits :</span>
+                            <span>{{ order.total }} €</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Livraison :</span>
+                            <span>
+                                {% if order.deliveryPrice == 0 %}
+                                    Offerte
+                                {% else %}
+                                    {{ order.deliveryPrice }} €
+                                {% endif %}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Total :</span>
+                            <span>{{ order.orderTotal }} €</span>
+                        </div>
+
+
 
                     </div>
 
