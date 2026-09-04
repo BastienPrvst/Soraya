@@ -3,15 +3,32 @@
     Validation du paiement
 {% endblock %}
 
+{% set header_text = 'var(--light)' %}
+{% set header_bg = 'var(--dark)' %}
+{% set header_bg_scrolled = 'var(--dark)' %}
+{% set header_logo = 'light' %}
+{% set footer_bg = 'var(--light)' %}
+{% set footer_text = 'var(--dark)' %}
+
 {% block body %}
 
-    <div class="w-full mx-auto h-full flex items-center justify-center">
-        <h2>Paiement en cours...</h2>
-    </div>
+    <main class="w-full h-full p-5 bg-[var(--dark)] flex justify-center min-h-[100vh] py-[10%] md:py-[5%]">
+        {#        <h1 class="text-center">Votre commande #{{ "%05d"|format(order.id) }} est confirmée !</h1>#}
+
+        <section class="p-5 text-center bg-[#837261] py-[20%] md:py-[10%] px-[10%] w-[95%] flex flex-col items-center">
+            <h1 class="text-center text-white text-5xl md:text-6xl mb-15">Paiement en cours</h1>
+
+            <div class="w-[100px]">
+                <svg fill="#E4D8C5FF" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M12,4a8,8,0,0,1,7.89,6.7A1.53,1.53,0,0,0,21.38,12h0a1.5,1.5,0,0,0,1.48-1.75,11,11,0,0,0-21.72,0A1.5,1.5,0,0,0,2.62,12h0a1.53,1.53,0,0,0,1.49-1.3A8,8,0,0,1,12,4Z"><animateTransform attributeName="transform" type="rotate" dur="0.75s" values="0 12 12;360 12 12" repeatCount="indefinite"/></path></svg>
+            </div>
+
+        </section>
+    </main>
 
 {% endblock %}
 
 {% block javascripts %}
+
     {{ parent() }}
     <script>
         async function checkStatus() {

@@ -4,76 +4,28 @@
     Paiement
 {% endblock %}
 
+{% set header_text = 'var(--dark)' %}
+{% set header_bg = 'var(--light)' %}
+{% set header_bg_scrolled = 'var(--light)' %}
+{% set header_logo = 'dark' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
+
 {% block body %}
 
-    <main class="w-full px-4 flex flex-row">
-        <div class="flex flex-wrap w-full">
-            <section class="flex flex-row">
-                <div class="left ml-3 w-7/12">
-                    <h2>Paiement</h2>
-                    <div>
-                        <h3>Résumé</h3>
+    <main class="w-full min-h-screen flex flex-col pt-[100px] px-[5%] pb-[5%] bg-[var(--light)]">
 
-                        <br>
+        <a class="block md:inline underline text-[var(--dark)]" href="{{ path('checkout_summary', { token:order.token }) }}">Retour</a>
 
-                        <a href="{{ path('checkout_summary', { token:order.token }) }}">Retour</a>
+        <section class="w-full h-full flex-1 flex flex-col items-center ">
+            <h1 class="text-3xl text-center py-6">Paiement</h1>
 
-
-                        <div class="user-info flex items-center justify-center flex-col">
-
-                            <div>
-                                <span>{{ order.firstname }} {{ order.lastname }}</span><br>
-                                <span>{{ order.email }}</span><br>
-                                {% if order.phoneNumber %}
-                                    <span>{{ order.phoneNumber }}</span>
-                                {% endif %}
-                                {% set countries = {
-                                    'FR': 'France',
-                                    'BE': 'Belgique',
-                                    'LU': 'Luxembourg',
-                                    'MO': 'Monaco'
-                                } %}
-
-                                <span>{{ order.activeAddress.street1 }}</span>
-                                {% if order.activeAddress.street2 %}
-                                    <br>
-                                    <span>{{ order.activeAddress.street2 }}</span>
-                                {% endif %}
-                                <br>
-                                <span>{{ order.activeAddress.zipcode }} {{ order.activeAddress.city }}</span>
-                                <br>
-                                <span>{{ countries[order.activeAddress.country] }}</span>
-
-                            </div>
-                        </div>
-
-
-                    </div>
-                </div>
-
-                <hr>
-
-                <div class="w-5/12">
-                    Total produit (TVA incluse) {{ order.total }}€
-                    <br>
-                    <span>
-                    Total {{ order.total + order.deliveryPrice }} €
-                </span>
-                </div>
-            </section>
-
-
-            <section class="mt-5 w-full">
-                <h2>Paiement</h2>
-
-                <div id="checkout" class="w-full">
-                </div>
-            </section>
-
-
-        </div>
+            <div id="checkout" class="w-[100%] max-w-[1000px] flex-1 border border-[#b8a98c] rounded-xl bg-[#F0EBDE] flex items-center justify-center p-8">
+            </div>
+        </section>
 
     </main>
+
 
 {% endblock %}
 

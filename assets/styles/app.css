@@ -32,7 +32,7 @@ h1, h2, h3, h4, h5, h6 {
     text-transform: uppercase;
 }
 
-p, span, div, label, input {
+p, span, div, label, input, button {
     font-family: Iosevka, serif;
 }
 
@@ -484,6 +484,8 @@ nav a, nav span {
 .thumb-swiper .swiper-slide-thumb-active {
     opacity: 1;
 }
+
+/*------------------Mondial Relay --------------------*/
 
 /* Par défaut (desktop) : carte + liste côte à côte, comportement natif du widget */
 
