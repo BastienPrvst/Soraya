@@ -132,7 +132,6 @@ readonly class StripePaymentService
 
     public function handleEvent(Event $event): void
     {
-        $this->logger->critical($event);
         if ($event->type !== 'checkout.session.completed') {
             return;
         }

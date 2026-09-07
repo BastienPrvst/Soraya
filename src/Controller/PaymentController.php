@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\DTO\OrderIntegrityResult;
 use App\Entity\Order;
 use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
@@ -15,7 +14,6 @@ use App\Service\StripePaymentService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
-use Psr\Log\LoggerInterface;
 use Stripe\Exception\ApiErrorException;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -40,7 +38,6 @@ final class PaymentController extends AbstractController
         private readonly ShoppingCartService    $shoppingCartService,
         private readonly OrderService           $orderService,
         private readonly OrderIntegrityManager $orderIntegrityManager,
-        private readonly LoggerInterface        $logger,
         private readonly WorkflowService        $workflowService,
     ) {
     }
@@ -79,11 +76,16 @@ final class PaymentController extends AbstractController
      * @throws Exception
      */
     #[Route(path: '/paiement/{token}', name: 'checkout_pay')]
-    public function paymentConfirm(
+    public function paymentCreate(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         RateLimiterFactoryInterface $checkoutLimiter,
         Request $request
     ): Response {
+
+
+        if ($request->query->get('payment_timeout') === '1') {
+            $this->addFlash('error', 'Le paiement n\'a pas pu être confirmé. Aucun débit n\'a été effectué.');
+        }
 
         $limiter = $checkoutLimiter->create($request->getClientIp() . '_' . $order->getToken());
 
