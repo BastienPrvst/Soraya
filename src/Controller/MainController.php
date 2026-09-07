@@ -40,20 +40,34 @@ final class MainController extends AbstractController
         return $this->render('main/session.html.twig');
     }
 
-    #[Route(path: '/aide', name: 'app-frequent-question')]
+    #[Route(path: '/aide', name: 'app_frequent_question')]
     public function frequentQuestion(
         Request $request,
-        MailerService $mailerService,
+
     ): Response {
+
+        return $this->render('main/faq.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
+
+    #[Route(path: '/contact', name: 'app_contact')]
+    public function contact(
+        Request $request,
+        MailerService $mailerService
+    ): Response
+    {
         $form = $this->createForm(ContactFormType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
             $mailerService->sendContactMail($form->getData());
         }
-        return $this->render('main/faq.html.twig', [
+
+        return $this->render('main/contact.html.twig', [
             'form' => $form->createView(),
         ]);
     }
+
 
     #[Route(path: '/testmail', name: 'app_test_mail')]
     public function testMailSend(

@@ -158,7 +158,7 @@ readonly class MailerService
             ->from($data['email_address'])
             ->to($adminMailTarget)
             ->subject('Contact Client')
-            ->htmlTemplate('mail/contact.html.twig')
+            ->htmlTemplate('contact_email.html.twig')
             ->locale('FR')
             ->context($data);
 
