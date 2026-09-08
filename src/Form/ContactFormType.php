@@ -20,6 +20,9 @@ class ContactFormType extends AbstractType
             ->add('lastname', TextType::class, [
                 'label' => 'Nom',
                 'required' => true,
+                'attr' => [
+                    'class' => 'w-full'
+                ],
                 'constraints' => [
                     new NotBlank(
                         message: 'Veuillez renseigner votre nom'
@@ -30,26 +33,30 @@ class ContactFormType extends AbstractType
                     ),
                 ]
             ])
-            ->add('firstname', TextType::class, [
-                'label' => 'Prénom',
-                'required' => true,
-                'constraints' => [
-                    new NotBlank(
-                        message: 'Veuillez renseigner votre prénom'
-                    ),
-                    new Length(
-                        max: 255,
-                        maxMessage: 'Le prénom ne peut pas faire plus de 255 caractères'
-                    )
-                ]
-            ])
             ->add('email_address', EmailType::class, [
                 'label' => 'Email',
                 'required' => true,
+                'attr' => [
+                    'class' => 'w-full'
+                ],
                 'constraints' => [
                     new NotBlank(
                         message: 'Veuillez renseigner votre adresse email'
                     ),
+                ]
+
+            ])
+            ->add('objet', TextType::class, [
+                'label' => 'Objet du message',
+                'required' => true,
+                'constraints' => [
+                    new NotBlank(
+                        message: 'Veuillez renseigner l\'objet de votre message'
+                    ),
+                    new Length(
+                        max: 255,
+                        maxMessage: 'L\'objet ne peut pas faire plus de 255 caractères'
+                    )
                 ]
             ])
             ->add('message', TextareaType::class, [
@@ -66,7 +73,10 @@ class ContactFormType extends AbstractType
                 ]
             ])
             ->add('submit', SubmitType::class, [
-                'label' => 'Envoyer'
+                'label' => 'Envoyer',
+                'attr' => [
+                    'class' => 'w-full'
+                ]
             ])
         ;
     }

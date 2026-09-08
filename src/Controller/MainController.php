@@ -43,7 +43,6 @@ final class MainController extends AbstractController
     #[Route(path: '/aide', name: 'app_frequent_question')]
     public function frequentQuestion(
         Request $request,
-
     ): Response {
 
         return $this->render('main/faq.html.twig', [
@@ -55,8 +54,7 @@ final class MainController extends AbstractController
     public function contact(
         Request $request,
         MailerService $mailerService
-    ): Response
-    {
+    ): Response {
         $form = $this->createForm(ContactFormType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
@@ -73,8 +71,7 @@ final class MainController extends AbstractController
     public function testMailSend(
         MailerService $mailerService,
         OrderRepository $orderRepository,
-    ): Response
-    {
+    ): Response {
         $order = $orderRepository->findOneBy([]);
         $mailerService->sendOrderConfirmationEmail($order);
         return $this->redirectToRoute('app_main');

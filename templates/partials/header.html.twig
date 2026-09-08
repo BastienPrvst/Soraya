@@ -20,7 +20,7 @@
         <ul class="hidden xl:flex flex-row gap-8">
             <li><a href="{{ path('app_main') }}" class="hover:opacity-70 transition-opacity">Accueil</a></li>
             <li><a href="{{ path('app_products') }}" class="hover:opacity-70 transition-opacity">Produits</a></li>
-            <li><a href="#" class="hidden xl:inline hover:opacity-70 transition-opacity">Contact</a></li>
+            <li><a href="{{ path('app_contact') }}" class="hidden xl:inline hover:opacity-70 transition-opacity">Contact</a></li>
         </ul>
 
         {# Logo #}
@@ -81,7 +81,7 @@
                 </a>
             </li>
             <li class="border-b border-[#453120]">
-                <a href="#" class="flex items-center justify-between py-4 text-lg">
+                <a href="{{ path('app_contact') }}" class="flex items-center justify-between py-4 text-lg">
                     Contact
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
