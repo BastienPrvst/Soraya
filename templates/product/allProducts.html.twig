@@ -5,55 +5,100 @@
     Les produits
 {% endblock %}
 
+{% set header_text = 'var(--dark)' %}
+{% set header_text_scrolled = 'var(--dark)' %}
+{% set header_bg_scrolled = 'var(--light)' %}
+{% set header_logo = 'dark' %}
+{% set header_logo_scrolled = 'dark' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
+
 {% block body %}
-    <main>
+    <main class="bg-[var(--light)]">
 
-        {% for message in app.flashes('error') %}
-            <div>{{ message }}</div>
-        {% endfor %}
-
-        <h1>Les Produits</h1>
-
-        <section class="flex flex-row items-stretch flex-wrap w-full mt-5 ">
-            {% for product in products %}
-
-                <div class="flex flex-col m-5 w-1/4 p-3 items-center bg-gray-100 max-h-full rounded">
-                    <ul>
-                        <li>
-                            <a href="{{ path('app_product_details', { name: product.name }) }}">
-                                <strong>{{ product.name|capitalize }}</strong>
-                            </a>
-                        </li>
-                        <li>{{ product.description }}</li>
-                        <li>{{ product.price }}€</li>
-                    </ul>
-
-                    <div>
-                        <form action="{{ path('app_shopping_cart_add', {pageId : product.id}) }}" method="post">
-                            <select name="quantity">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="3">3</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                            </select>
-                            <input name="productId" type="hidden" value="{{ product.id }}">
-                            <input class="bg-blue-600 text-white rounded px-4 py-2 cursor-pointer hover:bg-blue-700" type="submit" value="Ajouter au panier">
-                        </form>
-                    </div>
-
-                    {% for category in product.category %}
-
-                        {{ category.name }}
-
-                    {% endfor %}
-                </div>
-
-            {% endfor %}
-
+        <section class="products-hero h-[60vh]">
         </section>
 
+        <turbo-frame id="products-frame">
 
+            <section class="w-full sm:flex sm:flex-wrap px-[var(--padX)] py-15">
+                {% for product in products %}
+                    <a class="w-full sm:w-1/2 lg:w-1/4 py-8 block" href="{{ path('app_product_details', { name: product.name }) }}" data-turbo-frame="_top">
+
+                        <div>
+                            <div class="w-full sm:p-4 aspect-3/4">
+                                {% if product.mainImage %}
+                                    <img
+                                        src="{{ vich_uploader_asset(product.mainImage, 'imageFile') }}"
+                                        alt="{{ product.name }} - image {{ loop.index }}"
+                                        class="w-full h-full object-cover"
+                                    >
+                                {% else %}
+                                    <img
+                                        src="{{ asset('images/site/placeholder.jpg') }}"
+                                        alt="{{ product.name }} - image indisponible"
+                                        class="w-full h-full object-cover"
+                                    >
+                                {% endif %}
+                            </div>
+
+
+                            <div class="p-5">
+                                <p class="pb-2">{{ product.name|capitalize }}</p>
+                                <div class="flex justify-between">
+                                    <p>{{ product.capacity }}</p>
+                                    <p>{{ product.price }}€</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </a>
+                {% endfor %}
+
+                {% if products|length < limit %}
+                    {% for i in 1..(limit - products|length) %}
+                        <div class="hidden lg:block lg:invisible w-full lg:w-1/4 py-8" aria-hidden="true">
+                            <div>
+                                <div class="w-full sm:p-4 aspect-3/4"></div>
+                                <div class="p-5">
+                                    <p class="pb-2">&nbsp;</p>
+                                    <div class="flex justify-between">
+                                        <p>&nbsp;</p>
+                                        <p>&nbsp;</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            </section>
+
+            <section class="w-full pb-8">
+                <nav class="w-full grid grid-cols-3 items-center px-[var(--padX)]">
+
+                    <div class="justify-self-end">
+                        {% if currentPage > 1 %}
+                            <a href="{{ path('app_products', {'page': currentPage - 1}) }}">&laquo; Précédent</a>
+                        {% endif %}
+                    </div>
+
+                    <div class="justify-self-center flex">
+                        {% for page in 1..totalPages %}
+                            <a href="{{ path('app_products', {'page': page}) }}"
+                               class="{{ page == currentPage ? 'active' : 'underline' }} px-4">
+                                {{ page }}
+                            </a>
+                        {% endfor %}
+                    </div>
+
+                    <div>
+                        {% if currentPage < totalPages %}
+                            <a href="{{ path('app_products', {'page': currentPage + 1}) }}">Suivant &raquo;</a>
+                        {% endif %}
+                    </div>
+
+                </nav>
+            </section>
+        </turbo-frame>
     </main>
 {% endblock %}

@@ -485,9 +485,23 @@ nav a, nav span {
     opacity: 1;
 }
 
-/*------------------Mondial Relay --------------------*/
 
-/* Par défaut (desktop) : carte + liste côte à côte, comportement natif du widget */
+/*------------------Page produits multiples------------*/
+
+.products-hero {
+    background-image: url('../images/site/gtgt.png');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+}
+
+@media (min-width: 768px) {
+    .products-hero {
+        background-image: url('../images/site/fond-produits.png');
+    }
+}
+
+/*------------------Mondial Relay --------------------*/
 
 .MRW-ButtonCircle {
     display: none !important;
@@ -499,7 +513,7 @@ nav a, nav span {
     }
 
     .MRW-Results {
-        display: block; /* la liste seule occupe tout l'espace */
+        display: block;
     }
 
     .MRW-RList {
@@ -510,7 +524,6 @@ nav a, nav span {
         padding: 50px !important;
     }
 
-    /* Le bouton "afficher la liste" n'a plus d'utilité si la carte est masquée */
     .MRW-ShowList {
         display: none !important;
     }

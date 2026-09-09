@@ -16,6 +16,16 @@ class ProductRepository extends ServiceEntityRepository
         parent::__construct($registry, Product::class);
     }
 
+    public function findByPage(int $page, int $nbPerPage): array
+    {
+        return $this->createQueryBuilder('p')
+            ->orderBy('p.id', 'ASC')
+            ->setFirstResult(($page - 1) * $nbPerPage)
+            ->setMaxResults($nbPerPage)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function removeProductStock(Product $product, int $quantity): void
     {
         $updated = $this->createQueryBuilder('p')

@@ -57,6 +57,20 @@
                                 {% endfor %}
                             </div>
                         </div>
+
+                    {% else %}
+
+                        {% for i in 1..3 %}
+                            <div class="swiper thumb-swiper !hidden md:!block mt-1 opacity-0 transition-opacity duration-200">
+                                <div class="swiper-wrapper h-auto">
+                                    {% for img in product.images %}
+                                        <div class="swiper-slide opacity-50 aspect-3/4">
+
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endfor %}
                     {% endif %}
 
                 </div>
@@ -115,7 +129,7 @@
             {% if product.ingredients %}
                 <div class="product-collapse border-b-2 border-[var(--dark)]">
                     <h3 class="uppercase">
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Ingrédients :
                             <span class="collapse-icon shrink-0"></span>
                         </button>
@@ -131,7 +145,7 @@
             {% if product.useAdvice %}
                 <div class="product-collapse border-b-2 border-[var(--dark)]">
                     <h3 class="uppercase">
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Conseils d'utilisation
                             <span class="collapse-icon shrink-0"></span>
                         </button>
@@ -146,8 +160,8 @@
 
             {% if product.benefits %}
                 <div class="product-collapse border-b-2 border-[var(--dark)]">
-                    <h3 class="uppercase">
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                    <h3>
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Bienfaits :
                             <span class="collapse-icon shrink-0"></span>
                         </button>
@@ -165,7 +179,7 @@
             {% if product.targetAdvice %}
                 <div class="product-collapse border-b-2 border-[var(--dark)]">
                     <h3 class="uppercase">
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left">
+                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Conseils ciblés :
                             <span class="collapse-icon shrink-0"></span>
                         </button>

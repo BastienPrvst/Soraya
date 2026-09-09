@@ -135,7 +135,6 @@
 
 <script>
     (function () {
-        // Empêche de réenregistrer le listener turbo:load à chaque exécution du script
         if (window.__headerInit) return;
         window.__headerInit = true;
 
@@ -148,7 +147,7 @@
             const header      = document.querySelector('header');
             const logo        = document.getElementById('logo');
 
-            if (!burgerBtn || !header) return; // sécurité si le header n'est pas sur la page
+            if (!burgerBtn || !header) return;
 
             const restBg       = getComputedStyle(header).getPropertyValue('--header-bg').trim();
             const restText     = getComputedStyle(header).getPropertyValue('--header-text').trim();
@@ -165,8 +164,6 @@
                 header.style.setProperty('--header-text', isScrolled ? scrolledText : restText);
             }
 
-            // Assignation directe (au lieu d'addEventListener) : remplace proprement
-            // le handler précédent à chaque turbo:load, sans accumulation de doublons.
             window.onscroll = function () {
                 const isScrolled = window.scrollY > 50;
                 updateHeaderColors(isScrolled);
