@@ -40,6 +40,9 @@ class ProductCrudController extends AbstractCrudController
             ->setEntityLabelInSingular('Produit')
             ->setEntityLabelInPlural('Produits')
             ->setSearchFields(['name', 'category'])
+            ->setFormOptions([
+                'validation_groups' => ['Default'],
+            ])
             ->showEntityActionsInlined()
             ;
     }

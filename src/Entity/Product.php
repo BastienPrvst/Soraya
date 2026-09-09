@@ -18,9 +18,17 @@ class Product
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
+    #[Assert\Length(
+        min: 1,
+        max: 255,
+        maxMessage: 'Le nom du produit ne doit pas dépasser 255 caractères'
+    )]
     private ?string $name = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Assert\Type(Types::FLOAT)]
     private ?float $price = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -49,15 +57,25 @@ class Product
     private ?float $weight = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
+    #[Assert\Type(Types::INTEGER)]
+    #[Assert\Range(min: 1, max: 100)]
     private ?int $percentageDiscount = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $flatDiscount = null;
 
     #[ORM\Column]
+    #[Assert\Type(Types::INTEGER)]
     private ?int $stock = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank (
+        message: 'La description est obligatoire',
+    )]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'La description ne peut faire que 255 caractères maximum.'
+    )]
     private ?string $smallDescription = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
