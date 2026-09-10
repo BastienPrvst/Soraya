@@ -16,18 +16,18 @@
         <div class="w-full max-w-[1200px] flex flex-col align-center">
 
             {% if shoppingCart is not empty %}
-            <section class="w-full pb-7">
-                <h1 class="text-white text-4xl">Votre panier</h1>
-                <div id="cart_error">
-                    {% for message in app.flashes('error') %}
-                        <div class="text-red-400">{{ message }}</div>
-                    {% endfor %}
-                </div>
-            </section>
+
 
             <div id="cart_wrapper">
 
-
+                <div class="w-full pb-7">
+                    <h1 class="text-white text-4xl">Votre panier</h1>
+                    <div id="cart_error">
+                        {% for message in app.flashes('error') %}
+                            <div class="text-red-400">{{ message }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
                     <div class="text-white hidden md:flex ml-[130px] md:ml-[200px] px-12 box-border">
                         <span class="w-1/4 text-start pb-3">Produit</span>
                         <span class="w-1/4 text-center pb-3">Prix unitaire</span>
@@ -95,7 +95,7 @@
                                         <form action="{{ path('app_shopping_cart_remove') }}" method="post"
                                               class="hidden md:flex w-full justify-start px-12 h-[20%]">
                                             <input name="productId" type="hidden" value="{{ product.id }}">
-                                            <input type="submit" value="Supprimer" class="text-white rounded py-1 underline text-end">
+                                            <input type="submit" value="Supprimer" class="text-white rounded py-1 underline text-end cursor-pointer">
                                         </form>
                                     </div>
 
@@ -172,12 +172,22 @@
                         <div class="flex flex-col items-center justify-center text-center">
                             <h1 class="text-4xl py-8 px-12">Votre panier est vide</h1>
                             <hr class="w-1/2">
-                            <p class="py-8">Votre rituel vous attends</p>
+                            <p class="py-8">Votre rituel vous attend</p>
 
                             <button class="bg-[var(--light)] text-[var(--dark)] py-3 px-5 rounded-xl"><a href="{{ path('app_products') }}">Découvrir nos produits</a></button>
                         </div>
-
                     </section>
+
+
+                    <section class="w-full py-10">
+                        <div class="flex w-[100%]">
+                            <img class="hidden md:block objet-cover aspect-4/3 w-1/4 p-2 border-box" src="{{ asset('images/site/fleur.png') }}" alt="">
+                            <img class="objet-cover aspect-3/4 w-1/2 md:w-1/4 p-2 border-box" src="{{ asset('images/site/bouteille.png') }}" alt="">
+                            <img class="objet-cover aspect-3/4 w-1/2 md:w-1/4 p-2 border-box" src="{{ asset('images/site/ouai.png') }}" alt="">
+                            <img class="hidden md:block objet-cover aspect-4/3 w-1/4 p-2 border-box" src="{{ asset('images/site/pipette.png') }}" alt="">
+                        </div>
+                    </section>
+
                 {% endif %}
             </div>
 
