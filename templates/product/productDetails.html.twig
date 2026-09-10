@@ -25,7 +25,7 @@
                 <div class="w-full max-w-md mx-auto my-8 md:order-1 md:h-[100vh] box-border md:w-[50%] md:pr-5 xl:mx-0 xl:h-max">
 
                     {# Carousel principal #}
-                    <div class="swiper main-swiper h-[60vh]">
+                    <div class="swiper main-swiper h-[60vh] overflow-hidden opacity-0 transition-opacity duration-200">
                         <div class="swiper-wrapper">
                             {% for img in product.images %}
                                 <div class="swiper-slide">
@@ -127,7 +127,7 @@
             </div>
 
             {% if product.ingredients %}
-                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
                     <h3 class="uppercase">
                         <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Ingrédients :
@@ -143,7 +143,7 @@
             {% endif %}
 
             {% if product.useAdvice %}
-                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
                     <h3 class="uppercase">
                         <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Conseils d'utilisation
@@ -159,7 +159,7 @@
             {% endif %}
 
             {% if product.benefits %}
-                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
                     <h3>
                         <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Bienfaits :
@@ -177,7 +177,7 @@
 
 
             {% if product.targetAdvice %}
-                <div class="product-collapse border-b-2 border-[var(--dark)]">
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
                     <h3 class="uppercase">
                         <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
                             Conseils ciblés :
@@ -212,7 +212,6 @@
 
 {% block javascripts %}
 
-    {{ parent() }}
     {{ importmap('product-swiper.js') }}
 
 {% endblock %}

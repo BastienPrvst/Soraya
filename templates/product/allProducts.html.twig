@@ -21,7 +21,7 @@
 
         <turbo-frame id="products-frame">
 
-            <section class="w-full sm:flex sm:flex-wrap px-[var(--padX)] py-15">
+            <section id="anchor" class="w-full sm:flex sm:flex-wrap px-[var(--padX)] py-15">
                 {% for product in products %}
                     <a class="w-full sm:w-1/2 lg:w-1/4 py-8 block" href="{{ path('app_product_details', { name: product.name }) }}" data-turbo-frame="_top">
 
@@ -78,13 +78,13 @@
 
                     <div class="justify-self-end">
                         {% if currentPage > 1 %}
-                            <a href="{{ path('app_products', {'page': currentPage - 1}) }}">&laquo; Précédent</a>
+                            <a href="{{ path('app_products', {'page': currentPage - 1}) }}#anchor">&laquo; Précédent</a>
                         {% endif %}
                     </div>
 
                     <div class="justify-self-center flex">
                         {% for page in 1..totalPages %}
-                            <a href="{{ path('app_products', {'page': page}) }}"
+                            <a href="{{ path('app_products', {'page': page}) }}#anchor"
                                class="{{ page == currentPage ? 'active' : 'underline' }} px-4">
                                 {{ page }}
                             </a>
@@ -93,7 +93,7 @@
 
                     <div>
                         {% if currentPage < totalPages %}
-                            <a href="{{ path('app_products', {'page': currentPage + 1}) }}">Suivant &raquo;</a>
+                            <a href="{{ path('app_products', {'page': currentPage + 1}) }}#anchor">Suivant &raquo;</a>
                         {% endif %}
                     </div>
 
@@ -102,3 +102,18 @@
         </turbo-frame>
     </main>
 {% endblock %}
+
+{% block javascripts %}
+
+    {{ parent() }}
+
+    <script>
+        document.addEventListener("turbo:frame-load", (event) => {
+            if (event.target.id === "products-frame") {
+                document.getElementById("anchor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        });
+    </script>
+
+{% endblock %}
+

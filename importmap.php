@@ -77,5 +77,8 @@ return [
     'relay' => [
         'path' => './assets/js/relay.js',
         'entrypoint' => true,
+    ],
+    'collapse' => [
+        'path' => './assets/js/collapse.js',
     ]
 ];

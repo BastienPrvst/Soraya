@@ -36,19 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const mainSwiper = new Swiper(mainSwiperEl, mainSwiperConfig);
 
+    mainSwiperEl.classList.remove('opacity-0');
     thumbSwiperEl?.classList.remove('opacity-0');
 
-    const collapses = document.querySelectorAll('.product-collapse');
-
-    collapses.forEach((collapse) => {
-        const trigger = collapse.querySelector('.collapse-trigger');
-
-        trigger.addEventListener('click', () => {
-            const isOpen = collapse.classList.contains('is-open');
-            collapse.classList.toggle('is-open', !isOpen);
-            trigger.setAttribute('aria-expanded', String(!isOpen));
-        });
-    });
+    thumbSwiperEl?.classList.remove('opacity-0');
 
     const quantityInput = document.getElementById('quantity-input');
     const quantityDisplay = document.getElementById('quantity-display');

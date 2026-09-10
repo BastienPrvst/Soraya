@@ -446,7 +446,7 @@ nav a, nav span {
     height: 20px;
 }
 
-.product-collapse.is-open .collapse-icon::after {
+.collapse-div.is-open .collapse-icon::after {
     transform: translate(-50%, -50%) rotate(90deg) scaleY(0);
 }
 
@@ -456,7 +456,7 @@ nav a, nav span {
     transition: grid-template-rows 0.35s ease;
 }
 
-.product-collapse.is-open .collapse-content {
+.collapse-div.is-open .collapse-content {
     grid-template-rows: 1fr;
 }
 
@@ -472,7 +472,7 @@ nav a, nav span {
     transition: padding-bottom 0.35s ease;
 }
 
-.product-collapse.is-open .collapse-inner {
+.collapse-div.is-open .collapse-inner {
     padding-bottom: 1.5rem;
 }
 

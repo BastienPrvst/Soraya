@@ -1,5 +1,6 @@
 import './stimulus_bootstrap.js';
 import './js/delivery.js';
+import './js/collapse.js';
 
 import $ from 'jquery';
 

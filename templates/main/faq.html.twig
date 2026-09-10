@@ -13,50 +13,190 @@
 
 {% block body %}
 
-    <main>
+    <main class="px-[var(--padX)] bg-[var(--light)]">
 
-        <section class="questions">
-            <h1>Une question ?</h1>
+        <div class="pt-[100px] md:pt-[5%] pb-15 flex flex-col items-center text-[var(--dark)]">
+            <h1 class="text-4xl py-8">FAQ</h1>
 
-            <div>
-                <h2>Les commandes</h2>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut illum ipsum magni nostrum odit placeat porro repudiandae saepe sunt voluptatibus. Asperiores dolores fuga id illo. Animi fugit modi nobis. Excepturi.
-                </p>
+            <section>
+                <h2 class="text-2xl pt-4">Produits</h2>
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Vos produits conviennent-ils à tous les types de peau ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Où sont fabriqués vos produits ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Les formules contiennent-elles des ingrédients controversés ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-2xl pt-4">Commande</h2>
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Quels moyens de paiement acceptez-vous?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Puis-je modifier ou annuler ma commande ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-2xl pt-4">Livraison</h2>
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Quels sont les délais de livraison ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Dans quels pays livrez-vous ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Comment suivre mon colis ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2 class="text-2xl pt-4">Retours</h2>
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Puis-je retourner un produit ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Que faire si mon produit est arrivé endommagé ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section>
+                <h2 class="text-2xl pt-4">Contact</h2>
+                <div class="collapse-div border-b-2 border-[var(--dark)]">
+                    <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left text-xl">
+                        Comment contacter le service client ?
+                        <span class="collapse-icon shrink-0"></span>
+                    </button>
+                    <div class="collapse-content">
+                        <div class="collapse-inner">
+                            <div>
+                                <p><span>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio, eaque, exercitationem iusto molestiae nisi nobis odit, officiis possimus ratione similique suscipit tempore totam veniam? Ab autem dolor earum ipsa quos!</span><span>Alias aspernatur atque aut consectetur cum dolor dolorem excepturi explicabo illum ipsa maiores maxime minima modi nesciunt odio omnis perferendis perspiciatis placeat possimus provident quae quis rem, sit vitae voluptatem!</span><span>Ad aspernatur cumque dicta ea esse illo illum impedit iste, laudantium libero molestiae nam natus numquam odio odit porro provident qui reiciendis rem rerum similique sint suscipit temporibus ullam veritatis.</span><span>Alias asperiores assumenda culpa, cum debitis deserunt dignissimos doloribus enim id impedit ipsa iure laborum laudantium neque placeat possimus provident recusandae sapiente sequi, vel. Deserunt dicta dolorum esse hic recusandae!</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+
+        <section class="w-full py-10">
+            <div class="flex w-[100%]">
+                <img class="objet-cover aspect-4/3 w-1/3 border-box" src="{{ asset('images/site/fleur.png') }}" alt="">
+                <img class="objet-cover aspect-3/4 w-1/3 border-box" src="{{ asset('images/site/bouteille.png') }}" alt="">
+                <img class="objet-cover aspect-3/4 w-1/3 border-box" src="{{ asset('images/site/ouai.png') }}" alt="">
             </div>
-
-            <div>
-                <h3>Les produits</h3>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Adipisci alias aut earum et exercitationem, facere laborum neque pariatur possimus quae quia repellat. Aliquid aspernatur culpa necessitatibus placeat quae quaerat voluptate!
-                </p>
-            </div>
-
-            <div>
-                <h4>La livraison</h4>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aliquam, assumenda dignissimos fugit ipsum odit officiis saepe sequi temporibus voluptate voluptates! Deleniti eligendi eveniet id iste laborum magnam necessitatibus ratione sit?</p>
-            </div>
-
-            <div>
-                <h5>Retours et remboursements</h5>
-                <p>
-                    Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias amet, architecto cum deleniti doloribus explicabo harum id ipsa itaque magni molestias mollitia natus, necessitatibus quaerat quod sint sit ullam voluptatum.
-                </p>
-            </div>
-
-            <div>
-                <h6>Le paiement</h6>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Alias architecto deserunt dignissimos dolores eveniet excepturi fugiat laudantium, minus molestiae mollitia odio perspiciatis quas reiciendis rem suscipit tempore voluptatem, voluptates voluptatibus.</p>
-            </div>
-        </section>
-
-
-        <section class="contact">
-            {{ form(form) }}
         </section>
 
     </main>
-
 
 {% endblock %}
 

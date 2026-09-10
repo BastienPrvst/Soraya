@@ -42,11 +42,9 @@ final class MainController extends AbstractController
 
     #[Route(path: '/aide', name: 'app_frequent_question')]
     public function frequentQuestion(
-        Request $request,
     ): Response {
 
         return $this->render('main/faq.html.twig', [
-            'form' => $form->createView(),
         ]);
     }
 
