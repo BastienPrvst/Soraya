@@ -6,16 +6,12 @@ use App\Entity\Order;
 use App\Entity\Parameter;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use JsonException;
 use Psr\Log\LoggerInterface;
 use Random\RandomException;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 readonly class MailerService
@@ -41,12 +37,18 @@ readonly class MailerService
 
         //TODO Faire le corps des mails
 
-        $email = (new Email())
+        $email = (new TemplatedEmail())
             ->from('noreply@soraya.com')
             ->to($order->getEmail())
             ->subject('Confirmation de votre commande')
             ->priority(Email::PRIORITY_HIGH)
-            ->text('Votre commande à été validée!');
+            ->htmlTemplate('email/customer_confirmation.mjml.twig')
+            ->context([
+                'data' => [
+                    'order' => $order
+                ]
+            ])
+        ;
 
         //Mail Admin
 
@@ -57,7 +59,6 @@ readonly class MailerService
             ->to($adminMailTarget)
             ->subject('Nouvelle commande ' . $order->getBetterId())
             ->text('Nouvelle commande pour admin');
-
 
         try {
             $this->mailer->send($email);
@@ -77,12 +78,10 @@ readonly class MailerService
     }
 
     /**
-     * @throws TransportExceptionInterface
-     * @throws RandomException|JsonException
+     * @throws TransportExceptionInterface|\JsonException
      */
     public function sendResetPasswordEmail(
         string $userMail,
-        string $type,
     ): bool {
 
         if (!filter_var($userMail, FILTER_VALIDATE_EMAIL)) {
@@ -114,38 +113,20 @@ readonly class MailerService
 
         //Template mail en fonction d'oubli ou de changement volontaire
         //TODO faire les template de mails si differents
-        if ($type === 'forget') {
-            $email = (new TemplatedEmail())
-                ->from('noreply@soraya.com')
-                ->to($userMail)
-                ->subject('Changement de mot de passe Lévédène')
-                ->htmlTemplate('mail/reset_password.html.twig')
-                ->locale('FR')
-                ->context([
-                    'data' => [
-                        'url' => $url,
-                    ]
-                ]);
 
-            $this->mailer->send($email);
-        } elseif ($type === 'reset') {
-            $email = (new TemplatedEmail())
-                ->from('noreply@soraya.com')
-                ->to($userMail)
-                ->subject('Changement de mot de passe Site Soraya')
-                ->htmlTemplate('mail/reset_password.html.twig')
-                ->locale('FR')
-                ->context([
-                    'data' => [
-                        'url' => $url,
-                    ]
-                ]);
+        $email = (new TemplatedEmail())
+            ->from('noreply@soraya.com')
+            ->to($userMail)
+            ->subject('Changement de mot de passe Lévédène')
+            ->htmlTemplate('mail/reset_password.html.twig')
+            ->locale('FR')
+            ->context([
+                'data' => [
+                    'url' => $url,
+                ]
+            ]);
 
-            $this->mailer->send($email);
-        } else {
-            return false;
-        }
-
+        $this->mailer->send($email);
 
         return true;
     }
@@ -170,12 +151,12 @@ readonly class MailerService
     }
     public function sendRegisterMail(User $user): void
     {
-        $url = $this->urlGenerator->generate('app_login');
+        $url = $this->urlGenerator->generate('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $mail = (new TemplatedEmail())
             ->from('noreply@levedene.com')
             ->to($user->getEmail())
             ->subject('Bienvenue chez Lévédène')
-            ->htmlTemplate('register.mjml.twig')
+            ->htmlTemplate('mail/register.mjml.twig')
             ->locale('FR')
             ->context([
                 'data' => [

@@ -1,0 +1,134 @@
+{% mjml %}
+    <mjml>
+        <mj-head>
+            <mj-font name="Iosevka Charon" href="https://fonts.googleapis.com/css2?family=Iosevka+Charon&display=swap" />
+            <mj-font name="Staatliches" href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" />
+            <mj-attributes>
+                <mj-all font-family="Iosevka Charon, Arial, sans-serif" />
+                <mj-text color="#E4D8C5" />
+            </mj-attributes>
+        </mj-head>
+
+        <mj-body background-color="#453120">
+
+            <!-- Header : check + titre -->
+            <mj-section padding="40px 20px 20px 20px">
+                <mj-column width="60px">
+                    <mj-image width="60px" src="{{ email.image('@images/check.png') }}" alt="Confirmation" />
+                </mj-column>
+            </mj-section>
+
+            <mj-section padding="0 20px 20px 20px">
+                <mj-column width="60%">
+                    <mj-text align="center" font-family="Staatliches, Arial, sans-serif" font-size="24px" font-weight="bold" text-transform="uppercase" line-height="30px">
+                        Merci pour votre commande {{ data.order.user.firstname|capitalize }} !
+                    </mj-text>
+
+                    <mj-text align="center" font-size="13px" line-height="20px" padding-top="10px">
+                        Nous avons bien reçu votre commande et vous remercions pour votre confiance.
+                    </mj-text>
+                </mj-column>
+            </mj-section>
+
+            <mj-section padding="0 40px">
+                <mj-column>
+                    <mj-divider border-color="#E4D8C5" border-width="1px" />
+                </mj-column>
+            </mj-section>
+
+            <!-- Titre récapitulatif -->
+            <mj-section padding="20px 20px 10px 20px">
+                <mj-column>
+                    <mj-text align="center" font-size="15px" font-weight="bold" text-transform="uppercase" letter-spacing="1px">
+                        Récapitulatif de votre commande
+                    </mj-text>
+                </mj-column>
+            </mj-section>
+
+            <!-- En-tête du tableau -->
+            <mj-section padding="20px 20px 10px 20px">
+                <mj-column width="40%">
+                    <mj-text font-size="12px" text-transform="uppercase" color="#B8A88F">Produit</mj-text>
+                </mj-column>
+                <mj-column width="20%">
+                    <mj-text align="center" font-size="12px" text-transform="uppercase" color="#B8A88F">Prix</mj-text>
+                </mj-column>
+                <mj-column width="20%">
+                    <mj-text align="center" font-size="12px" text-transform="uppercase" color="#B8A88F">Quantité</mj-text>
+                </mj-column>
+                <mj-column width="20%">
+                    <mj-text align="right" font-size="12px" text-transform="uppercase" color="#B8A88F">Total</mj-text>
+                </mj-column>
+            </mj-section>
+
+            <mj-section padding="0 20px">
+                <mj-column>
+                    <mj-divider border-color="#5C4630" border-width="1px" />
+                </mj-column>
+            </mj-section>
+
+            <!-- Boucle sur les articles -->
+            {% for orderItem in data.order.orderItems %}
+                <mj-section padding="15px 20px" vertical-align="top">
+                    <mj-column width="40%" vertical-align="top">
+                        <mj-table>
+                            <tr>
+                                <td width="50" style="padding:0;">
+                                    {% if orderItem.product.mainImage %}
+                                        <img src="{{ email.image('@products/' ~ orderItem.product.mainImage.filename) }}" width="50" height="50" style="border-radius:4px; display:block; object-fit:cover;" alt="{{ orderItem.product.name }}">
+                                    {% else %}
+                                        <div style="width:50px; height:50px; background-color:#5C4630; border-radius:4px;"></div>
+                                    {% endif %}
+                                </td>
+                                <td style="padding-left:12px; font-size:13px; font-weight:bold; color:#E4D8C5; vertical-align:middle;">
+                                    {{ orderItem.product.name|upper }}
+                                </td>
+                            </tr>
+                        </mj-table>
+                    </mj-column>
+                    <mj-column width="20%" vertical-align="top">
+                        <mj-text align="center" font-size="13px">{{ orderItem.product.price|number_format(2, ',', ' ') }}€</mj-text>
+                    </mj-column>
+                    <mj-column width="20%" vertical-align="top">
+                        <mj-text align="center" font-size="13px">{{ orderItem.quantity }}</mj-text>
+                    </mj-column>
+                    <mj-column width="20%" vertical-align="top">
+                        <mj-text align="right" font-size="13px">{{ (orderItem.product.price * orderItem.quantity)|number_format(2, ',', ' ') }}€</mj-text>
+                    </mj-column>
+                </mj-section>
+            {% endfor %}
+
+            <mj-section padding="10px 20px 20px 20px">
+                <mj-column>
+                    <mj-divider border-color="#5C4630" border-width="1px" />
+                </mj-column>
+            </mj-section>
+
+            <!-- Total général -->
+            <mj-section padding="0 20px 40px 20px">
+                <mj-column width="50%">
+                    <mj-text font-size="14px">Total</mj-text>
+                </mj-column>
+                <mj-column width="50%">
+                    <mj-text align="right" font-size="14px" font-weight="bold">
+                        {{ data.order.total|number_format(2, ',', ' ') }}€
+                    </mj-text>
+                </mj-column>
+            </mj-section>
+
+            <!-- Footer -->
+            <mj-section full-width="full-width" background-color="#837261" padding="40px 20px">
+                <mj-column>
+                    <mj-text align="center" font-family="Staatliches, Arial, sans-serif" font-size="30px" text-transform="uppercase" letter-spacing="2px" color="#F5EEE3">
+                        Lévédène
+                    </mj-text>
+                    <mj-text align="center" font-size="13px" line-height="20px" color="#F5EEE3" padding-top="15px">
+                        Votre commande sera préparée avec amour.<br>
+                        Vous recevrez un e-mail dès son expédition.
+                    </mj-text>
+                </mj-column>
+            </mj-section>
+
+        </mj-body>
+    </mjml>
+{% endmjml %}

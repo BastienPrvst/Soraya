@@ -7,6 +7,7 @@ twig:
 
     paths:
         '%kernel.project_dir%/public/images/email': images
+        '%kernel.project_dir%/public/images/products': products
 
 when@test:
     twig:

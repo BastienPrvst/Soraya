@@ -1,8 +1,10 @@
 {% mjml %}
     <mjml>
         <mj-head>
+            <mj-font name="Iosevka Charon" href="https://fonts.googleapis.com/css2?family=Iosevka+Charon&display=swap" />
+            <mj-font name="Staatliches" href="https://fonts.googleapis.com/css2?family=Staatliches&display=swap" />
             <mj-attributes>
-                <mj-all font-family="Helvetica, Arial, sans-serif" />
+                <mj-all font-family="Iosevka Charon, Arial, sans-serif" />
                 <mj-text color="#4a3f35" />
             </mj-attributes>
         </mj-head>
@@ -20,7 +22,7 @@
             <mj-section full-width="full-width" background-color="#e8ddc8" padding="40px 20px">
                 <mj-column width="500px">
 
-                    <mj-text align="center" font-size="20px" font-weight="bold" text-transform="uppercase" padding-bottom="15px">
+                    <mj-text align="center" font-size="20px" font-weight="bold" text-transform="uppercase" padding-bottom="15px" font-family="Staatliches, Arial, sans-serif">
                         Bonjour {{ data.user.firstname|capitalize }}
                     </mj-text>
 
@@ -39,15 +41,15 @@
                             </mj-text>
                         </mj-column>
                         <mj-column width="33%">
-                            <mj-image width="40px" src="{{ email.image('@images/goutte.png') }}" alt="" />
+                            <mj-image width="40px" src="{{ email.image('@images/coeur.png') }}" alt="" />
                             <mj-text align="center" font-size="13px" line-height="18px">
-                                Une approche douce<br>et minimaliste
+                                Un moment, rien que<br>pour vous
                             </mj-text>
                         </mj-column>
                         <mj-column width="33%">
-                            <mj-image width="40px" src="{{ email.image('@images/coeur.png') }}" alt="" />
+                            <mj-image width="40px" src="{{ email.image('@images/goutte.png') }}" alt="" />
                             <mj-text align="center" font-size="13px" line-height="18px">
-                                Un rituel pour<br>toi, chaque jour
+                                Une approche douce<br>et minimaliste
                             </mj-text>
                         </mj-column>
                     </mj-section>

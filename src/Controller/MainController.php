@@ -70,9 +70,10 @@ final class MainController extends AbstractController
     public function testMailSend(
         MailerService $mailerService,
         OrderRepository $orderRepository,
-    ): void {
+    ): Response {
         $order = $orderRepository->findOneBy([]);
         $mailerService->sendOrderConfirmationEmail($order);
+        return $this->redirectToRoute('app_main');
     }
 
     #[Route(path: '/testmail2', name: 'app_register_mail')]
@@ -82,6 +83,16 @@ final class MainController extends AbstractController
     ): Response {
         $user = $userRepository->findOneBy([]);
         $mailerService->sendRegisterMail($user);
+        return $this->redirectToRoute('app_main');
+    }
+
+    #[Route(path: '/testmail3', name: 'app_reset_mail')]
+    public function testResetMail(
+        MailerService $mailerService,
+        UserRepository $userRepository,
+    ): Response {
+        $user = $userRepository->findOneBy([]);
+        $mailerService->sendResetPasswordEmail($user->getEmail());
         return $this->redirectToRoute('app_main');
     }
 }
