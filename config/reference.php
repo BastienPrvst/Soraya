@@ -1517,6 +1517,17 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     },
  *     default_transport?: scalar|Param|null, // Default: "default"
  * }
+ * @psalm-type MjmlConfig = array{
+ *     renderer?: "binary"|"service"|"mjml_php"|Param, // Default: "binary"
+ *     options?: array{
+ *         binary?: scalar|Param|null, // Path to the MJML binary // Default: null
+ *         node?: scalar|Param|null, // Path to node // Default: null
+ *         service_id?: scalar|Param|null, // Service id when renderer is defined to "service"
+ *         validation_level?: scalar|Param|null, // Validation level. See https://github.com/mjmlio/mjml/tree/master/packages/mjml-validator#validating-mjml // Default: "strict"
+ *         minify?: bool|Param, // Default: false
+ *         mjml_version?: int|Param, // Mjml version // Default: null
+ *     },
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1534,6 +1545,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *     symfonycasts_tailwind?: SymfonycastsTailwindConfig,
  *     turbo?: TurboConfig,
+ *     mjml?: MjmlConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,
@@ -1554,6 +1566,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         symfonycasts_tailwind?: SymfonycastsTailwindConfig,
  *         turbo?: TurboConfig,
+ *         mjml?: MjmlConfig,
  *     },
  *     "when@prod"?: array{
  *         imports?: ImportsConfig,
@@ -1572,6 +1585,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         symfonycasts_tailwind?: SymfonycastsTailwindConfig,
  *         turbo?: TurboConfig,
+ *         mjml?: MjmlConfig,
  *     },
  *     "when@test"?: array{
  *         imports?: ImportsConfig,
@@ -1591,6 +1605,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         symfonycasts_verify_email?: SymfonycastsVerifyEmailConfig,
  *         symfonycasts_tailwind?: SymfonycastsTailwindConfig,
  *         turbo?: TurboConfig,
+ *         mjml?: MjmlConfig,
  *     },
  *     ...<string, ExtensionType|array{ // extra keys must follow the when@%env% pattern or match an extension alias
  *         imports?: ImportsConfig,

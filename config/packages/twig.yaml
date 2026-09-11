@@ -5,6 +5,9 @@ twig:
         google_api_key: '%google.api.key%'
         stripe_dashboard_url: '%stripe.dashboard.url%'
 
+    paths:
+        '%kernel.project_dir%/public/images/email': images
+
 when@test:
     twig:
         strict_variables: true

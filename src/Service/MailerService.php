@@ -118,7 +118,7 @@ readonly class MailerService
             $email = (new TemplatedEmail())
                 ->from('noreply@soraya.com')
                 ->to($userMail)
-                ->subject('Changement de mot de passe Site Soraya')
+                ->subject('Changement de mot de passe Lévédène')
                 ->htmlTemplate('mail/reset_password.html.twig')
                 ->locale('FR')
                 ->context([
@@ -164,6 +164,28 @@ readonly class MailerService
 
         try {
             $this->mailer->send($adminEmail);
+        } catch (TransportExceptionInterface $e) {
+            $this->logger->error('Erreur mail client: ' . $e->getMessage());
+        }
+    }
+    public function sendRegisterMail(User $user): void
+    {
+        $url = $this->urlGenerator->generate('app_login');
+        $mail = (new TemplatedEmail())
+            ->from('noreply@levedene.com')
+            ->to($user->getEmail())
+            ->subject('Bienvenue chez Lévédène')
+            ->htmlTemplate('register.mjml.twig')
+            ->locale('FR')
+            ->context([
+                'data' => [
+                    'user' => $user,
+                    'url' => $url,
+                ]
+            ]);
+
+        try {
+            $this->mailer->send($mail);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Erreur mail client: ' . $e->getMessage());
         }

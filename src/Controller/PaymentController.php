@@ -180,15 +180,15 @@ final class PaymentController extends AbstractController
             ]);
         }
 
-        //TODO A optimiser (envois async)
-        if ($order->getStatus() === OrderStatus::PAID) {
-            $mailerService->sendOrderConfirmationEmail($order);
-            $stockService->removeByOrder($order);
-            if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
-                $this->workflowService->applyTransition($order, 'to_pending_delivery');
-            }
-            $this->entityManager->flush();
-        }
+//        //TODO A optimiser (envois async)
+//        if ($order->getStatus() === OrderStatus::PAID) {
+//            $mailerService->sendOrderConfirmationEmail($order);
+//            $stockService->removeByOrder($order);
+//            if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
+//                $this->workflowService->applyTransition($order, 'to_pending_delivery');
+//            }
+//            $this->entityManager->flush();
+//        }
 
         $session = $request->getSession();
         if ($session->has(SessionElements::ORDER_TOKEN->value)

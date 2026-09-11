@@ -13,6 +13,7 @@
         "doctrine/orm": "3.6.7",
         "easycorp/easyadmin-bundle": "^5.5.1",
         "fakerphp/faker": "^1.24.1",
+        "notfloran/mjml-bundle": "^3.11",
         "phpdocumentor/reflection-docblock": "^6.0.3",
         "phpstan/phpdoc-parser": "^2.3.3",
         "stripe/stripe-php": "^19.4.1",
