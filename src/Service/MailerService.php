@@ -54,7 +54,7 @@ readonly class MailerService
 
         $adminMailTarget = $this->getAdminMail();
 
-        $adminEmail = (new Email())
+        $adminEmail = (new TemplatedEmail())
             ->from('noreply@soraya.com')
             ->to($adminMailTarget)
             ->subject('Nouvelle commande ' . $order->getBetterId())
@@ -64,10 +64,6 @@ readonly class MailerService
             $this->mailer->send($email);
         } catch (TransportExceptionInterface $e) {
             $this->logger->error('Erreur mail client: ' . $e->getMessage());
-        }
-
-        if (($_ENV['APP_ENV']) === 'dev') {
-            usleep(10000000);
         }
 
         try {
@@ -111,8 +107,7 @@ readonly class MailerService
             'token' => $token,
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
-        //Template mail en fonction d'oubli ou de changement volontaire
-        //TODO faire les template de mails si differents
+        $contactUrl = $this->urlGenerator->generate('app_contact');
 
         $email = (new TemplatedEmail())
             ->from('noreply@soraya.com')
@@ -123,6 +118,8 @@ readonly class MailerService
             ->context([
                 'data' => [
                     'url' => $url,
+                    'contactUrl' => $contactUrl,
+                    'username' => $user->getFirstname(),
                 ]
             ]);
 
@@ -151,6 +148,7 @@ readonly class MailerService
     }
     public function sendRegisterMail(User $user): void
     {
+        //TODO Faire une route de validation de compte et changer l'url
         $url = $this->urlGenerator->generate('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $mail = (new TemplatedEmail())
             ->from('noreply@levedene.com')

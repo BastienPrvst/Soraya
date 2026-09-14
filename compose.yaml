@@ -25,13 +25,12 @@ services:
       PMA_USER: user
       PMA_PASSWORD: password
 
-  mailer:
-    image: mailhog/mailhog
-    container_name: mailhog
-    restart: always
+  mailpit:
+    image: axllent/mailpit:latest
+    restart: unless-stopped
     ports:
-      - "1025:1025"
       - "8025:8025"
+      - "1025:1025"
 
 volumes:
   db_data:

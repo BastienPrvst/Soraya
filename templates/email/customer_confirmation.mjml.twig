@@ -7,13 +7,21 @@
                 <mj-all font-family="Iosevka Charon, Arial, sans-serif" />
                 <mj-text color="#E4D8C5" />
             </mj-attributes>
+            <mj-style>
+                @media only screen and (max-width:480px) {
+                .desktop-row { display:none !important; }
+                }
+                @media only screen and (min-width:481px) {
+                .mobile-card { display:none !important; }
+                }
+            </mj-style>
         </mj-head>
 
-        <mj-body background-color="#453120">
+        <mj-body background-color="#453120" width="750px">
 
             <!-- Header : check + titre -->
             <mj-section padding="40px 20px 20px 20px">
-                <mj-column width="60px">
+                <mj-column width="300px">
                     <mj-image width="60px" src="{{ email.image('@images/check.png') }}" alt="Confirmation" />
                 </mj-column>
             </mj-section>
@@ -46,19 +54,21 @@
             </mj-section>
 
             <!-- En-tête du tableau -->
-            <mj-section padding="20px 20px 10px 20px">
-                <mj-column width="40%">
-                    <mj-text font-size="12px" text-transform="uppercase" color="#B8A88F">Produit</mj-text>
-                </mj-column>
-                <mj-column width="20%">
-                    <mj-text align="center" font-size="12px" text-transform="uppercase" color="#B8A88F">Prix</mj-text>
-                </mj-column>
-                <mj-column width="20%">
-                    <mj-text align="center" font-size="12px" text-transform="uppercase" color="#B8A88F">Quantité</mj-text>
-                </mj-column>
-                <mj-column width="20%">
-                    <mj-text align="right" font-size="12px" text-transform="uppercase" color="#B8A88F">Total</mj-text>
-                </mj-column>
+            <mj-section padding="20px 20px 10px 20px" css-class="desktop-row">
+                <mj-group>
+                    <mj-column width="40%">
+                        <mj-text font-size="12px" text-transform="uppercase" color="#B8A88F">Produit</mj-text>
+                    </mj-column>
+                    <mj-column width="20%">
+                        <mj-text align="center" font-size="12px" text-transform="uppercase" color="#B8A88F">Prix</mj-text>
+                    </mj-column>
+                    <mj-column width="20%">
+                        <mj-text align="center" font-size="12px" text-transform="uppercase" color="#B8A88F">Quantité</mj-text>
+                    </mj-column>
+                    <mj-column width="20%">
+                        <mj-text align="right" font-size="12px" text-transform="uppercase" color="#B8A88F">Total</mj-text>
+                    </mj-column>
+                </mj-group>
             </mj-section>
 
             <mj-section padding="0 20px">
@@ -69,33 +79,73 @@
 
             <!-- Boucle sur les articles -->
             {% for orderItem in data.order.orderItems %}
-                <mj-section padding="15px 20px" vertical-align="top">
-                    <mj-column width="40%" vertical-align="top">
+
+                <!-- VERSION DESKTOP : ligne tableau -->
+                <mj-section padding="15px 20px" css-class="desktop-row">
+                    <mj-group>
+                        <mj-column width="40%" vertical-align="middle">
+                            <mj-table>
+                                <tr>
+                                    <td width="150" valign="middle" style="padding:0;">
+                                        {% if orderItem.product.mainImage %}
+                                            <img src="{{ email.image('@products/' ~ orderItem.product.mainImage.filename) }}" width="150" height="150" style="border-radius:4px; display:block; object-fit:cover; width:150px !important; height:150px !important; vertical-align:middle;" alt="{{ orderItem.product.name }}">
+                                        {% else %}
+                                            <div style="width:150px; height:150px; background-color:#5C4630; border-radius:4px;"></div>
+                                        {% endif %}
+                                    </td>
+                                    <td valign="middle" style="padding-left:16px; font-size:14px; font-weight:bold; color:#E4D8C5; vertical-align:middle;">
+                                        {{ orderItem.product.name|upper }}
+                                    </td>
+                                </tr>
+                            </mj-table>
+                        </mj-column>
+                        <mj-column width="20%" vertical-align="middle">
+                            <mj-text align="center" font-size="14px">{{ orderItem.product.price|number_format(2, ',', ' ') }}€</mj-text>
+                        </mj-column>
+                        <mj-column width="20%" vertical-align="middle">
+                            <mj-text align="center" font-size="14px">{{ orderItem.quantity }}</mj-text>
+                        </mj-column>
+                        <mj-column width="20%" vertical-align="middle">
+                            <mj-text align="right" font-size="14px">{{ (orderItem.product.price * orderItem.quantity)|number_format(2, ',', ' ') }}€</mj-text>
+                        </mj-column>
+                    </mj-group>
+                </mj-section>
+
+                <!-- VERSION MOBILE : carte empilée -->
+                <mj-section padding="20px 20px 0 20px" css-class="mobile-card">
+                    <mj-column>
+                        {% if orderItem.product.mainImage %}
+                            <mj-table>
+                                <tr>
+                                    <td style="padding:0;">
+                                        <img src="{{ email.image('@products/' ~ orderItem.product.mainImage.filename) }}" width="100%" style="width:100% !important; height:220px !important; object-fit:cover; display:block; border-radius:8px;" alt="{{ orderItem.product.name }}">
+                                    </td>
+                                </tr>
+                            </mj-table>
+                        {% endif %}
+                    </mj-column>
+                </mj-section>
+                <mj-section padding="15px 20px 25px 20px" css-class="mobile-card">
+                    <mj-column>
+                        <mj-text font-size="12px" text-transform="uppercase" color="#B8A88F" padding-bottom="4px">Produit</mj-text>
+                        <mj-text font-size="15px" font-weight="bold" padding-bottom="12px">{{ orderItem.product.name|upper }}</mj-text>
                         <mj-table>
                             <tr>
-                                <td width="50" style="padding:0;">
-                                    {% if orderItem.product.mainImage %}
-                                        <img src="{{ email.image('@products/' ~ orderItem.product.mainImage.filename) }}" width="50" height="50" style="border-radius:4px; display:block; object-fit:cover;" alt="{{ orderItem.product.name }}">
-                                    {% else %}
-                                        <div style="width:50px; height:50px; background-color:#5C4630; border-radius:4px;"></div>
-                                    {% endif %}
-                                </td>
-                                <td style="padding-left:12px; font-size:13px; font-weight:bold; color:#E4D8C5; vertical-align:middle;">
-                                    {{ orderItem.product.name|upper }}
-                                </td>
+                                <td style="padding:6px 0; font-size:13px; color:#B8A88F;">Prix</td>
+                                <td style="padding:6px 0; font-size:13px; text-align:right; color:#E4D8C5;">{{ orderItem.product.price|number_format(2, ',', ' ') }}€</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:6px 0; font-size:13px; color:#B8A88F;">Quantité</td>
+                                <td style="padding:6px 0; font-size:13px; text-align:right; color:#E4D8C5;">{{ orderItem.quantity }}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0 0 0; font-size:13px; color:#B8A88F; border-top:1px solid #5C4630;">Total</td>
+                                <td style="padding:10px 0 0 0; font-size:13px; text-align:right; color:#E4D8C5; border-top:1px solid #5C4630;">{{ (orderItem.product.price * orderItem.quantity)|number_format(2, ',', ' ') }}€</td>
                             </tr>
                         </mj-table>
                     </mj-column>
-                    <mj-column width="20%" vertical-align="top">
-                        <mj-text align="center" font-size="13px">{{ orderItem.product.price|number_format(2, ',', ' ') }}€</mj-text>
-                    </mj-column>
-                    <mj-column width="20%" vertical-align="top">
-                        <mj-text align="center" font-size="13px">{{ orderItem.quantity }}</mj-text>
-                    </mj-column>
-                    <mj-column width="20%" vertical-align="top">
-                        <mj-text align="right" font-size="13px">{{ (orderItem.product.price * orderItem.quantity)|number_format(2, ',', ' ') }}€</mj-text>
-                    </mj-column>
                 </mj-section>
+
             {% endfor %}
 
             <mj-section padding="10px 20px 20px 20px">
@@ -106,13 +156,21 @@
 
             <!-- Total général -->
             <mj-section padding="0 20px 40px 20px">
-                <mj-column width="50%">
-                    <mj-text font-size="14px">Total</mj-text>
-                </mj-column>
-                <mj-column width="50%">
-                    <mj-text align="right" font-size="14px" font-weight="bold">
-                        {{ data.order.total|number_format(2, ',', ' ') }}€
-                    </mj-text>
+                <mj-column>
+                    <mj-table>
+                        <tr>
+                            <td style="padding:6px 0; font-size:14px; color:#E4D8C5;">Livraison</td>
+                            <td style="padding:6px 0; font-size:14px; text-align:right; font-weight:bold; color:#E4D8C5;">
+                                {{ data.order.deliveryPrice == 0 ? 'Offerte' : data.order.deliveryPrice|number_format(2, ',', ' ') ~ ' €' }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:6px 0; font-size:14px; color:#E4D8C5;">Total</td>
+                            <td style="padding:6px 0; font-size:14px; text-align:right; font-weight:bold; color:#E4D8C5;">
+                                {{ data.order.total|number_format(2, ',', ' ') }}€
+                            </td>
+                        </tr>
+                    </mj-table>
                 </mj-column>
             </mj-section>
 

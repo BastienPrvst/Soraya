@@ -65,16 +65,10 @@ final class UserController extends AbstractController
         Request $request,
         RateLimiterFactoryInterface $mailSenderLimiter
     ) : Response {
-        $limiter = $mailSenderLimiter->create($request->getClientIp());
-
-        if (false === $limiter->consume(1)->isAccepted()) {
-            throw new TooManyRequestsHttpException();
-        }
-
         $form = $this->createForm(MailToChangePasswordType::class);
         $form->handleRequest($request);
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->mailerService->sendResetPasswordEmail($form->get('email')->getData(), 'forget');
+            $this->mailerService->sendResetPasswordEmail($form->get('email')->getData());
         }
 
         return $this->render('security/send_reset_password_mail.html.twig', [
@@ -99,7 +93,7 @@ final class UserController extends AbstractController
             throw new TooManyRequestsHttpException();
         }        /* @var User $user */
         $user = $this->getUser();
-        $this->mailerService->sendResetPasswordEmail($user->getEmail(), 'change');
+        $this->mailerService->sendResetPasswordEmail($user->getEmail());
         $this->addFlash(
             'success',
             'Un mail de changement de mot de passe à bien été envoyé à l`\'adresse mail associée au compte. '
