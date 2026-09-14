@@ -56,8 +56,15 @@ final class MainController extends AbstractController
     ): Response {
         $form = $this->createForm(ContactFormType::class);
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
-            $mailerService->sendContactMail($form->getData());
+
+            try {
+                $mailerService->sendContactMail($form->getData());
+            }catch (\Exception $exception){
+                $this->addFlash('error', 'Une erreur s\'est produite lors de l\'envoi du formulaire');
+            }
+
         }
 
         return $this->render('main/contact.html.twig', [

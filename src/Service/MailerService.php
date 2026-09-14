@@ -113,7 +113,7 @@ readonly class MailerService
             ->from('noreply@soraya.com')
             ->to($userMail)
             ->subject('Changement de mot de passe Lévédène')
-            ->htmlTemplate('mail/reset_password.html.twig')
+            ->htmlTemplate('reset_password.mjml.twig')
             ->locale('FR')
             ->context([
                 'data' => [
@@ -131,21 +131,22 @@ readonly class MailerService
     public function sendContactMail(mixed $data): void
     {
         $adminMailTarget = $this->getAdminMail();
-
         $adminEmail = (new TemplatedEmail())
-            ->from($data['email_address'])
+            ->from('no-reply@votredomaine.fr')
+            ->replyTo($data['email_address'])
             ->to($adminMailTarget)
             ->subject('Contact Client')
-            ->htmlTemplate('contact_email.html.twig')
+            ->htmlTemplate('mail/contact_email.html.twig')
             ->locale('FR')
             ->context($data);
 
         try {
             $this->mailer->send($adminEmail);
         } catch (TransportExceptionInterface $e) {
-            $this->logger->error('Erreur mail client: ' . $e->getMessage());
+            $this->logger->error('Erreur mail client : ' . $e->getMessage());
         }
     }
+
     public function sendRegisterMail(User $user): void
     {
         //TODO Faire une route de validation de compte et changer l'url

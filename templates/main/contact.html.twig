@@ -15,9 +15,9 @@
 
 {% block body %}
 
-    <main class="w-full h-full px-[var(--padX)] bg-[var(--dark)] min-h-[100vh] py-[100px] md:py-[10%] text-[var(--light)] lg:px-50">
+    <main class="w-full h-full px-[var(--padX)] bg-[var(--dark)] min-h-[100vh] py-[100px] md:py-[75px] text-[var(--light)] lg:px-50 flex items-center flex-col justify-center">
 
-        <h1 class="text-2xl pt-5 pb-8 px-5 md:text-4xl">Nous contacter</h1>
+        <h1 class="text-2xl pt-5 pb-8 px-5 md:text-4xl self-start">Nous contacter</h1>
 
 
         <section class="w-[100%] p-5 flex flex-col md:flex-row justify-between">
@@ -78,11 +78,13 @@
             {{ form_errors(form) }}
 
             <div class="flex flex-col md:flex-row md:gap-x-4">
+                {{ form_row(form.firstname, { row_attr: { class: 'w-full md:w-1/2' } }) }}
                 {{ form_row(form.lastname, { row_attr: { class: 'w-full md:w-1/2' } }) }}
-                {{ form_row(form.email_address, { row_attr: { class: 'w-full md:w-1/2' } }) }}
             </div>
 
-            {{ form_row(form.objet) }}
+            {{ form_row(form.email_address) }}
+
+            {{ form_row(form.object) }}
             {{ form_row(form.message) }}
             <div class="flex justify-end">
                 {{ form_row(form.submit, { row_attr: { class: 'w-1/3' } }) }}

@@ -1,4 +1,24 @@
-<h1>Demande de contact de {{ firstname }} {{ lastname }}</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Contact Client</title>
+</head>
+<body>
+<p><strong>Nouveau message de contact</strong></p>
 
+<p>
+    <strong>Nom :</strong> {{ lastname }} {{ firstname }}<br>
+    <strong>Email :</strong> {{ email_address }}<br>
+    <span>Objet: {{ object }}</span>
+</p>
 
-<div>{{ message }}</div>
+<p>
+    <strong>Message :</strong>
+</p>
+
+<p>
+    {{ message|nl2br }}
+</p>
+</body>
+</html>
