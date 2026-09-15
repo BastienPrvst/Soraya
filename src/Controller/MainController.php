@@ -10,6 +10,7 @@ use App\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class MainController extends AbstractController
@@ -49,6 +50,9 @@ final class MainController extends AbstractController
         ]);
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     #[Route(path: '/contact', name: 'app_contact')]
     public function contact(
         Request $request,
@@ -58,13 +62,10 @@ final class MainController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $mailerService->sendContactMail($form->getData());
+            $this->addFlash('info', 'Votre demande de contact à bien été envoyée.');
 
-            try {
-                $mailerService->sendContactMail($form->getData());
-            }catch (\Exception $exception){
-                $this->addFlash('error', 'Une erreur s\'est produite lors de l\'envoi du formulaire');
-            }
-
+            return $this->redirectToRoute('app_contact');
         }
 
         return $this->render('main/contact.html.twig', [

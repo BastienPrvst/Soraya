@@ -26,6 +26,31 @@ readonly class MailerService
     }
 
     /**
+     * @throws TransportExceptionInterface
+     */
+    public function sendRegisterMail(User $user): void
+    {
+        //TODO Faire une route de validation de compte et changer l'url
+        $url = $this->urlGenerator->generate('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $mail = (new TemplatedEmail())
+            ->from('noreply@levedene.com')
+            ->to($user->getEmail())
+            ->subject('Bienvenue chez Lévédène')
+            ->htmlTemplate('mail/register_email.mjml.twig')
+            ->locale('FR')
+            ->context([
+                'data' => [
+                    'user' => $user,
+                    'url' => $url,
+                ]
+            ]);
+
+        $this->mailer->send($mail);
+
+    }
+
+    /**
+     * @throws TransportExceptionInterface
      */
     public function sendOrderConfirmationEmail(Order $order): void
     {
@@ -34,8 +59,6 @@ readonly class MailerService
         }
 
         //Mail client
-
-        //TODO Faire le corps des mails
 
         $email = (new TemplatedEmail())
             ->from('noreply@soraya.com')
@@ -60,17 +83,9 @@ readonly class MailerService
             ->subject('Nouvelle commande ' . $order->getBetterId())
             ->text('Nouvelle commande pour admin');
 
-        try {
-            $this->mailer->send($email);
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->error('Erreur mail client: ' . $e->getMessage());
-        }
+        $this->mailer->send($email);
+        $this->mailer->send($adminEmail);
 
-        try {
-            $this->mailer->send($adminEmail);
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->error('Erreur mail admin: ' . $e->getMessage());
-        }
     }
 
     /**
@@ -128,6 +143,9 @@ readonly class MailerService
         return true;
     }
 
+    /**
+     * @throws TransportExceptionInterface
+     */
     public function sendContactMail(mixed $data): void
     {
         $adminMailTarget = $this->getAdminMail();
@@ -140,35 +158,7 @@ readonly class MailerService
             ->locale('FR')
             ->context($data);
 
-        try {
-            $this->mailer->send($adminEmail);
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->error('Erreur mail client : ' . $e->getMessage());
-        }
-    }
-
-    public function sendRegisterMail(User $user): void
-    {
-        //TODO Faire une route de validation de compte et changer l'url
-        $url = $this->urlGenerator->generate('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $mail = (new TemplatedEmail())
-            ->from('noreply@levedene.com')
-            ->to($user->getEmail())
-            ->subject('Bienvenue chez Lévédène')
-            ->htmlTemplate('mail/register_email.mjml.twig')
-            ->locale('FR')
-            ->context([
-                'data' => [
-                    'user' => $user,
-                    'url' => $url,
-                ]
-            ]);
-
-        try {
-            $this->mailer->send($mail);
-        } catch (TransportExceptionInterface $e) {
-            $this->logger->error('Erreur mail client: ' . $e->getMessage());
-        }
+        $this->mailer->send($adminEmail);
     }
 
     private function getAdminMail(): string
@@ -177,7 +167,7 @@ readonly class MailerService
         $parameter = $parameterRepository->findOneBy([]);
         $adminMailTarget = $parameter ? $parameter->getAdminMail() : null;
         if (empty($adminMailTarget)) {
-            $adminMailTarget = 'admin@soraya.com';
+            $adminMailTarget = 'admin@lévédène.com';
         }
 
         return $adminMailTarget;

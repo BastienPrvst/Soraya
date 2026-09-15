@@ -2,23 +2,41 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contact Client</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
 </head>
 <body>
-<p><strong>Nouveau message de contact</strong></p>
+<div style="max-width: 100%; padding: 20px; box-sizing: border-box; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+    <p><strong>Nouveau message de contact</strong></p>
 
-<p>
-    <strong>Nom :</strong> {{ lastname }} {{ firstname }}<br>
-    <strong>Email :</strong> {{ email_address }}<br>
-    <span>Objet: {{ object }}</span>
-</p>
+    <p>
+        <strong>Nom :</strong> {{ lastname }} {{ firstname }}<br>
+        <strong>Email :</strong> {{ email_address }}<br>
+        <span>Objet: {{ object }}</span>
+    </p>
 
-<p>
-    <strong>Message :</strong>
-</p>
+    <p>
+        <strong>Message :</strong>
+    </p>
 
-<p>
-    {{ message|nl2br }}
-</p>
+    <p style="word-wrap: break-word; overflow-wrap: break-word; word-break: break-word;">
+        {{ message|nl2br }}
+    </p>
+</div>
 </body>
 </html>

@@ -23,6 +23,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Util\TargetPathTrait;
@@ -156,6 +157,7 @@ final class PaymentController extends AbstractController
 
     /**
      * @throws Exception
+     * @throws TransportExceptionInterface
      */
     #[Route('/confirmation-de-paiement/{token}', name: 'checkout_success')]
     public function index(
@@ -180,15 +182,14 @@ final class PaymentController extends AbstractController
             ]);
         }
 
-//        //TODO A optimiser (envois async)
-//        if ($order->getStatus() === OrderStatus::PAID) {
-//            $mailerService->sendOrderConfirmationEmail($order);
-//            $stockService->removeByOrder($order);
-//            if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
-//                $this->workflowService->applyTransition($order, 'to_pending_delivery');
-//            }
-//            $this->entityManager->flush();
-//        }
+        if ($order->getStatus() === OrderStatus::PAID) {
+            $mailerService->sendOrderConfirmationEmail($order);
+            $stockService->removeByOrder($order);
+            if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
+                $this->workflowService->applyTransition($order, 'to_pending_delivery');
+            }
+            $this->entityManager->flush();
+        }
 
         $session = $request->getSession();
         if ($session->has(SessionElements::ORDER_TOKEN->value)

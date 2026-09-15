@@ -148,7 +148,14 @@ class ShoppingCartService extends AbstractType
 
     public function getTotalQuantity(): int
     {
-        $session = $this->requestStack->getSession();
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (!$request || !$request->hasSession()) {
+            return 0;
+        }
+
+        $session = $request->getSession();
+
         if ($session->has(SessionElements::SHOPPING_CART->value)) {
             $shoppingCart = $session->get(SessionElements::SHOPPING_CART->value);
             return array_sum($shoppingCart);

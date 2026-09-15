@@ -4,23 +4,17 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\ModifyProfileType;
-use App\Form\MailToChangePasswordType;
 use App\Repository\OrderRepository;
-use App\Service\MailerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Exception\TooManyRequestsHttpException;
-use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
-use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class UserController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly MailerService $mailerService,
     ) {
     }
 
