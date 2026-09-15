@@ -55,49 +55,4 @@ final class UserController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
-
-    /**
-     * @throws TransportExceptionInterface
-     * @throws \JsonException
-     */
-    #[Route(path: '/mot-de-passe-oublié', name: 'app_password_forgot')]
-    public function sendResetPasswordMail(
-        Request $request,
-        RateLimiterFactoryInterface $mailSenderLimiter
-    ) : Response {
-        $form = $this->createForm(MailToChangePasswordType::class);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $this->mailerService->sendResetPasswordEmail($form->get('email')->getData());
-        }
-
-        return $this->render('security/send_reset_password_mail.html.twig', [
-            'form' => $form->createView(),
-        ]);
-    }
-
-    /**
-     * @throws TransportExceptionInterface
-     * @throws \JsonException
-     */
-    #[Route(path: '/mon-profil/changer-de-mot-de-passe', name: 'app_password_change')]
-    public function sendChangePasswordMail(
-        Request $request,
-        RateLimiterFactoryInterface $mailSenderLimiter
-    ) : Response {
-        /* @var User $user */
-        $user = $this->getUser();
-        $limiter = $mailSenderLimiter->create($request->getClientIp() . $user->getId());
-
-        if (false === $limiter->consume(1)->isAccepted()) {
-            throw new TooManyRequestsHttpException();
-        }        /* @var User $user */
-        $user = $this->getUser();
-        $this->mailerService->sendResetPasswordEmail($user->getEmail());
-        $this->addFlash(
-            'success',
-            'Un mail de changement de mot de passe à bien été envoyé à l`\'adresse mail associée au compte. '
-        );
-        return $this->redirectToRoute('app_profile_modify');
-    }
 }

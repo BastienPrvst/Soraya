@@ -113,7 +113,7 @@ readonly class MailerService
             ->from('noreply@soraya.com')
             ->to($userMail)
             ->subject('Changement de mot de passe Lévédène')
-            ->htmlTemplate('reset_password.mjml.twig')
+            ->htmlTemplate('mail/reset_password_email.mjml.twig')
             ->locale('FR')
             ->context([
                 'data' => [
@@ -155,7 +155,7 @@ readonly class MailerService
             ->from('noreply@levedene.com')
             ->to($user->getEmail())
             ->subject('Bienvenue chez Lévédène')
-            ->htmlTemplate('mail/register.mjml.twig')
+            ->htmlTemplate('mail/register_email.mjml.twig')
             ->locale('FR')
             ->context([
                 'data' => [

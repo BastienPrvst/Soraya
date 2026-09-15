@@ -20,7 +20,7 @@ class ChangePasswordType extends AbstractType
             ->add('password', RepeatedType::class, [
                 'type' => PasswordType::class,
                 'first_options'  => [
-                    'label' => 'Mot de passe',
+                    'label' => 'Nouveau mot de passe',
                     'constraints' => [
                         new NotBlank(
                             message : 'Veuillez saisir un mot de passe.'
