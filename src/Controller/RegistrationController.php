@@ -25,8 +25,7 @@ class RegistrationController extends AbstractController
     public function __construct(
         private readonly EmailVerifier $emailVerifier,
         private readonly LoggerInterface $logger
-    )
-    {
+    ) {
     }
 
     #[Route('/inscription', name: 'app_register')]
@@ -41,27 +40,32 @@ class RegistrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $user->setPassword($passwordHasher->hashPassword($user, $form->get('plainPassword')->getData()));
+                $user->setIsActive(false);
                 $entityManager->persist($user);
                 $entityManager->flush();
                 $this->addFlash(
                     'info',
-                    'Un mail avec lien de confirmation vous a été envoyé pour activer votre compte.');
+                    'Un mail avec lien de confirmation vous a été envoyé pour activer votre compte.'
+                );
 
-                $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
+                $this->emailVerifier->sendEmailConfirmation(
+                    'app_verify_email',
+                    $user,
                     (new TemplatedEmail())
                         ->from(new Address('noreply@soraya.fr', 'Levedène'))
                         ->to((string) $user->getEmail())
+                        ->context([
+                            'user' => $user,
+                        ])
                         ->subject('Confirmer votre mail - Levedène')
-                        ->htmlTemplate('registration/confirmation_email.html.twig')
-                );
-                return $this->redirectToRoute('app_login');
-            } catch (\Exception|TransportExceptionInterface $e) {
-                $this->logger->error(
-                    $e->getMessage(),
-                    [$e->getCode()]
+                        ->htmlTemplate('mail/register_email.mjml.twig')
                 );
 
+                return $this->redirectToRoute('app_login');
+            } catch (\Exception|TransportExceptionInterface $e) {
+                $this->logger->error($e->getMessage(), [$e->getCode()]);
                 $this->addFlash('error', $e->getMessage());
+                return $this->redirectToRoute('app_register');
             }
         }
 
@@ -71,8 +75,11 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/verify/email', name: 'app_verify_email')]
-    public function verifyUserEmail(Request $request, TranslatorInterface $translator, UserRepository $userRepository): Response
-    {
+    public function verifyUserEmail(
+        Request $request,
+        TranslatorInterface $translator,
+        UserRepository $userRepository
+    ): Response {
         $id = $request->query->get('id');
 
         if (null === $id) {

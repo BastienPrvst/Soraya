@@ -116,6 +116,7 @@ class AppFixtures extends Fixture
                 ->setPrice($faker->randomFloat(2, 15, 80))
                 ->setSmallDescription($faker->text(255))
                 ->setDescription($faker->paragraph())
+                ->setCapacity('20ml')
                 ->addCategory($categories[$category])
                 ->setStock(random_int(1, 250));
             $this->manager->persist($product);

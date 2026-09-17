@@ -43,30 +43,30 @@ class RegistrationFormType extends AbstractType
                     new NotBlank(
                         message : 'Veuillez saisir un mot de passe.'
                     ),
-                    new Length(
-                        min : 12,
-                        minMessage : 'Le mot de passe doit contenir au moins {{ limit }} caractères.'
-                    ),
-                    new Regex(
-                        pattern : '/[A-Z]/',
-                        message : 'Le mot de passe doit contenir au moins une majuscule.',
-                        match: true
-                    ),
-                    new Regex(
-                        pattern : '/[a-z]/',
-                        message : 'Le mot de passe doit contenir au moins une minuscule.',
-                        match: true
-                    ),
-                    new Regex(
-                        pattern : '/\d/',
-                        message : 'Le mot de passe doit contenir au moins un chiffre.',
-                        match: true
-                    ),
-                    new Regex(
-                        pattern : '/[#?!@$%^&*-]/',
-                        message : 'Le mot de passe doit contenir au moins un caractère spécial.',
-                        match: true
-                    ),
+//                    new Length(
+//                        min : 10,
+//                        minMessage : 'Le mot de passe doit contenir au moins {{ limit }} caractères.'
+//                    ),
+//                    new Regex(
+//                        pattern : '/[A-Z]/',
+//                        message : 'Le mot de passe doit contenir au moins une majuscule.',
+//                        match: true
+//                    ),
+//                    new Regex(
+//                        pattern : '/[a-z]/',
+//                        message : 'Le mot de passe doit contenir au moins une minuscule.',
+//                        match: true
+//                    ),
+//                    new Regex(
+//                        pattern : '/\d/',
+//                        message : 'Le mot de passe doit contenir au moins un chiffre.',
+//                        match: true
+//                    ),
+//                    new Regex(
+//                        pattern : '/[#?!@$%^&*-]/',
+//                        message : 'Le mot de passe doit contenir au moins un caractère spécial.',
+//                        match: true
+//                    ),
                 ]
             ])
             ->add('firstname', TextType::class, [

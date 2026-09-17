@@ -18,7 +18,7 @@ class UserChecker implements UserCheckerInterface
 
         if (!$user->isActive()) {
             throw new CustomUserMessageAuthenticationException(
-                'Votre compte n\'est pas encore activé. Vérifiez vos emails.'
+                'Votre compte n\'est pas encore activé. Veuillez vérifier vos emails.'
             );
         }
     }

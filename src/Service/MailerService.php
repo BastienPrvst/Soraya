@@ -31,7 +31,7 @@ readonly class MailerService
     public function sendRegisterMail(User $user): void
     {
         //TODO Faire une route de validation de compte et changer l'url
-        $url = $this->urlGenerator->generate('app_login', [], UrlGeneratorInterface::ABSOLUTE_URL);
+        $url = $this->urlGenerator->generate('app_verify_email', [], UrlGeneratorInterface::ABSOLUTE_URL);
         $mail = (new TemplatedEmail())
             ->from('noreply@levedene.com')
             ->to($user->getEmail())
