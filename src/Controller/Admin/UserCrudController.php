@@ -71,11 +71,22 @@ class UserCrudController extends AbstractCrudController
                     ->generateUrl();
             });
 
+        $mailAction = Action::new('mail', 'Envoi mail d\'inscription')
+            ->setIcon('fa fa-envelope')
+            ->linkToRoute('admin_register_mail', function(User $user)
+            {
+                return [
+                    'user' => $user->getId(),
+                ];
+            });
+
         return $actions
             ->add(Crud::PAGE_INDEX, $editDeleteGroup)
             ->add(Crud::PAGE_INDEX, $ordersAction)
             ->add(Crud::PAGE_EDIT, $ordersAction)
+            ->add(Crud::PAGE_EDIT, $mailAction)
             ->add(Crud::PAGE_DETAIL, $ordersAction)
+            ->add(Crud::PAGE_DETAIL, $mailAction)
             ->reorder(Crud::PAGE_INDEX, ['showOrders', 'actions'])
             ->remove(Crud::PAGE_INDEX, Action::DELETE)
             ->remove(Crud::PAGE_INDEX, Action::EDIT);

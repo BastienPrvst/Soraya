@@ -100,7 +100,7 @@ class RegistrationController extends AbstractController
             $secondsSinceLastSent = time() - $lastSent->getTimestamp();
 
             if ($secondsSinceLastSent < $cooldown) {
-//                $this->addFlash('warning', 'Merci de patienter avant de redemander un mail.');
+
                 return $this->render('security/resend_verify_password.html.twig', [
                     'verification_email_sent_at' => $lastSent,
                 ]);

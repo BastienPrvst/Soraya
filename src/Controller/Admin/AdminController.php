@@ -7,11 +7,13 @@ namespace App\Controller\Admin;
 use App\Entity\Order;
 use App\Entity\Parameter;
 use App\Entity\Product;
+use App\Entity\User;
 use App\Enum\OrderStatus;
 use App\Form\Admin\PackageType;
 use App\Form\ParameterType;
 use App\Repository\OrderRepository;
 use App\Repository\ParameterRepository;
+use App\Security\EmailVerifier;
 use App\Service\MailerService;
 use App\Service\StockService;
 use App\Service\WorkflowService;
@@ -24,11 +26,13 @@ use EasyCorp\Bundle\EasyAdminBundle\Provider\AdminContextProvider;
 use EasyCorp\Bundle\EasyAdminBundle\Router\AdminUrlGenerator;
 use PHPUnit\Framework\MockObject\Rule\Parameters;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Messenger\Exception\ExceptionInterface;
+use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 
@@ -45,8 +49,8 @@ class AdminController extends AbstractController
      * @throws TransportExceptionInterface
      * @throws ExceptionInterface
      */
-    #[Route(path: '/renvoie-mail/{token}', name: 'admin_confirmation_mail')]
-    public function renvoiMail(
+    #[Route(path: '/renvoi-mail/confirmation/{token}', name: 'admin_confirmation_mail')]
+    public function resendConfirmationMail(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
         MailerService $mailerService,
         Request $request
@@ -56,6 +60,36 @@ class AdminController extends AbstractController
         }
         return $this->redirect($request->headers->get('referer'));
     }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    #[Route(path: '/renvoi-mail/inscription/{user}', name: 'admin_register_mail')]
+    public function resendRegisterMail(
+        User $user,
+        EmailVerifier $emailVerifier,
+        Request $request
+    )
+    : Response
+    {
+        if (!$user->isActive()){
+            $emailVerifier->sendEmailConfirmation(
+                'app_verify_email',
+                $user,
+                (new TemplatedEmail())
+                    ->from(new Address('noreply@soraya.fr', 'Levedène'))
+                    ->to((string) $user->getEmail())
+                    ->context(['user' => $user])
+                    ->subject('Confirmer votre mail - Levedène')
+                    ->htmlTemplate('mail/register_email.mjml.twig')
+            );
+        }else{
+            $this->addFlash('error', 'Le compte de cet utilisateur est déjà activé.');
+        }
+
+        return $this->redirect($request->headers->get('referer'));
+    }
+
 
     #[Route(path: '/admin/imprimer-etiquette/{token}', name: 'admin_delivery_sticker')]
     public function printDelivery(

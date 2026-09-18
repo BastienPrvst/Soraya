@@ -21,32 +21,7 @@ readonly class MailerService
         private MailerInterface       $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private EntityManagerInterface $entityManager,
-        private LoggerInterface $logger,
     ) {
-    }
-
-    /**
-     * @throws TransportExceptionInterface
-     */
-    public function sendRegisterMail(User $user): void
-    {
-        //TODO Faire une route de validation de compte et changer l'url
-        $url = $this->urlGenerator->generate('app_verify_email', [], UrlGeneratorInterface::ABSOLUTE_URL);
-        $mail = (new TemplatedEmail())
-            ->from('noreply@levedene.com')
-            ->to($user->getEmail())
-            ->subject('Bienvenue chez Lévédène')
-            ->htmlTemplate('mail/register_email.mjml.twig')
-            ->locale('FR')
-            ->context([
-                'data' => [
-                    'user' => $user,
-                    'url' => $url,
-                ]
-            ]);
-
-        $this->mailer->send($mail);
-
     }
 
     /**
