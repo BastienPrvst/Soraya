@@ -73,8 +73,7 @@ class UserCrudController extends AbstractCrudController
 
         $mailAction = Action::new('mail', 'Envoi mail d\'inscription')
             ->setIcon('fa fa-envelope')
-            ->linkToRoute('admin_register_mail', function(User $user)
-            {
+            ->linkToRoute('admin_register_mail', function (User $user) {
                 return [
                     'user' => $user->getId(),
                 ];
