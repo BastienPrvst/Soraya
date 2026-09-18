@@ -29,7 +29,7 @@ class RegistrationController extends AbstractController
     }
 
     #[Route('/inscription', name: 'app_register')]
-    public function index(
+    public function register(
         Request $request,
         UserPasswordHasherInterface $passwordHasher,
         EntityManagerInterface $entityManager,
@@ -43,28 +43,22 @@ class RegistrationController extends AbstractController
                 $user->setIsActive(false);
                 $entityManager->persist($user);
                 $entityManager->flush();
-                $this->addFlash(
-                    'info',
-                    'Un mail avec lien de confirmation vous a été envoyé pour activer votre compte.'
-                );
+//                $this->addFlash(
+//                    'info',
+//                    'Un mail avec lien de confirmation vous a été envoyé pour activer votre compte.'
+//                );
 
-                $this->emailVerifier->sendEmailConfirmation(
-                    'app_verify_email',
-                    $user,
-                    (new TemplatedEmail())
-                        ->from(new Address('noreply@soraya.fr', 'Levedène'))
-                        ->to((string) $user->getEmail())
-                        ->context([
-                            'user' => $user,
-                        ])
-                        ->subject('Confirmer votre mail - Levedène')
-                        ->htmlTemplate('mail/register_email.mjml.twig')
-                );
+                $this->sendVerificationEmail($user);
 
-                return $this->redirectToRoute('app_login');
+                $user->setVerificationEmailSentAt(new \DateTimeImmutable());
+                $entityManager->flush();
+
+                $request->getSession()->set('pending_verification_user_id', $user->getId());
+
+                return $this->redirectToRoute('app_verify_send');
+
             } catch (\Exception|TransportExceptionInterface $e) {
                 $this->logger->error($e->getMessage(), [$e->getCode()]);
-                $this->addFlash('error', $e->getMessage());
                 return $this->redirectToRoute('app_register');
             }
         }
@@ -74,7 +68,56 @@ class RegistrationController extends AbstractController
         ]);
     }
 
-    #[Route('/verify/email', name: 'app_verify_email')]
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    #[Route(path: '/verify/send', name: 'app_verify_send')]
+    public function resendVerifyEmail(Request $request, EntityManagerInterface $em): Response
+    {
+
+        $userId = $request->getSession()->get('pending_verification_user_id');
+
+        if (!$userId) {
+            throw $this->createNotFoundException('Aucune vérification en attente.');
+        }
+
+        $user = $em->getRepository(User::class)->find($userId);
+
+        if (!$user) {
+            throw $this->createNotFoundException('Utilisateur introuvable.');
+        }
+
+        if ($user->isActive()) {
+            $request->getSession()->remove('pending_verification_user_id');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $lastSent = $user->getVerificationEmailSentAt();
+        $cooldown = 60;
+
+        if ($lastSent !== null) {
+            $secondsSinceLastSent = time() - $lastSent->getTimestamp();
+
+            if ($secondsSinceLastSent < $cooldown) {
+//                $this->addFlash('warning', 'Merci de patienter avant de redemander un mail.');
+                return $this->render('security/resend_verify_password.html.twig', [
+                    'verification_email_sent_at' => $lastSent,
+                ]);
+            }
+        }
+
+        $this->sendVerificationEmail($user);
+
+        $user->setVerificationEmailSentAt(new \DateTimeImmutable());
+        $em->flush();
+
+        return $this->render('security/resend_verify_password.html.twig', [
+            'verification_email_sent_at' => $user->getVerificationEmailSentAt(),
+        ]);
+    }
+
+    #[Route('/verify/verified', name: 'app_verify_email')]
     public function verifyUserEmail(
         Request $request,
         TranslatorInterface $translator,
@@ -103,5 +146,22 @@ class RegistrationController extends AbstractController
         $this->addFlash('success', 'Votre adresse mail a bien été vérifiée.');
 
         return $this->redirectToRoute('app_login');
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
+    private function sendVerificationEmail(User $user): void
+    {
+        $this->emailVerifier->sendEmailConfirmation(
+            'app_verify_email',
+            $user,
+            (new TemplatedEmail())
+                ->from(new Address('noreply@soraya.fr', 'Levedène'))
+                ->to((string) $user->getEmail())
+                ->context(['user' => $user])
+                ->subject('Confirmer votre mail - Levedène')
+                ->htmlTemplate('mail/register_email.mjml.twig')
+        );
     }
 }

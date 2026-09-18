@@ -92,6 +92,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $phoneNumber = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $verificationEmailSentAt = null;
+
     public function __construct()
     {
         $this->addresses = new ArrayCollection();
@@ -311,6 +314,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPhoneNumber(string $phoneNumber): static
     {
         $this->phoneNumber = $phoneNumber;
+
+        return $this;
+    }
+
+    public function getVerificationEmailSentAt(): ?\DateTimeImmutable
+    {
+        return $this->verificationEmailSentAt;
+    }
+
+    public function setVerificationEmailSentAt(?\DateTimeImmutable $verificationEmailSentAt): static
+    {
+        $this->verificationEmailSentAt = $verificationEmailSentAt;
 
         return $this;
     }

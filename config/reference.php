@@ -1520,7 +1520,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  * @psalm-type MjmlConfig = array{
  *     renderer?: "binary"|"service"|"mjml_php"|Param, // Default: "binary"
  *     options?: array{
- *         binary?: scalar|Param|null, // Path to the MJML binary // Default: null
+ *         binary?: scalar|Param|null, // Path to the MJML binary // Default: "C:\\Users\\Bastien\\Desktop\\Projets\\ProjetSoraya\\node_modules\\.bin\\mjml.CMD"
  *         node?: scalar|Param|null, // Path to node // Default: null
  *         service_id?: scalar|Param|null, // Service id when renderer is defined to "service"
  *         validation_level?: scalar|Param|null, // Validation level. See https://github.com/mjmlio/mjml/tree/master/packages/mjml-validator#validating-mjml // Default: "strict"
