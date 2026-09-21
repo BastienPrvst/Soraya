@@ -485,6 +485,10 @@ nav a, nav span {
     opacity: 1;
 }
 
+.collapse-trigger {
+    cursor: pointer;
+}
+
 
 /*------------------Page produits multiples------------*/
 

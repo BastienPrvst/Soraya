@@ -7,9 +7,14 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ProductRepository::class)]
+#[UniqueEntity(
+    fields: ['name'],
+    message: 'Ce nom de produit est déjà utilisé.'
+)]
 class Product
 {
     #[ORM\Id]
@@ -17,15 +22,13 @@ class Product
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Length(
-        min: 1,
         max: 255,
         maxMessage: 'Le nom du produit ne doit pas dépasser 255 caractères'
     )]
     private ?string $name = null;
-
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\Type(Types::FLOAT)]
@@ -64,12 +67,12 @@ class Product
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
     private ?int $flatDiscount = null;
 
-    #[ORM\Column]
-    #[Assert\Type(Types::INTEGER)]
-    private ?int $stock = null;
+    #[ORM\Column(options: ['default' => 0])]
+    #[Assert\PositiveOrZero]
+    private int $stock = 0;
 
     #[ORM\Column(length: 255)]
-    #[Assert\NotBlank (
+    #[Assert\NotBlank(
         message: 'La description est obligatoire',
     )]
     #[Assert\Length(

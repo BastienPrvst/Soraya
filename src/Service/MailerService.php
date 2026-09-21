@@ -40,7 +40,7 @@ readonly class MailerService
             ->to($order->getEmail())
             ->subject('Confirmation de votre commande')
             ->priority(Email::PRIORITY_HIGH)
-            ->htmlTemplate('email/customer_confirmation.mjml.twig')
+            ->htmlTemplate('mail/customer_confirmation.mjml.twig')
             ->context([
                 'data' => [
                     'order' => $order
