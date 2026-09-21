@@ -78,7 +78,7 @@
                 <div class="px-[var(--padX)] w-full md:min-h-[100%] md:order-3 md:w-[45%] md:px-0 md:h-[75%]">
                     <div class="flex flex-col h-full md:justify-between">
 
-                        <div class="md:pt-8">
+                        <div class="md:pt-8 wrap-break-word">
                             <h2 class="text-[var(--dark)] text-3xl pb-3">Description :</h2>
 
                             <p>{{ product.smallDescription|raw }}</p> <br>
@@ -120,7 +120,7 @@
 
         <section class="px-[clamp(1rem,3vw,4rem)] w-full">
 
-            <div class="border-b-2 border-[var(--dark)] pb-6 mb-2">
+            <div class="border-b-2 border-[var(--dark)] pb-6 mb-2 wrap-break-word">
                 <h3 class="text-xl py-5">Description :</h3>
 
                 {{ product.description|raw }}
@@ -135,7 +135,7 @@
                         </button>
                     </h3>
                     <div class="collapse-content">
-                        <div class="collapse-inner">
+                        <div class="collapse-inner wrap-break-word">
                             {{ product.ingredients|raw }}
                         </div>
                     </div>
@@ -151,7 +151,7 @@
                         </button>
                     </h3>
                     <div class="collapse-content">
-                        <div class="collapse-inner">
+                        <div class="collapse-inner wrap-break-word">
                             {{ product.useAdvice|raw }}
                         </div>
                     </div>
@@ -167,7 +167,7 @@
                         </button>
                     </h3>
                     <div class="collapse-content">
-                        <div class="collapse-inner">
+                        <div class="collapse-inner wrap-break-word">
                             {{ product.benefits|raw }}
                         </div>
                     </div>
@@ -185,7 +185,7 @@
                         </button>
                     </h3>
                     <div class="collapse-content">
-                        <div class="collapse-inner">
+                        <div class="collapse-inner wrap-break-word">
                             {{ product.targetAdvice|raw }}
                         </div>
                     </div>
@@ -210,11 +210,6 @@
 
 {% endblock %}
 
-{% block javascripts %}
-
-    {{ importmap('product-swiper.js') }}
-
-{% endblock %}
 
 
 
