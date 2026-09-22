@@ -89,12 +89,23 @@ class ContactFormType extends AbstractType
                     )
                 ]
             ])
+            //Honeypot
+            ->add('website', TextType::class, [
+                'label' => false,
+                'required' => false,
+                'mapped' => false,
+                'attr' => [
+                    'tabindex' => -1,
+                    'autocomplete' => 'off',
+                ],
+            ])
             ->add('submit', SubmitType::class, [
                 'label' => 'Envoyer',
                 'attr' => [
                     'class' => 'w-full'
                 ]
             ])
+
         ;
     }
 

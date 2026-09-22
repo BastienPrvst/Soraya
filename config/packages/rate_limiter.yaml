@@ -15,4 +15,9 @@ framework:
         mail_sender:
             policy: 'fixed_window'
             limit: 1
-            interval: '3 minutes'
+            interval: '1 minute'
+        contact:
+            policy: 'fixed_window'
+            limit: 1
+            interval: '5 minutes'
+

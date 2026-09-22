@@ -11,6 +11,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactoryInterface;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class MainController extends AbstractController
@@ -35,12 +36,25 @@ final class MainController extends AbstractController
     #[Route(path: '/contact', name: 'app_contact')]
     public function contact(
         Request $request,
-        MailerService $mailerService
+        MailerService $mailerService,
+        RateLimiterFactoryInterface $contactLimiter
     ): Response {
         $form = $this->createForm(ContactFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!empty($form->get('website')->getData())) {
+                $this->addFlash('info', 'Votre demande de contact à bien été envoyée.');
+                return $this->redirectToRoute('app_contact');
+            }
+
+            $limiter = $contactLimiter->create($request->getClientIp());
+
+            if (false === $limiter->consume(1)->isAccepted()) {
+                $this->addFlash('error', 'Trop de tentatives, veuillez réessayer plus tard.');
+                return $this->redirectToRoute('app_contact');
+            }
+
             $mailerService->sendContactMail($form->getData());
             $this->addFlash('info', 'Votre demande de contact à bien été envoyée.');
 
