@@ -51,6 +51,9 @@ class OrderRepository extends ServiceEntityRepository
     public function getLastTenOrders(User $user): array
     {
         $statuses = [
+            OrderStatus::PAID,
+            OrderStatus::PENDING_SHIPPING,
+            OrderStatus::SHIPPING,
             OrderStatus::SHIPPED,
             OrderStatus::REFUND
         ];

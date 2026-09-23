@@ -1,63 +1,119 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}
+    Mon Profil
+{% endblock %}
+
+
+{% set header_text = 'var(--dark)' %}
+{% set header_bg = 'var(--light)' %}
+{% set header_bg_scrolled = 'var(--light)' %}
+{% set header_logo = 'dark' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
+
 {% block body %}
 
-    <h1>Votre profil</h1>
+    <main class="w-full bg-[var(--light)] pt-[15vh] flex flex-col items-center">
 
-    <div>
-        Nom : {{ activeUser.lastname }}
+        <div class="w-full px-[var(--padX)]">
+            <h1 class="text-4xl text-[var(--dark)]">Mon compte</h1>
+            <p>Bonjour {{ activeUser.firstname }}</p>
+        </div>
 
-        Prénom : {{ activeUser.firstname }}
+        <section class="w-full px-[var(--padX)] mt-10">
+            <div class="border border-[#453120]/60 p-8">
 
-        Email : {{ activeUser.email }}
+                <h2 class="text-3xl text-[var(--dark)] mb-6">Mes dernières commandes</h2>
 
-        <a href="{{ path('app_profile_modify') }}">Modifier mes informations</a>
+                <table class="w-full text-left">
+                    <thead>
+                    <tr class="text-[var(--light)]">
+                        <th class="bg-[#453120]/40 px-4 py-3 font-normal rounded-l-xl">Numéro de commande</th>
+                        <th class="bg-[#453120]/40 px-4 py-3 font-normal">Date</th>
+                        <th class="bg-[#453120]/40 px-4 py-3 font-normal">Montant</th>
+                        <th class="bg-[#453120]/40 px-4 py-3 font-normal">Statut</th>
+                        <th class="bg-[#453120]/40 px-4 py-3 font-normal rounded-r-xl"></th>
+                    </tr>
+                    </thead>
 
-    </div>
+                    {# Un <tbody> par commande : une ligne résumé + une ligne détail (produits) #}
+                    {% for order in lastOrders %}
+                        {# Les 2 premières sont visibles, les suivantes (max 8) sont masquées #}
+                        <tbody class="order {{ loop.index > 2 ? 'extra-order hidden' : '' }}">
+                        <tr class="order-summary">
+                            <td class="px-4 py-5">{{ order.betterId }}</td>
+                            <td class="px-4 py-5">{{ order.creationDate|format_date(pattern='d MMM y', locale='fr') }}</td>
+                            <td class="px-4 py-5">{{ order.orderTotal|number_format(2, '.', '') }} €</td>
+                            <td class="px-4 py-5">{{ order.status.label }}</td>
+                            <td class="px-4 py-5 text-right">
+                                <button type="button"
+                                        class="see-order underline cursor-pointer"
+                                        aria-expanded="false"
+                                        aria-controls="order-details-{{ order.id }}">
+                                    Voir la commande
+                                </button>
+                            </td>
+                        </tr>
 
-    <div class="orders-div">
-
-        {% if lastOrders is not empty %}
-            <h2 class="text-center">Vos dernières commandes chez nous</h2>
-            {% for order in lastOrders %}
-                <div class="bg-light rounded-2 p-3 m-3 d-flex flex-column align-items-center justify-content-center w-75 mx-auto">
-
-                    <div class="w-100 text-center fs-3"> Commande #{{ "%05d"|format(order.id) }} </div>
-                    <div class="w-100">
-                        Le : {{ order.creationDate|date('d/m/Y') }}
-                    </div>
-
-                    <hr class="w-100">
-
-
-                    {% for item in order.orderItems %}
-                        <div class="d-flex flex-row w-100 justify-content-evenly">
-
-                            <p>{{ item.product.name }}</p>
-
-                            <p>Qut : {{ item.quantity }}</p>
-
-                            <p>Prix Unitaire : {{ item.unitPrice }}€</p>
-
-                            <p>Total Produits: {{ item.total }}€</p>
-
-                        </div>
+                        <tr class="order-details" id="order-details-{{ order.id }}">
+                            <td colspan="5" class="p-0">
+                                <div class="details-wrap">
+                                    <div class="details-inner">
+                                        <div class="px-4 pt-2 pb-6">
+                                            <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-5">
+                                                {% for item in order.orderItems %}
+                                                    <li class="flex gap-2 text-xs">
+                                                        {% if item.product.mainImage is not null %}
+                                                            <img src="{{ vich_uploader_asset(item.product.mainImage, 'imageFile') }}"
+                                                                 alt="{{ item.product.name }} - image"
+                                                                 class="w-[50px] h-[62px] object-cover shrink-0">
+                                                        {% else %}
+                                                            <img src="{{ asset('images/site/placeholder.jpg') }}" alt=""
+                                                                 class="w-[50px] h-[62px] object-cover shrink-0">
+                                                        {% endif %}
+                                                        <div class="flex flex-col justify-between">
+                                                            <p>{{ item.product.name }}</p>
+                                                            <div>
+                                                                <p>Quantité : {{ item.quantity }}</p>
+                                                                <p>{{ item.unitPrice|number_format(2, '.', '') }} €</p>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                {% else %}
+                                                    <li class="text-xs">Aucun produit pour cette commande.</li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
                     {% endfor %}
+                </table>
 
-                    <p>Prix livraison : {{ order.deliveryPrice > 0 ? order.deliveryPrice ~ '€' : 'Gratuite' }}</p>
+                {% if lastOrders|length > 2 %}
+                    <div class="flex justify-end mt-6">
+                        <button type="button"
+                                id="toggle-more-orders"
+                                aria-expanded="false"
+                                class="bg-[#453120]/40 text-[var(--light)] text-sm px-4 py-2 rounded-md cursor-pointer">
+                            Voir le reste des commandes
+                        </button>
+                    </div>
+                {% endif %}
 
-                    <p>Total : {{ order.total }}€</p>
-                </div>
+            </div>
+        </section>
 
-            {% endfor %}
-
-        {% else %}
-            <p>Vous n'avez pas encore passé de commande chez nous.</p>
-
-        {% endif %}
-
-
-    </div>
+    </main>
 
 {% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/profil.js') }}"></script>
+{% endblock %}
+
 

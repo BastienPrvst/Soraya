@@ -534,3 +534,41 @@ nav a, nav span {
 }
 
 
+
+/*--------------------Profil----------------*/
+
+/* Traits de séparation */
+.order-summary td { border-bottom: 1px solid rgb(69 49 32 / .6); }
+.order.is-open .order-summary td { border-bottom-color: transparent; }
+.order-details td { border-bottom: 1px solid transparent; }
+.order.is-open .order-details td { border-bottom-color: rgb(69 49 32 / .6); }
+
+/* Ouverture fluide des produits */
+.details-wrap {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows .35s ease;
+}
+.order.is-open .details-wrap { grid-template-rows: 1fr; }
+
+.details-inner {
+    overflow: hidden;
+    min-height: 0;
+    visibility: hidden;            /* évite de tabuler dans le contenu fermé */
+    transition: visibility .35s;
+}
+.order.is-open .details-inner { visibility: visible; }
+
+/* Apparition des commandes supplémentaires */
+@keyframes order-in {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: none; }
+}
+.extra-order.is-shown { animation: order-in .35s ease; }
+
+@media (prefers-reduced-motion: reduce) {
+    .details-wrap { transition: none; }
+    .extra-order.is-shown { animation: none; }
+}
+
+
