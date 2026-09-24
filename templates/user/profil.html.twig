@@ -16,9 +16,9 @@
 
     <main class="w-full bg-[var(--light)] pt-[15vh] flex flex-col items-center">
 
-        <div class="w-full px-[var(--padX)]">
+        <div class="w-full px-[var(--padX)] text-center">
             <h1 class="text-4xl text-[var(--dark)]">Mon compte</h1>
-            <p>Bonjour {{ activeUser.firstname }}</p>
+            <p>Bonjour <span data-value="firstname">{{ activeUser.firstname }}</span></p>
         </div>
 
         <section class="w-full px-[var(--padX)] mt-10">
@@ -26,86 +26,232 @@
 
                 <h2 class="text-3xl text-[var(--dark)] mb-6">Mes dernières commandes</h2>
 
-                <table class="w-full text-left">
-                    <thead>
-                    <tr class="text-[var(--light)]">
-                        <th class="bg-[#453120]/40 px-4 py-3 font-normal rounded-l-xl">Numéro de commande</th>
-                        <th class="bg-[#453120]/40 px-4 py-3 font-normal">Date</th>
-                        <th class="bg-[#453120]/40 px-4 py-3 font-normal">Montant</th>
-                        <th class="bg-[#453120]/40 px-4 py-3 font-normal">Statut</th>
-                        <th class="bg-[#453120]/40 px-4 py-3 font-normal rounded-r-xl"></th>
-                    </tr>
-                    </thead>
+                {% if lastOrders is not null %}
 
-                    {# Un <tbody> par commande : une ligne résumé + une ligne détail (produits) #}
-                    {% for order in lastOrders %}
-                        {# Les 2 premières sont visibles, les suivantes (max 8) sont masquées #}
-                        <tbody class="order {{ loop.index > 2 ? 'extra-order hidden' : '' }}">
-                        <tr class="order-summary">
-                            <td class="px-4 py-5">{{ order.betterId }}</td>
-                            <td class="px-4 py-5">{{ order.creationDate|format_date(pattern='d MMM y', locale='fr') }}</td>
-                            <td class="px-4 py-5">{{ order.orderTotal|number_format(2, '.', '') }} €</td>
-                            <td class="px-4 py-5">{{ order.status.label }}</td>
-                            <td class="px-4 py-5 text-right">
-                                <button type="button"
-                                        class="see-order underline cursor-pointer"
-                                        aria-expanded="false"
-                                        aria-controls="order-details-{{ order.id }}">
-                                    Voir la commande
-                                </button>
-                            </td>
+                    <table class="w-full text-left table-fixed">
+                        <thead>
+                        <tr class="text-[var(--light)]">
+                            <th class="bg-[#453120]/40 px-4 py-3 font-normal rounded-l-xl">Numéro de commande</th>
+                            <th class="bg-[#453120]/40 px-4 py-3 font-normal">Date</th>
+                            <th class="bg-[#453120]/40 px-4 py-3 font-normal">Montant</th>
+                            <th class="bg-[#453120]/40 px-4 py-3 font-normal">Statut</th>
+                            <th class="bg-[#453120]/40 px-4 py-3 font-normal rounded-r-xl w-48"></th>
                         </tr>
+                        </thead>
 
-                        <tr class="order-details" id="order-details-{{ order.id }}">
-                            <td colspan="5" class="p-0">
-                                <div class="details-wrap">
-                                    <div class="details-inner">
-                                        <div class="px-4 pt-2 pb-6">
-                                            <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-5">
-                                                {% for item in order.orderItems %}
-                                                    <li class="flex gap-2 text-xs">
-                                                        {% if item.product.mainImage is not null %}
-                                                            <img src="{{ vich_uploader_asset(item.product.mainImage, 'imageFile') }}"
-                                                                 alt="{{ item.product.name }} - image"
-                                                                 class="w-[50px] h-[62px] object-cover shrink-0">
-                                                        {% else %}
-                                                            <img src="{{ asset('images/site/placeholder.jpg') }}" alt=""
-                                                                 class="w-[50px] h-[62px] object-cover shrink-0">
-                                                        {% endif %}
-                                                        <div class="flex flex-col justify-between">
-                                                            <p>{{ item.product.name }}</p>
-                                                            <div>
-                                                                <p>Quantité : {{ item.quantity }}</p>
-                                                                <p>{{ item.unitPrice|number_format(2, '.', '') }} €</p>
+                        {% for order in lastOrders %}
+                            <tbody class="order {{ loop.index > 2 ? 'extra-order hidden' : '' }}">
+                            <tr class="order-summary">
+                                <td class="px-4 py-5">{{ order.betterId }}</td>
+                                <td class="px-4 py-5">{{ order.creationDate|format_date(pattern='d MMM y', locale='fr') }}</td>
+                                <td class="px-4 py-5">{{ order.orderTotal|number_format(2, '.', '') }} €</td>
+                                <td class="px-4 py-5">{{ order.status.label }}</td>
+                                <td class="px-4 py-5 text-right">
+                                    <button type="button"
+                                            class="see-order underline cursor-pointer whitespace-nowrap"
+                                            aria-expanded="false"
+                                            aria-controls="order-details-{{ order.id }}">
+                                        Voir la commande
+                                    </button>
+                                </td>
+                            </tr>
+
+                            <tr class="order-details" id="order-details-{{ order.id }}">
+                                <td colspan="5" class="p-0">
+                                    <div class="details-wrap">
+                                        <div class="details-inner">
+                                            <div class="px-4 pt-2 pb-6">
+                                                <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-5">
+                                                    {% for item in order.orderItems %}
+                                                        <li class="flex gap-2 text-xs">
+                                                            {% if item.product.mainImage is not null %}
+                                                                <img src="{{ vich_uploader_asset(item.product.mainImage, 'imageFile') }}"
+                                                                     alt="{{ item.product.name }} - image"
+                                                                     class="w-[50px] h-[62px] object-cover shrink-0">
+                                                            {% else %}
+                                                                <img src="{{ asset('images/site/placeholder.jpg') }}" alt=""
+                                                                     class="w-[50px] h-[62px] object-cover shrink-0">
+                                                            {% endif %}
+                                                            <div class="flex flex-col justify-between">
+                                                                <p>{{ item.product.name }}</p>
+                                                                <div>
+                                                                    <p>Quantité : {{ item.quantity }}</p>
+                                                                    <p>{{ item.unitPrice|number_format(2, '.', '') }} €</p>
+                                                                </div>
                                                             </div>
-                                                        </div>
-                                                    </li>
-                                                {% else %}
-                                                    <li class="text-xs">Aucun produit pour cette commande.</li>
-                                                {% endfor %}
-                                            </ul>
+                                                        </li>
+                                                    {% else %}
+                                                        <li class="text-xs">Aucun produit pour cette commande.</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </td>
-                        </tr>
-                        </tbody>
-                    {% endfor %}
-                </table>
+                                </td>
+                            </tr>
+                            </tbody>
+                        {% endfor %}
+                    </table>
 
-                {% if lastOrders|length > 2 %}
-                    <div class="flex justify-end mt-6">
-                        <button type="button"
-                                id="toggle-more-orders"
-                                aria-expanded="false"
-                                class="bg-[#453120]/40 text-[var(--light)] text-sm px-4 py-2 rounded-md cursor-pointer">
-                            Voir le reste des commandes
-                        </button>
-                    </div>
+                    {% if lastOrders|length > 2 %}
+                        <div class="flex justify-end mt-6">
+                            <button type="button"
+                                    id="toggle-more-orders"
+                                    aria-expanded="false"
+                                    class="bg-[#453120]/40 text-[var(--light)] text-sm px-4 py-2 rounded-md cursor-pointer">
+                                Voir le reste des commandes
+                            </button>
+                        </div>
+                    {% endif %}
+
+                {% else %}
+
+                    <p>Oups, vous n'avez aucune commande</p>
+
+
                 {% endif %}
 
             </div>
         </section>
+
+        {% set inputClass = 'w-full bg-[#f4efe2] border-b border-[#453120]/60 px-2 py-1 focus:outline-none focus:border-[var(--dark)]' %}
+        {% set rowClass = 'grid grid-cols-1 sm:grid-cols-[14rem_1fr] gap-x-4 gap-y-2 items-start border-b border-[#453120]/60 px-4 py-5' %}
+
+        {% set infoRows = {
+            'Prénom': activeUser.firstname,
+            'Nom': activeUser.lastname,
+            'Adresse e-mail': activeUser.email,
+            'Adresse de livraison': activeUser.address ? activeUser.address.oneLine : '—',
+            'Mot de passe': '••••••••',
+        } %}
+
+        <section class="w-full px-[var(--padX)] mt-10">
+
+            {% for message in app.flashes('success') %}
+                <p role="status" class="mb-4">{{ message }}</p>
+            {% endfor %}
+
+            {# Si le formulaire revient avec des erreurs, il s'affiche directement ouvert #}
+            <div id="profile-info"
+                 class="group border border-[#453120]/60 p-8 {{ infoForm.vars.submitted ? 'is-editing' }}"
+                 {% if infoForm.vars.submitted %}data-submitted{% endif %}>
+
+                <div class="flex justify-between items-start mb-6">
+                    <h3 class="text-3xl text-[var(--dark)]">Mes informations</h3>
+                    <button type="button" id="profile-edit"
+                            class="group-[.is-editing]:hidden bg-[#453120]/40 text-[var(--light)] text-sm px-4 py-2 rounded-md cursor-pointer">
+                        Modifier mes informations
+                    </button>
+                </div>
+
+                {# ---------- Mode lecture ---------- #}
+                <dl class="group-[.is-editing]:hidden">
+                    {% for label, value in infoRows %}
+                        <div class="{{ rowClass }}">
+                            <dt>{{ label }}</dt>
+                            <dd>{{ value }}</dd>
+                        </div>
+                    {% endfor %}
+                </dl>
+
+                {# ---------- Mode édition ---------- #}
+                <div class="hidden group-[.is-editing]:block">
+
+                    {# Les messages d'erreur (<ul>) de tout le formulaire sont stylés ici, une seule fois #}
+                    {{ form_start(infoForm, {attr: {
+                        novalidate: 'novalidate',
+                        'data-turbo': 'false',
+                        class: '[&_ul]:list-none [&_ul]:p-0 [&_ul]:mt-1 [&_ul]:text-sm [&_ul]:text-red-800',
+                    }}) }}
+
+                    {{ form_errors(infoForm) }}
+
+                    <div class="{{ rowClass }}">
+                        {{ form_label(infoForm.firstname) }}
+                        <div>
+                            {{ form_widget(infoForm.firstname, {attr: {class: inputClass}}) }}
+                            {{ form_errors(infoForm.firstname) }}
+                        </div>
+                    </div>
+
+                    <div class="{{ rowClass }}">
+                        {{ form_label(infoForm.lastname) }}
+                        <div>
+                            {{ form_widget(infoForm.lastname, {attr: {class: inputClass}}) }}
+                            {{ form_errors(infoForm.lastname) }}
+                        </div>
+                    </div>
+
+                    <div class="{{ rowClass }}">
+                        <span>Adresse de livraison</span>
+                        <div class="grid gap-3">
+                            {{ form_widget(infoForm.address.street1, {attr: {class: inputClass, placeholder: 'Adresse'}}) }}
+                            {{ form_errors(infoForm.address.street1) }}
+
+                            {{ form_widget(infoForm.address.street2, {attr: {class: inputClass, placeholder: 'Complément d\'adresse (facultatif)'}}) }}
+                            {{ form_errors(infoForm.address.street2) }}
+
+                            <div class="grid grid-cols-[8rem_1fr] gap-3">
+                                <div>
+                                    {{ form_widget(infoForm.address.zipcode, {attr: {class: inputClass, placeholder: 'Code postal'}}) }}
+                                    {{ form_errors(infoForm.address.zipcode) }}
+                                </div>
+                                <div>
+                                    {{ form_widget(infoForm.address.city, {attr: {class: inputClass, placeholder: 'Ville'}}) }}
+                                    {{ form_errors(infoForm.address.city) }}
+                                </div>
+                            </div>
+
+                            {{ form_widget(infoForm.address.country, {attr: {class: inputClass}}) }}
+                            {{ form_errors(infoForm.address.country) }}
+                        </div>
+                    </div>
+
+                    <div class="{{ rowClass }}">
+                        <span>Adresse e-mail</span>
+                        <div>
+                            <span>{{ activeUser.email }}</span>
+                            <p class="text-xs opacity-60 mt-1">L'adresse e-mail ne peut pas être modifiée.</p>
+                        </div>
+                    </div>
+
+                    <div class="{{ rowClass }}">
+                        <span>Mot de passe</span>
+                        <div class="grid gap-3">
+                            <p class="text-xs opacity-60">
+                                Laissez ces champs vides pour garder votre mot de passe.
+                                Le mot de passe actuel est requis pour en définir un nouveau.
+                            </p>
+
+                            {{ form_widget(infoForm.currentPassword, {attr: {class: inputClass, placeholder: 'Mot de passe actuel'}}) }}
+                            {{ form_errors(infoForm.currentPassword) }}
+
+                            {{ form_widget(infoForm.newPassword.first, {attr: {class: inputClass, placeholder: 'Nouveau mot de passe'}}) }}
+                            {{ form_widget(infoForm.newPassword.second, {attr: {class: inputClass, placeholder: 'Confirmer le nouveau mot de passe'}}) }}
+                            {{ form_errors(infoForm.newPassword) }}
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end items-center gap-4 mt-6">
+                        <a href="{{ path('app_profile') }}" id="profile-cancel" class="underline">Annuler</a>
+                        <button type="submit"
+                                class="bg-[var(--dark)] text-[var(--light)] text-sm px-5 py-2 rounded-md cursor-pointer">
+                            Valider
+                        </button>
+                    </div>
+
+                    {{ form_end(infoForm) }}
+                </div>
+
+            </div>
+        </section>
+
+        <div class="flex justify-center my-10">
+            <a href="{{ path('app_logout') }}"
+               class="bg-[var(--dark)] text-[var(--light)] text-sm px-5 py-2 rounded-md">
+                Se déconnecter
+            </a>
+        </div>
 
     </main>
 

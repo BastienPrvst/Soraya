@@ -20,4 +20,8 @@ framework:
             policy: 'fixed_window'
             limit: 1
             interval: '5 minutes'
+        profil:
+            policy: 'fixed_window'
+            limit: 1
+            interval: '1 minutes'
 

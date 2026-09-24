@@ -34,4 +34,20 @@ if (!window.__ordersToggleInit) {
             moreBtn.textContent = expanded ? 'Voir le reste des commandes' : 'Masquer les commandes';
         }
     });
+
+    document.addEventListener('click', (e) => {
+        const box = document.getElementById('profile-info');
+        if (!box) return;
+
+        if (e.target.closest('#profile-edit')) {
+            box.classList.add('is-editing');
+        }
+
+        const cancel = e.target.closest('#profile-cancel');
+        if (cancel && !box.hasAttribute('data-submitted')) {
+            e.preventDefault();
+            box.classList.remove('is-editing');
+            box.querySelector('form').reset();
+        }
+    });
 }

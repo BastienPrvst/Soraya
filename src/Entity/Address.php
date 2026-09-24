@@ -40,7 +40,7 @@ class Address
     #[ORM\Column(nullable: true)]
     private ?bool $isActive = null;
 
-    #[ORM\ManyToOne(inversedBy: 'addresses')]
+    #[ORM\OneToOne(inversedBy: 'address')]
     private ?User $user = null;
 
     /**
@@ -190,5 +190,15 @@ class Address
             'MC' => 'Monaco',
             default => $this->getCountry(),
         };
+    }
+
+    public function getOneLine(): string
+    {
+        return implode(', ', array_filter([
+            $this->street1,
+            $this->street2,
+            trim($this->zipcode . ' ' . $this->city),
+            $this->getFullCountry(),
+        ]));
     }
 }

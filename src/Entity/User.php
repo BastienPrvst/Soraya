@@ -47,11 +47,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
-    /**
-     * @var Collection<int, Address>
-     */
-    #[ORM\OneToMany(targetEntity: Address::class, mappedBy: 'user')]
-    private Collection $addresses;
+    #[ORM\OneToOne(targetEntity: Address::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    private ?Address $address = null;
 
     #[ORM\Column(length: 255)]
     #[Assert\NotBlank(
@@ -97,7 +94,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->addresses = new ArrayCollection();
         $this->orders = new ArrayCollection();
     }
 
@@ -176,32 +172,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $data;
     }
 
-    /**
-     * @return Collection<int, Address>
-     */
-    public function getAddresses(): Collection
+    public function getAddress(): ?Address
     {
-        return $this->addresses;
+        return $this->address;
     }
 
-    public function addAddress(Address $address): static
+    public function setAddress(?Address $address): static
     {
-        if (!$this->addresses->contains($address)) {
-            $this->addresses->add($address);
+
+        if ($address === null && $this->address !== null) {
+            $this->address->setUser(null);
+        }
+
+        if ($address !== null && $address->getUser() !== $this) {
             $address->setUser($this);
         }
 
-        return $this;
-    }
-
-    public function removeAddress(Address $address): static
-    {
-        if ($this->addresses->removeElement($address)) {
-            // set the owning side to null (unless already changed)
-            if ($address->getUser() === $this) {
-                $address->setUser(null);
-            }
-        }
+        $this->address = $address;
 
         return $this;
     }
