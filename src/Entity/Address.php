@@ -174,9 +174,9 @@ class Address
         return $this->country;
     }
 
-    public function setCountry(string $country): static
+    public function setCountry(?string $country): static
     {
-        $this->country = $country;
+        $this->country = $country ?? '';
 
         return $this;
     }

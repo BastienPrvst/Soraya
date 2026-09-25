@@ -50,4 +50,11 @@ if (!window.__ordersToggleInit) {
             box.querySelector('form').reset();
         }
     });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#address-erase')) return;
+
+        document.querySelectorAll('#address-fields input, #address-fields select')
+            .forEach((field) => (field.value = ''));
+    });
 }

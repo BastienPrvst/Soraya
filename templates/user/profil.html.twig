@@ -63,7 +63,7 @@
                                             <div class="px-4 pt-2 pb-6">
                                                 <ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-x-4 gap-y-5">
                                                     {% for item in order.orderItems %}
-                                                        <li class="flex gap-2 text-xs">
+                                                        <li class="flex gap-2 text-base">
                                                             {% if item.product.mainImage is not null %}
                                                                 <img src="{{ vich_uploader_asset(item.product.mainImage, 'imageFile') }}"
                                                                      alt="{{ item.product.name }} - image"
@@ -81,7 +81,7 @@
                                                             </div>
                                                         </li>
                                                     {% else %}
-                                                        <li class="text-xs">Aucun produit pour cette commande.</li>
+                                                        <li class="text-base">Aucun produit pour cette commande.</li>
                                                     {% endfor %}
                                                 </ul>
                                             </div>
@@ -183,8 +183,12 @@
                     </div>
 
                     <div class="{{ rowClass }}">
-                        <span>Adresse de livraison</span>
-                        <div class="grid gap-3">
+                        <p class="h-full flex flex-col justify-between">
+                            Adresse de livraison <br>
+                            <span id="address-erase" class="underline cursor-pointer">Supprimer l'adresse</span>
+
+                        </p>
+                        <div id="address-fields" class="grid gap-3">
                             {{ form_widget(infoForm.address.street1, {attr: {class: inputClass, placeholder: 'Adresse'}}) }}
                             {{ form_errors(infoForm.address.street1) }}
 
@@ -211,24 +215,41 @@
                         <span>Adresse e-mail</span>
                         <div>
                             <span>{{ activeUser.email }}</span>
-                            <p class="text-xs opacity-60 mt-1">L'adresse e-mail ne peut pas être modifiée.</p>
+                            <p class="text-base opacity-60 mt-1">L'adresse e-mail ne peut pas être modifiée.</p>
                         </div>
                     </div>
 
                     <div class="{{ rowClass }}">
                         <span>Mot de passe</span>
                         <div class="grid gap-3">
-                            <p class="text-xs opacity-60">
+                            <p class="text-base opacity-60">
                                 Laissez ces champs vides pour garder votre mot de passe.
                                 Le mot de passe actuel est requis pour en définir un nouveau.
                             </p>
 
-                            {{ form_widget(infoForm.currentPassword, {attr: {class: inputClass, placeholder: 'Mot de passe actuel'}}) }}
+                            {{ form_widget(infoForm.currentPassword, {
+                                attr: {
+                                    class: inputClass,
+                                    placeholder: 'Mot de passe actuel'
+                                }
+                            }) }}
                             {{ form_errors(infoForm.currentPassword) }}
 
-                            {{ form_widget(infoForm.newPassword.first, {attr: {class: inputClass, placeholder: 'Nouveau mot de passe'}}) }}
-                            {{ form_widget(infoForm.newPassword.second, {attr: {class: inputClass, placeholder: 'Confirmer le nouveau mot de passe'}}) }}
+                            {{ form_widget(infoForm.newPassword, {
+                                attr: {
+                                    class: inputClass,
+                                    placeholder: 'Nouveau mot de passe'
+                                }
+                            }) }}
                             {{ form_errors(infoForm.newPassword) }}
+
+                            {{ form_widget(infoForm.newPasswordConfirmation, {
+                                attr: {
+                                    class: inputClass,
+                                    placeholder: 'Confirmer le nouveau mot de passe'
+                                }
+                            }) }}
+                            {{ form_errors(infoForm.newPasswordConfirmation) }}
                         </div>
                     </div>
 
@@ -248,8 +269,19 @@
 
         <div class="flex justify-center my-10">
             <a href="{{ path('app_logout') }}"
-               class="bg-[var(--dark)] text-[var(--light)] text-sm px-5 py-2 rounded-md">
-                Se déconnecter
+               class="bg-[var(--dark)] text-[var(--light)] text-sm px-5 py-2 rounded-md flex items-center">
+                <svg class="pr-2" width="23" height="23" viewBox="0 0 23 23" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <g clip-path="url(#clip0_726_6992)">
+                        <path d="M8.55631 21.2973C7.876 21.2973 7.19568 21.2973 6.51536 21.2973C5.65188 21.2973 4.7884 21.2973 3.89875 21.2973C2.56428 21.2973 1.72696 20.4328 1.7008 19.0968C1.7008 18.7039 1.7008 18.2847 1.7008 17.8918V4.00797C1.7008 3.32688 1.85779 2.82916 2.22412 2.43622C2.64278 1.96469 3.19226 1.72893 3.92491 1.72893C5.44255 1.72893 6.98635 1.72893 8.50398 1.72893C8.66098 1.72893 8.87031 1.70273 9.0273 1.59795C9.3413 1.38838 9.49829 0.995444 9.39363 0.628702C9.31513 0.261959 9.00114 0 8.58248 0C6.96018 0 5.36405 0 3.74175 0C1.64846 0 0 1.65034 0 3.77221C0 5.55353 0 7.30866 0 9.08998V11.5V13.91C0 15.6913 0 17.4465 0 19.2278C0 21.0353 1.22981 22.5547 3.0091 22.9214C3.29693 22.9738 3.58476 22.9738 3.89875 22.9738H3.95108H5.10239C6.2537 22.9738 7.40501 22.9738 8.55631 22.9738C8.81798 22.9738 9.0273 22.8952 9.21047 22.7118C9.36746 22.5547 9.44596 22.3451 9.44596 22.0831C9.44596 21.6378 9.05347 21.2973 8.55631 21.2973Z" fill="#E4D8C5"/>
+                        <path d="M22.6856 10.8195C20.9325 9.09055 19.2055 7.33543 17.4524 5.6065L17.4262 5.5803C17.3477 5.50172 17.2692 5.42313 17.1646 5.34454C16.9029 5.16117 16.6151 5.10878 16.3272 5.21356C16.0394 5.31834 15.8562 5.55411 15.7778 5.86846C15.6993 6.18281 15.8039 6.44477 16.1179 6.75912C16.9814 7.62358 19.7812 10.4265 19.7812 10.4265L19.9905 10.6623H6.80278C6.72428 10.6623 6.61962 10.6623 6.54112 10.6623C6.14863 10.6885 5.80847 11.0291 5.7823 11.422C5.75614 11.6839 5.83463 11.9197 5.99163 12.0769C6.17479 12.2603 6.41029 12.365 6.72428 12.365C10.8847 12.365 19.7027 12.365 19.7027 12.365H20.0167L19.8073 12.5746C18.3159 14.0678 16.0656 16.3468 15.9609 16.4516C15.7778 16.6874 15.7254 16.9755 15.8301 17.2637C15.9347 17.5256 16.1441 17.7352 16.4319 17.8138C16.7721 17.8924 17.0599 17.8138 17.3739 17.4994L18.2112 16.6612C19.7027 15.168 21.1941 13.6748 22.6856 12.1817C22.8949 11.9721 22.9996 11.7625 22.9996 11.5268C22.9996 11.2648 22.8949 11.0291 22.6856 10.8195Z" fill="#E4D8C5"/>
+                    </g>
+                    <defs>
+                        <clipPath id="clip0_726_6992">
+                            <rect width="23" height="23" fill="white"/>
+                        </clipPath>
+                    </defs>
+                </svg>
+                 Se déconnecter
             </a>
         </div>
 

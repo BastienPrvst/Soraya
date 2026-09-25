@@ -4,9 +4,7 @@ namespace App\Form;
 
 use App\Entity\Address;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\CountryType;
-use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -20,13 +18,15 @@ class AddressType extends AbstractType
             ->add('street1', TextType::class, [
                 'label' => 'Rue *',
                 'required' => false,
+                'empty_data' => '',
                 'attr' => [
                     'class' => 'street_input'
-                ]
+                ],
             ])
             ->add('street2', TextType::class, [
                 'label' => 'Rue 2',
                 'required' => false,
+                'empty_data' => '',
                 'attr' => [
                     'class' => 'street2_input'
                 ]
@@ -35,6 +35,7 @@ class AddressType extends AbstractType
             ->add('city', TextType::class, [
                 'label' => 'Ville *',
                 'required' => false,
+                'empty_data' => '',
                 'attr' => [
                     'class' => 'city_input'
                 ]
@@ -42,13 +43,16 @@ class AddressType extends AbstractType
             ->add('zipcode', TextType::class, [
                 'label' => 'Code postal *',
                 'required' => false,
+                'empty_data' => '',
                 'attr' => [
                     'class' => 'zipcode_input'
                 ]
             ])
             ->add('country', CountryType::class, [
                 'label' => 'Pays',
-                'preferred_choices' => ['FR'],
+                'placeholder' => 'Sélectionnez un pays',
+                'required' => false,
+                'empty_data' => '',
                 'choice_filter' => static function (?string $countryCode): bool {
                     return $countryCode === 'FR';
                 },
