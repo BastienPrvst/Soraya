@@ -58,15 +58,33 @@ class OrderRepository extends ServiceEntityRepository
             OrderStatus::REFUND
         ];
 
-        return $this->createQueryBuilder('o')
-            ->where('o.user = :user')
+        $orders = $this->createQueryBuilder('o')
+            ->leftJoin('o.payment', 'pay')
+            ->addSelect('pay')
+            ->andWhere('o.user = :user')
             ->andWhere('o.status IN (:statuses)')
-            ->orderBy('o.creationDate', 'DESC')
             ->setParameter('user', $user)
             ->setParameter('statuses', $statuses)
+            ->orderBy('o.creationDate', 'DESC')
+            ->addOrderBy('o.id', 'DESC')
             ->setMaxResults(10)
             ->getQuery()
             ->getResult();
+
+        if ($orders === []) {
+            return [];
+        }
+
+        $this->createQueryBuilder('o')
+            ->select('o', 'i', 'pr')
+            ->leftJoin('o.orderItems', 'i')
+            ->leftJoin('i.product', 'pr')
+            ->where('o.id IN (:ids)')
+            ->setParameter('ids', array_map(static fn (Order $o) => $o->getId(), $orders))
+            ->getQuery()
+            ->getResult();
+
+        return $orders;
     }
 
     public function findNextToPrepare(Order $exclude): ?Order
