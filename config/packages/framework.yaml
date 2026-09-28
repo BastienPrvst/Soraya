@@ -7,7 +7,11 @@ framework:
         cookie_secure: auto
         cookie_httponly: true
         cookie_samesite: lax
-#        cookie_lifetime: 3600
+        cookie_lifetime: 86400
+        gc_maxlifetime: 86400
+        gc_probability: 1
+        gc_divisor: 100
+        save_path: '%kernel.project_dir%/var/sessions/%kernel.environment%'
     #esi: true
     #fragments: true
 

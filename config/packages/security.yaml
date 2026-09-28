@@ -30,6 +30,11 @@ security:
                 path: app_logout
                 # where to redirect after logout
                 target: app_main
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 2592000
+                path: /
+                samesite: lax
             login_throttling:
                 max_attempts: 8
                 interval: '10 minutes'
