@@ -22,14 +22,14 @@
         </div>
 
         <section class="w-full px-[var(--padX)] mt-10">
-            <div class="border border-[#453120]/60 p-8">
+            <div class="border border-[#453120]/60 p-4 md:p-8">
 
                 <h2 class="text-3xl text-[var(--dark)] mb-6">Mes dernières commandes</h2>
 
                 {% if lastOrders is not null %}
 
-                    <table class="w-full text-left table-fixed">
-                        <thead>
+                    <table class="w-full text-left table-fixed max-md:block">
+                        <thead class="max-md:hidden">
                         <tr class="text-[var(--light)]">
                             <th class="bg-[#453120]/40 px-4 py-3 font-normal rounded-l-xl">Numéro de commande</th>
                             <th class="bg-[#453120]/40 px-4 py-3 font-normal">Date</th>
@@ -40,13 +40,25 @@
                         </thead>
 
                         {% for order in lastOrders %}
-                            <tbody class="order {{ loop.index > 2 ? 'extra-order hidden' : '' }}">
-                            <tr class="order-summary">
-                                <td class="px-4 py-5">{{ order.betterId }}</td>
-                                <td class="px-4 py-5">{{ order.creationDate|format_date(pattern='d MMM y', locale='fr') }}</td>
-                                <td class="px-4 py-5">{{ order.orderTotal|number_format(2, '.', '') }} €</td>
-                                <td class="px-4 py-5">{{ order.status.label }}</td>
-                                <td class="px-4 py-5 text-right">
+                            <tbody class="order max-md:[&:not(.hidden)]:block max-md:border-b max-md:border-[#453120] max-md:pb-4 max-md:mb-4 {{ loop.index > 2 ? 'extra-order hidden' : '' }}">
+                            <tr class="order-summary max-md:block">
+                                <td data-label="Numéro de commande"
+                                    class="px-4 py-5 max-md:flex max-md:justify-between max-md:gap-2 max-md:py-2 max-md:rounded-xl max-md:bg-[#453120]/40 max-md:text-[var(--light)] max-md:before:content-[attr(data-label)]">
+                                    {{ order.betterId }}
+                                </td>
+                                <td data-label="Date"
+                                    class="px-4 py-5 max-md:flex max-md:justify-between max-md:px-2 max-md:py-2 max-md:before:content-[attr(data-label)]">
+                                    {{ order.creationDate|format_date(pattern='d MMM y', locale='fr') }}
+                                </td>
+                                <td data-label="Montant"
+                                    class="px-4 py-5 max-md:flex max-md:justify-between max-md:px-2 max-md:py-2 max-md:before:content-[attr(data-label)]">
+                                    {{ order.orderTotal|number_format(2, '.', '') }} €
+                                </td>
+                                <td data-label="Statut"
+                                    class="px-4 py-5 max-md:flex max-md:justify-between max-md:px-2 max-md:py-2 max-md:before:content-[attr(data-label)]">
+                                    {{ order.status.label }}
+                                </td>
+                                <td class="px-4 py-5 text-right max-md:flex max-md:justify-end max-md:px-2 max-md:py-1">
                                     <button type="button"
                                             class="see-order underline cursor-pointer whitespace-nowrap"
                                             aria-expanded="false"
@@ -56,8 +68,8 @@
                                 </td>
                             </tr>
 
-                            <tr class="order-details" id="order-details-{{ order.id }}">
-                                <td colspan="5" class="p-0">
+                            <tr class="order-details max-md:block" id="order-details-{{ order.id }}">
+                                <td colspan="5" class="p-0 max-md:block">
                                     <div class="details-wrap">
                                         <div class="details-inner">
                                             <div class="px-4 pt-2 pb-6">
@@ -67,10 +79,10 @@
                                                             {% if item.product.mainImage is not null %}
                                                                 <img src="{{ vich_uploader_asset(item.product.mainImage, 'imageFile') }}"
                                                                      alt="{{ item.product.name }} - image"
-                                                                     class="w-[50px] h-[62px] object-cover shrink-0">
+                                                                     class="w-[125px] md:w-[50px] aspect-3/4 object-cover shrink-0">
                                                             {% else %}
                                                                 <img src="{{ asset('images/site/placeholder.jpg') }}" alt=""
-                                                                     class="w-[50px] h-[62px] object-cover shrink-0">
+                                                                     class="w-[125px] md:w-[50px] aspect-3/4  object-cover shrink-0">
                                                             {% endif %}
                                                             <div class="flex flex-col justify-between">
                                                                 <p>{{ item.product.name }}</p>
@@ -115,7 +127,10 @@
         </section>
 
         {% set inputClass = 'w-full bg-[#f4efe2] border-b border-[#453120]/60 px-2 py-1 focus:outline-none focus:border-[var(--dark)]' %}
+
         {% set rowClass = 'grid grid-cols-1 sm:grid-cols-[14rem_1fr] gap-x-4 gap-y-2 items-start border-b border-[#453120]/60 px-4 py-5' %}
+
+        {% set readRowClass = 'grid grid-cols-[9rem_1fr] sm:grid-cols-[14rem_1fr] gap-x-4 items-start border-b border-[#453120]/60 px-2 sm:px-4 py-4 sm:py-5' %}
 
         {% set infoRows = {
             'Prénom': activeUser.firstname,
@@ -131,33 +146,32 @@
                 <p role="status" class="mb-4">{{ message }}</p>
             {% endfor %}
 
-            {# Si le formulaire revient avec des erreurs, il s'affiche directement ouvert #}
             <div id="profile-info"
-                 class="group border border-[#453120]/60 p-8 {{ infoForm.vars.submitted ? 'is-editing' }}"
+                 class="group flex flex-col md:block border border-[#453120]/60 p-4 md:p-8 {{ infoForm.vars.submitted ? 'is-editing' }}"
                  {% if infoForm.vars.submitted %}data-submitted{% endif %}>
 
-                <div class="flex justify-between items-start mb-6">
-                    <h3 class="text-3xl text-[var(--dark)]">Mes informations</h3>
+                <div class="max-md:contents md:flex md:justify-between md:items-start mb-6">
+                    <h3 class="text-3xl text-[var(--dark)] max-md:order-1 max-md:mb-6">Mes informations</h3>
                     <button type="button" id="profile-edit"
-                            class="group-[.is-editing]:hidden bg-[#453120]/40 text-[var(--light)] text-sm px-4 py-2 rounded-md cursor-pointer">
+                            class="group-[.is-editing]:hidden max-md:order-3 max-md:self-center max-md:mt-6 bg-[#453120]/40 text-[var(--light)] text-sm px-4 py-2 rounded-md cursor-pointer">
                         Modifier mes informations
                     </button>
                 </div>
 
                 {# ---------- Mode lecture ---------- #}
-                <dl class="group-[.is-editing]:hidden">
+                <dl class="group-[.is-editing]:hidden max-md:order-2">
                     {% for label, value in infoRows %}
-                        <div class="{{ rowClass }}">
+                        {# CHANGÉ : readRowClass au lieu de rowClass #}
+                        <div class="{{ readRowClass }}">
                             <dt>{{ label }}</dt>
-                            <dd>{{ value }}</dd>
+                            <dd class="break-words min-w-0">{{ value }}</dd>
                         </div>
                     {% endfor %}
                 </dl>
 
                 {# ---------- Mode édition ---------- #}
-                <div class="hidden group-[.is-editing]:block">
+                <div class="hidden group-[.is-editing]:block max-md:order-4">
 
-                    {# Les messages d'erreur (<ul>) de tout le formulaire sont stylés ici, une seule fois #}
                     {{ form_start(infoForm, {attr: {
                         novalidate: 'novalidate',
                         'data-turbo': 'false',
@@ -281,7 +295,7 @@
                         </clipPath>
                     </defs>
                 </svg>
-                 Se déconnecter
+                Se déconnecter
             </a>
         </div>
 
@@ -293,5 +307,3 @@
     {{ parent() }}
     <script src="{{ asset('js/profil.js') }}"></script>
 {% endblock %}
-
-

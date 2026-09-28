@@ -538,10 +538,8 @@ nav a, nav span {
 /*--------------------Profil----------------*/
 
 /* Traits de séparation */
-.order-summary td { border-bottom: 1px solid rgb(69 49 32 / .6); }
 .order.is-open .order-summary td { border-bottom-color: transparent; }
 .order-details td { border-bottom: 1px solid transparent; }
-.order.is-open .order-details td { border-bottom-color: rgb(69 49 32 / .6); }
 
 /* Ouverture fluide des produits */
 .details-wrap {
@@ -554,7 +552,7 @@ nav a, nav span {
 .details-inner {
     overflow: hidden;
     min-height: 0;
-    visibility: hidden;            /* évite de tabuler dans le contenu fermé */
+    visibility: hidden;
     transition: visibility .35s;
 }
 .order.is-open .details-inner { visibility: visible; }
@@ -569,6 +567,11 @@ nav a, nav span {
 @media (prefers-reduced-motion: reduce) {
     .details-wrap { transition: none; }
     .extra-order.is-shown { animation: none; }
+}
+
+@media (min-width: 768px){
+    .order-summary td { border-bottom: 1px solid rgb(69 49 32 / .6); }
+    .order.is-open .order-details td { border-bottom-color: rgb(69 49 32 / .6); }
 }
 
 

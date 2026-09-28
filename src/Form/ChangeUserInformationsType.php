@@ -44,6 +44,9 @@ class ChangeUserInformationsType extends AbstractType
                 'label' => 'Nouveau mot de passe',
                 'mapped' => false,
                 'required' => false,
+                'help' =>
+                    'Le mot de passe doit contenir 8 caractères dont une majuscule,
+                         une minuscule, un chiffre et un caractère spécial.',
                 'attr' => [
                     'autocomplete' => 'new-password',
                 ],

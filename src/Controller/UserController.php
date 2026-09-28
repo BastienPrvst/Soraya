@@ -21,27 +21,8 @@ final class UserController extends AbstractController
     {
     }
 
-    #[Route(path: '/mon-profil', name: 'app_profile', methods: ['GET'])]
-    public function showProfile(OrderRepository $orderRepository): Response
-    {
-        $user = $this->getUser();
-        if (!$user instanceof User) {
-            return $this->redirectToRoute('app_login');
-        }
-
-        $form = $this->createForm(ChangeUserInformationsType::class, $user, [
-            'action' => $this->generateUrl('app_profile_update'),
-        ]);
-
-        return $this->render('user/profil.html.twig', [
-            'activeUser' => $user,
-            'lastOrders' => $orderRepository->getLastTenOrders($user),
-            'infoForm' => $form,
-        ]);
-    }
-
-    #[Route(path: '/mon-profil/update', name: 'app_profile_update', methods: ['POST'])]
-    public function updateProfile(
+    #[Route(path: '/mon-profil', name: 'app_profile', methods: ['GET', 'POST'])]
+    public function profile(
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $hasher,
@@ -54,77 +35,78 @@ final class UserController extends AbstractController
             return $this->redirectToRoute('app_login');
         }
 
-        $limiter = $profilLimiter->create($request->getClientIp());
-        if (false === $limiter->consume(1)->isAccepted()) {
-            $this->addFlash('error', 'Veuillez patienter pour effectuer un nouveau changement de vos informations.');
-            return $this->redirectToRoute('app_profile');
-        }
-
-        $form = $this->createForm(ChangeUserInformationsType::class, $user, [
-            'action' => $this->generateUrl('app_profile_update'),
-        ]);
+        $form = $this->createForm(ChangeUserInformationsType::class, $user);
         $form->handleRequest($request);
 
-        $currentPassword = $form->get('currentPassword')->getData();
-        $newPassword = $form->get('newPassword')->getData();
-        $confirmation = $form->get('newPasswordConfirmation')->getData();
+        $status = Response::HTTP_OK;
 
-        if ($newPassword && !$currentPassword) {
-            $form->get('currentPassword')->addError(
-                new FormError('Le mot de passe actuel doit être indiqué.')
-            );
-        }
-
-        if ($newPassword && $form->isSubmitted()) {
-            if (!$hasher->isPasswordValid($user, $currentPassword)) {
-                $form->get('currentPassword')->addError(
-                    new FormError('Le mot de passe actuel est incorrect.')
-                );
+        if ($form->isSubmitted()) {
+            $limiter = $profilLimiter->create($request->getClientIp());
+            if (false === $limiter->consume(1)->isAccepted()) {
+                $this->addFlash('error', 'Veuillez patienter pour effectuer un nouveau changement de vos informations.');
+                return $this->redirectToRoute('app_profile');
             }
 
-            if ($newPassword !== $confirmation) {
-                $form->get('newPasswordConfirmation')->addError(
-                    new FormError('Les mots de passe ne correspondent pas.')
-                );
+            $currentPassword = $form->get('currentPassword')->getData();
+            $newPassword = $form->get('newPassword')->getData();
+            $confirmation = $form->get('newPasswordConfirmation')->getData();
+
+            if (!$currentPassword && $newPassword) {
+                $form->get('currentPassword')->addError(new FormError('Le mot de passe actuel doit être indiqué.'));
             }
-        }
 
-        $addressForm = $form->get('address');
-        $fields = ['street1', 'street2', 'zipcode', 'city', 'country'];
-
-        $isAddressTouched = false;
-        foreach ($fields as $field) {
-            if (trim((string) $addressForm->get($field)->getData()) !== '') {
-                $isAddressTouched = true;
-                break;
+            if (!$newPassword && $currentPassword) {
+                $form->get('newPassword')->addError(new FormError('Veuillez renseigner un nouveau mot de passe.'));
             }
-        }
 
-        if (!$isAddressTouched) {
-            $user->setAddress(null);
-        } else {
-            $violations = $validator->validate($user->getAddress());
-            foreach ($violations as $violation) {
-                $path = $violation->getPropertyPath();
-                $target = $addressForm->has($path) ? $addressForm->get($path) : $addressForm;
-                $target->addError(new FormError($violation->getMessage()));
+            if ($currentPassword && $newPassword) {
+                if (!$hasher->isPasswordValid($user, $currentPassword)) {
+                    $form->get('currentPassword')->addError(new FormError('Le mot de passe actuel est incorrect.'));
+                }
+
+                if ($newPassword !== $confirmation) {
+                    $form->get('newPasswordConfirmation')->addError(new FormError(
+                        'Les mots de passe ne correspondent pas.'
+                    ));
+                }
             }
-        }
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            if ($newPassword) {
-                $user->setPassword($hasher->hashPassword($user, $newPassword));
+            $addressForm = $form->get('address');
+            $isAddressTouched = false;
+            foreach (['street1', 'street2', 'zipcode', 'city', 'country'] as $field) {
+                if (trim((string) $addressForm->get($field)->getData()) !== '') {
+                    $isAddressTouched = true;
+                    break;
+                }
             }
-            $em->flush();
 
-            $this->addFlash('success', 'Vos informations ont été mises à jour.');
-            return $this->redirectToRoute('app_profile');
+            if (!$isAddressTouched) {
+                $user->setAddress(null);
+            } else {
+                foreach ($validator->validate($user->getAddress()) as $violation) {
+                    $path = $violation->getPropertyPath();
+                    $target = $addressForm->has($path) ? $addressForm->get($path) : $addressForm;
+                    $target->addError(new FormError($violation->getMessage()));
+                }
+            }
+
+            if ($form->isValid()) {
+                if ($newPassword) {
+                    $user->setPassword($hasher->hashPassword($user, $newPassword));
+                }
+                $em->flush();
+
+                $this->addFlash('success', 'Vos informations ont été mises à jour.');
+                return $this->redirectToRoute('app_profile');
+            }
+
+            $status = Response::HTTP_UNPROCESSABLE_ENTITY;
         }
 
         return $this->render('user/profil.html.twig', [
             'activeUser' => $user,
             'lastOrders' => $orderRepository->getLastTenOrders($user),
             'infoForm' => $form,
-        ], new Response('', Response::HTTP_UNPROCESSABLE_ENTITY));
+        ], new Response('', $status));
     }
 }

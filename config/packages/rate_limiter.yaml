@@ -23,5 +23,5 @@ framework:
         profil:
             policy: 'fixed_window'
             limit: 1
-            interval: '1 minutes'
+            interval: '30 seconds'
 
