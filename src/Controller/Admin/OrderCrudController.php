@@ -152,7 +152,9 @@ class OrderCrudController extends AbstractCrudController
                     ->linkToRoute('admin_delivery')
                     ->renderAsButton()
                     ->displayIf(static function (Order $order) {
-                        return $order->getStatus()?->isAtLeast(OrderStatus::PENDING_SHIPPING);
+                        return (
+                            $order->getStatus()?->isAtLeast(OrderStatus::PENDING_SHIPPING) &&
+                            !$order->getStatus()?->isAtLeast(OrderStatus::PENDING_REFUND));
                     })
             )
             ->addAction(
