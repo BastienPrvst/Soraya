@@ -2,9 +2,11 @@
 
 namespace App\Controller\Admin;
 
+use App\Entity\Category;
 use App\Entity\Product;
 use App\Form\Admin\ImageType;
 use App\Repository\ParameterRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\ActionGroup;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Crud;
@@ -79,11 +81,64 @@ class ProductCrudController extends AbstractCrudController
 
     public function configureFields(string $pageName): iterable
     {
-        if ($pageName === CRUD::PAGE_INDEX) {
+        if ($pageName === Crud::PAGE_INDEX) {
             return $this->getIndexFields();
         }
 
         return $this->getFormFields();
+    }
+
+    /**
+     * Création : on ajoute d'abord les nouvelles catégories saisies dans le formulaire.
+     */
+    public function persistEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof Product) {
+            $this->addNewCategories($entityManager, $entityInstance);
+        }
+
+        parent::persistEntity($entityManager, $entityInstance);
+    }
+
+    /**
+     * Modification : même logique.
+     */
+    public function updateEntity(EntityManagerInterface $entityManager, $entityInstance): void
+    {
+        if ($entityInstance instanceof Product) {
+            $this->addNewCategories($entityManager, $entityInstance);
+        }
+
+        parent::updateEntity($entityManager, $entityInstance);
+    }
+
+    /**
+     * Lit le champ non mappé "newCategories" (noms séparés par des virgules),
+     * réutilise les catégories déjà existantes et crée les autres.
+     */
+    private function addNewCategories(EntityManagerInterface $entityManager, Product $product): void
+    {
+        $formData = $this->getContext()->getRequest()->request->all('Product');
+        $raw = $formData['newCategories'] ?? '';
+
+        if (!is_string($raw) || trim($raw) === '') {
+            return;
+        }
+
+        $names = array_unique(array_filter(array_map('trim', explode(',', $raw))));
+        $repository = $entityManager->getRepository(Category::class);
+
+        foreach ($names as $name) {
+            $category = $repository->findOneBy(['name' => $name]);
+
+            if (!$category) {
+                $category = new Category();
+                $category->setName($name);
+                $entityManager->persist($category);
+            }
+
+            $product->addCategory($category);
+        }
     }
 
     private function getIndexFields(): iterable
@@ -133,8 +188,8 @@ class ProductCrudController extends AbstractCrudController
             FormField::addColumn(6),
             FormField::addFieldset(),
             IntegerField::new('id')
-            ->setLabel('ID')
-            ->setDisabled(),
+                ->setLabel('ID')
+                ->setDisabled(),
             TextField::new('name')
                 ->setLabel('Nom')
                 ->setCssClass('fw-bold')
@@ -185,9 +240,19 @@ class ProductCrudController extends AbstractCrudController
             ,
             AssociationField::new('category')
                 ->setLabel('Catégories')
+                ->setColumns(6)
                 ->formatValue(function ($value) {
                     return implode(', ', $value->map(fn($c) => $c->getName())->toArray());
                 }),
+            TextField::new('newCategories')
+                ->setLabel('Nouvelles catégories')
+                ->setHelp('Optionnel : saisis un ou plusieurs noms séparés par des virgules. Ceux qui existent déjà sont réutilisés.')
+                ->setFormTypeOptions([
+                    'mapped' => false,
+                    'required' => false,
+                ])
+                ->setColumns(6)
+                ->onlyOnForms(),
 
             FormField::addColumn(6),
             FormField::addFieldset(),

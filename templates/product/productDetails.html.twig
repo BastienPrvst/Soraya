@@ -14,18 +14,23 @@
 
 {% block body %}
 
+    {% set collapses = [
+        { title: 'Ingrédients :', content: product.ingredients },
+        { title: "Conseils d'utilisation", content: product.useAdvice },
+        { title: 'Bienfaits :', content: product.benefits },
+        { title: 'Conseils ciblés :', content: product.targetAdvice },
+    ] %}
+
     <main class="bg-[var(--light)]">
 
-        <section class="px-[var(--padX)] mb-[5vh] pt-[20%] md:pt-[7%] lg:pt-[5%]">
+        <section class="px-[var(--padX)] mb-[5vh] pt-[20%] md:pt-[7%] lg:pt-[10%]">
 
-            <div class="md:flex md:flex-col flex-wrap md:max-h-[100vh] md:items-center">
-                <h1 class="h-auto text-center text-wrap text-4xl text-[var(--dark)] md:order-2 md:w-[45%] md:pt-[10%] md:text-start md:border-b-2 md:border-[var(--dark)] md:pb-5 break-words"> {{ product.name|capitalize }} </h1>
+            <div class="grid grid-cols-1 gap-y-6 md:pb-[5vh] md:pb-8 md:grid-cols-2 md:gap-x-10 md:items-start">
 
-                {# Carousel des images du produit #}
-                <div class="w-full max-w-md mx-auto my-8 md:order-1 md:h-[100vh] box-border md:w-[50%] md:pr-5 xl:mx-0 xl:h-max">
+                <div class="min-w-0 w-full max-w-md mx-auto md:row-span-2 md:sticky md:top-24">
 
                     {# Carousel principal #}
-                    <div class="swiper main-swiper h-[60vh] overflow-hidden opacity-0 transition-opacity duration-200">
+                    <div class="swiper main-swiper h-[60vh] w-full overflow-hidden opacity-0 transition-opacity duration-200">
                         <div class="swiper-wrapper">
                             {% for img in product.images %}
                                 <div class="swiper-slide">
@@ -33,6 +38,7 @@
                                         src="{{ vich_uploader_asset(img, 'imageFile') }}"
                                         alt="{{ product.name }} - image {{ loop.index }}"
                                         class="w-full h-full object-cover"
+                                        {% if not loop.first %}loading="lazy"{% endif %}
                                     >
                                 </div>
                             {% endfor %}
@@ -42,74 +48,64 @@
                         <div class="swiper-button-next !text-[var(--dark)]"></div>
                     </div>
 
-                    {# Miniatures — visibles à partir de md #}
+                    {# Miniatures — visibles à partir de md, uniquement s'il y a plusieurs images #}
                     {% if product.images|length > 1 %}
-                        <div class="swiper thumb-swiper !hidden md:!block mt-1 opacity-0 transition-opacity duration-200">
-                            <div class="swiper-wrapper h-auto">
+                        <div class="swiper thumb-swiper !hidden md:!block mt-1 w-full opacity-0 transition-opacity duration-200">
+                            <div class="swiper-wrapper">
                                 {% for img in product.images %}
                                     <div class="swiper-slide cursor-pointer opacity-50 aspect-3/4">
                                         <img
                                             src="{{ vich_uploader_asset(img, 'imageFile') }}"
                                             alt="{{ product.name }} - miniature {{ loop.index }}"
                                             class="w-full h-full object-cover"
+                                            loading="lazy"
                                         >
                                     </div>
                                 {% endfor %}
                             </div>
                         </div>
+                    {% endif %}
+                </div>
 
-                    {% else %}
+                {# ---------- Titre (droite, haut) ---------- #}
+                <h1 class="min-w-0 text-center text-4xl text-[var(--dark)] break-words md:text-start md:border-b-2 md:border-[var(--dark)] md:pb-5 md:self-end">
+                    {{ product.name|capitalize }}
+                </h1>
 
-                        {% for i in 1..3 %}
-                            <div class="swiper thumb-swiper !hidden md:!block mt-1 opacity-0 transition-opacity duration-200">
-                                <div class="swiper-wrapper h-auto">
-                                    {% for img in product.images %}
-                                        <div class="swiper-slide opacity-50 aspect-3/4">
+                {# ---------- Infos + achat (droite, bas) ---------- #}
+                <div class="min-w-0 flex flex-col gap-6 md:self-start">
 
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                            </div>
-                        {% endfor %}
+                    <div class="wrap-break-word">
+                        <h2 class="text-[var(--dark)] text-3xl pb-3">Description :</h2>
+                        <div>{{ product.smallDescription|raw }}</div>
+                    </div>
+
+                    {% if product.capacity %}
+                        <span class="border rounded-xl px-3 py-1 text-center w-fit">{{ product.capacity }}</span>
                     {% endif %}
 
-                </div>
+                    <form action="{{ path('app_shopping_cart_add', {pageId: product.id}) }}" method="post" class="flex flex-col gap-4 pb-6">
+                        <input name="productId" type="hidden" value="{{ product.id }}">
+                        <input id="quantity-input" name="quantity" type="hidden" value="1">
 
-                <div class="px-[var(--padX)] w-full md:min-h-[100%] md:order-3 md:w-[45%] md:px-0 md:h-[75%]">
-                    <div class="flex flex-col h-full md:justify-between">
+                        <span class="text-xl">{{ product.price }}€</span>
 
-                        <div class="md:pt-8 wrap-break-word">
-                            <h2 class="text-[var(--dark)] text-3xl pb-3">Description :</h2>
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <div class="inline-flex items-center border border-[var(--dark)] rounded-lg px-4 py-2 gap-4">
+                                <button type="button" data-qty-btn="-1" aria-label="Diminuer la quantité" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">−</button>
+                                <span id="quantity-display" class="text-base w-4 text-center leading-none">1</span>
+                                <button type="button" data-qty-btn="1" aria-label="Augmenter la quantité" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">+</button>
+                            </div>
 
-                            <p>{{ product.smallDescription|raw }}</p> <br>
+                            <input
+                                type="submit"
+                                value="{{ product.stock > 0 ? 'Ajouter au panier' : 'Rupture' }}"
+                                {% if product.stock <= 0 %}disabled{% endif %}
+                                class="buy-button text-lg bg-white rounded-lg py-3 px-5 cursor-pointer transition ease-in-out hover:bg-[var(--dark)] hover:text-white disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-inherit"
+                            >
                         </div>
-                        <span class="border-1 rounded-xl p-1 text-center w-min mb-8">{{ product.capacity }}</span>
-
-
-
-                            <form action="{{ path('app_shopping_cart_add', {pageId : product.id}) }}" method="post" class="flex justify-between items-center flex-wrap pb-6">
-                                <input name="productId" type="hidden" value="{{ product.id }}">
-                                <input id="quantity-input" name="quantity" type="hidden" value="1">
-
-                                <span class="text-xl w-full pl-3">{{ product.price }}€</span>
-
-                                <div class="inline-flex items-center border border-[var(--dark)] rounded-lg px-4 py-2 gap-4">
-                                    <button type="button" data-qty-btn="-1" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">−</button>
-                                    <span id="quantity-display" class="text-base w-4 text-center leading-none">1</span>
-                                    <button type="button" data-qty-btn="1" class="appearance-none bg-transparent border-0 p-0 m-0 text-lg leading-none cursor-pointer">+</button>
-                                </div>
-
-                                {% if product.stock > 0 %}
-
-                                    <input class="self-end buy-button text-lg bg-white rounded-lg py-3 px-5 cursor-pointer hover:bg-[var(--dark)] hover:text-white transition delay-50 ease-in-out" type="submit" value="Ajouter au panier">
-                                {% else %}
-                                    <input class="self-end buy-button text-lg bg-white rounded-lg py-3 px-5 cursor-pointer hover:bg-[var(--dark)] hover:text-white transition delay-50 ease-in-out"  disabled type="submit" value="Rupture">
-                                {% endif %}
-                            </form>
-
-                    </div>
+                    </form>
                 </div>
-
 
             </div>
 
@@ -118,99 +114,44 @@
         </section>
 
 
+        {# ============ DESCRIPTION + SECTIONS REPLIABLES ============ #}
         <section class="px-[clamp(1rem,3vw,4rem)] w-full">
 
             <div class="border-b-2 border-[var(--dark)] pb-6 mb-2 wrap-break-word">
                 <h3 class="text-xl py-5">Description :</h3>
-
                 {{ product.description|raw }}
             </div>
 
-            {% if product.ingredients %}
-                <div class="collapse-div border-b-2 border-[var(--dark)]">
-                    <h3 class="uppercase">
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
-                            Ingrédients :
-                            <span class="collapse-icon shrink-0"></span>
-                        </button>
-                    </h3>
-                    <div class="collapse-content">
-                        <div class="collapse-inner wrap-break-word">
-                            {{ product.ingredients|raw }}
+            {% for item in collapses %}
+                {% if item.content %}
+                    <div class="collapse-div border-b-2 border-[var(--dark)]">
+                        <h3>
+                            <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
+                                {{ item.title }}
+                                <span class="collapse-icon shrink-0"></span>
+                            </button>
+                        </h3>
+                        <div class="collapse-content">
+                            <div class="collapse-inner wrap-break-word">
+                                {{ item.content|raw }}
+                            </div>
                         </div>
                     </div>
-                </div>
-            {% endif %}
-
-            {% if product.useAdvice %}
-                <div class="collapse-div border-b-2 border-[var(--dark)]">
-                    <h3 class="uppercase">
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
-                            Conseils d'utilisation
-                            <span class="collapse-icon shrink-0"></span>
-                        </button>
-                    </h3>
-                    <div class="collapse-content">
-                        <div class="collapse-inner wrap-break-word">
-                            {{ product.useAdvice|raw }}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-
-            {% if product.benefits %}
-                <div class="collapse-div border-b-2 border-[var(--dark)]">
-                    <h3>
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
-                            Bienfaits :
-                            <span class="collapse-icon shrink-0"></span>
-                        </button>
-                    </h3>
-                    <div class="collapse-content">
-                        <div class="collapse-inner wrap-break-word">
-                            {{ product.benefits|raw }}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-
-
-
-            {% if product.targetAdvice %}
-                <div class="collapse-div border-b-2 border-[var(--dark)]">
-                    <h3 class="uppercase">
-                        <button type="button" class="collapse-trigger flex items-center justify-between w-full py-4 text-left uppercase text-xl !font-[Staatliches]">
-                            Conseils ciblés :
-                            <span class="collapse-icon shrink-0"></span>
-                        </button>
-                    </h3>
-                    <div class="collapse-content">
-                        <div class="collapse-inner wrap-break-word">
-                            {{ product.targetAdvice|raw }}
-                        </div>
-                    </div>
-                </div>
-            {% endif %}
-
-
+                {% endif %}
+            {% endfor %}
 
         </section>
 
+
+        {# ============ VISUELS ============ #}
         <section class="px-[var(--padX)] w-full py-[10vh]">
             <div class="flex flex-col md:flex-row">
-                <img class="aspect-3/4 w-full md:w-1/3 h-auto" src="{{ asset('images/site/bottle.png') }}" alt="">
-                <img class="aspect-3/4 w-full md:w-1/3" src="{{ asset('images/site/pile.png') }}" alt="">
-                <img class="aspect-3/4 w-full hidden md:block md:w-1/3" src="{{ asset('images/site/goutte.png') }}" alt="">
+                <img class="aspect-3/4 w-full md:w-1/3 h-auto object-cover" src="{{ asset('images/site/bottle.png') }}" alt="" loading="lazy">
+                <img class="aspect-3/4 w-full md:w-1/3 object-cover" src="{{ asset('images/site/pile.png') }}" alt="" loading="lazy">
+                <img class="aspect-3/4 w-full hidden md:block md:w-1/3 object-cover" src="{{ asset('images/site/goutte.png') }}" alt="" loading="lazy">
             </div>
         </section>
-
-
 
     </main>
 
 {% endblock %}
-
-
-
-
-

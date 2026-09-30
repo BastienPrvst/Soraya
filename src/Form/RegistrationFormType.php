@@ -14,14 +14,25 @@ use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Validator\Constraints\Length;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Regex;
 
 class RegistrationFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
+
+    public function __construct(
+        private readonly UrlGeneratorInterface $urlGenerator,
+    ) {
+    }
+
+    public function buildForm(
+        FormBuilderInterface $builder,
+        array $options,
+    ): void {
+        $cguUrl = $this->urlGenerator->generate('app_main');
+
         $builder
             ->add('email', EmailType::class, [
                 'label' => 'Email',
@@ -83,7 +94,12 @@ class RegistrationFormType extends AbstractType
                 'required' => false,
             ])
             ->add('cgu', CheckboxType::class, [
-                'label' => 'J\'accepte les conditions générales de vente et la politique de confidentialité.',
+                'label' => sprintf(
+                    'J\'accepte les <a href="%s" target="_blank"
+                    rel="noopener" class="underline">conditions générales de vente et la politique de confidentialité</a>.',
+                    $cguUrl
+                ),
+                'label_html' => true,
                 'required' => true,
                 'mapped' => false,
             ])

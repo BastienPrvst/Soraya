@@ -30,6 +30,7 @@
 {% endblock %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script src="https://js.stripe.com/clover/stripe.js"></script>
     <script src="{{ asset('js/checkout.js') }}" defer></script>
     <script>
