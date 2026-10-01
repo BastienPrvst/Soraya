@@ -112,10 +112,6 @@ class ProductCrudController extends AbstractCrudController
         parent::updateEntity($entityManager, $entityInstance);
     }
 
-    /**
-     * Lit le champ non mappé "newCategories" (noms séparés par des virgules),
-     * réutilise les catégories déjà existantes et crée les autres.
-     */
     private function addNewCategories(EntityManagerInterface $entityManager, Product $product): void
     {
         $formData = $this->getContext()->getRequest()->request->all('Product');
@@ -168,7 +164,9 @@ class ProductCrudController extends AbstractCrudController
                 ->setLabel('Prix')
                 ->setStoredAsCents(false),
             PercentField::new('percentageDiscount')
-                ->setLabel('% Reduction'),
+                ->setLabel('% Reduction')
+                ->setStoredAsFractional(false)
+                ->setNumDecimals(0),
             MoneyField::new('flatDiscount')
                 ->setLabel('Reduction en €')
                 ->setCurrency('EUR')
@@ -222,6 +220,8 @@ class ProductCrudController extends AbstractCrudController
                 ->setColumns(4),
             PercentField::new('percentageDiscount')
                 ->setLabel('% Reduction')
+                ->setStoredAsFractional(false)
+                ->setNumDecimals(0)
                 ->setColumns(4),
             MoneyField::new('flatDiscount')
                 ->setLabel('Reduction en €')
