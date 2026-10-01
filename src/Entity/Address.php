@@ -201,4 +201,11 @@ class Address
             $this->getFullCountry(),
         ]));
     }
+
+    public function __clone()
+    {
+        $this->id = null;
+        $this->user = null;
+        $this->isActive = false;
+    }
 }

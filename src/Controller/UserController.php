@@ -80,10 +80,9 @@ final class UserController extends AbstractController
                 }
             }
 
-            if (!$isAddressTouched) {
-                $user->setAddress(null);
-            } else {
-                foreach ($validator->validate($user->getAddress()) as $violation) {
+            $address = $user->getAddress();
+            if ($isAddressTouched && $address) {
+                foreach ($validator->validate($address) as $violation) {
                     $path = $violation->getPropertyPath();
                     $target = $addressForm->has($path) ? $addressForm->get($path) : $addressForm;
                     $target->addError(new FormError($violation->getMessage()));
@@ -91,9 +90,19 @@ final class UserController extends AbstractController
             }
 
             if ($form->isValid()) {
+                if ($isAddressTouched) {
+                    $address?->setIsActive(true);
+                } elseif ($address) {
+                    $user->setAddress(null);
+                    if ($address->getId()) {
+                        $em->remove($address);
+                    }
+                }
+
                 if ($newPassword) {
                     $user->setPassword($hasher->hashPassword($user, $newPassword));
                 }
+
                 $em->flush();
 
                 $this->addFlash('success', 'Vos informations ont été mises à jour.');

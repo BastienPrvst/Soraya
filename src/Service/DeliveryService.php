@@ -21,22 +21,23 @@ readonly class DeliveryService
 
     public function switchRelayToDeliver(Order $order, ?User $user = null): void
     {
-        $favAddress = null;
-
-        if ($user) {
-            $favAddress = $this->addressRepository->findOneBy([
-                'user' => $user,
-                'isActive' => true
-            ]);
-        }
-
         $order->setDeliveryMode(DeliveryMode::HOME);
 
-        if ($favAddress) {
-            $order
-                ->setDeliveryAddress($favAddress)
-                ->setRelayId(null);
+        $user ??= $order->getUser();
+        $isFromRelay = $order->getRelayId() !== null;
+
+        if ($user && ($isFromRelay || !$order->getDeliveryAddress())) {
+            $favAddress = $this->addressRepository->findOneBy([
+                'user' => $user,
+                'isActive' => true,
+            ]);
+
+            if ($favAddress) {
+                $order->setDeliveryAddress(clone $favAddress);
+            }
         }
+
+        $order->setRelayId(null);
     }
 
     public function switchDeliverToRelay(Order $order): void
