@@ -76,7 +76,7 @@ class OrderItem
     #[ORM\PreUpdate]
     public function computePrices(): void
     {
-        $this->unitPrice = $this->product->getPrice();
+        $this->unitPrice = $this->product->getRealPrice();
         $this->total = $this->unitPrice * $this->quantity;
     }
 

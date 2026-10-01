@@ -20,7 +20,7 @@ final class ShoppingCartController extends AbstractController
     }
 
     #[Route('/shoppingCart/add/{pageId}', name: 'app_shopping_cart_add')]
-    public function addToCart(Request $request, int $pageId): Response
+    public function addToCart(Request $request): Response
     {
         $id = $request->request->get('productId');
         $quantity = (int) $request->request->get('quantity', 1);
@@ -33,8 +33,13 @@ final class ShoppingCartController extends AbstractController
         }
 
         if ($this->isTurboStreamRequest($request)) {
+            if ($error) {
+                $this->addFlash('error', $error);
+            } else {
+                $this->addFlash('success', 'Produit bien ajouté à votre panier');
+            }
+
             return $this->render('shopping_cart/_cart_add.stream.html.twig', [
-                'error' => $error,
                 'totalQuantityCart' => $this->getTotalQuantityCart(),
             ]);
         }

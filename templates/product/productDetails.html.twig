@@ -88,7 +88,17 @@
                         <input name="productId" type="hidden" value="{{ product.id }}">
                         <input id="quantity-input" name="quantity" type="hidden" value="1">
 
-                        <span class="text-xl">{{ product.price }}€</span>
+                        <span class="text-xl">
+                            {% if product.flatDiscount or product.percentageDiscount %}
+
+                                <span class="line-through decoration-[var(--dark)]">
+                                    {{ product.price }}€
+                                </span>
+                                {{ product.realPrice }}€
+                            {% else %}
+                                {{ product.price }}€
+                            {% endif %}
+                        </span>
 
                         <div class="flex flex-wrap items-center justify-between gap-4">
                             <div class="inline-flex items-center border border-[var(--dark)] rounded-lg px-4 py-2 gap-4">

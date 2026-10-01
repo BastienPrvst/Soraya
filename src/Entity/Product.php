@@ -60,7 +60,6 @@ class Product
     private ?float $weight = null;
 
     #[ORM\Column(type: Types::SMALLINT, nullable: true)]
-    #[Assert\Type(Types::INTEGER)]
     #[Assert\Range(min: 1, max: 100)]
     private ?int $percentageDiscount = null;
 
@@ -273,6 +272,25 @@ class Product
         $this->flatDiscount = $flatDiscount;
 
         return $this;
+    }
+
+    public function getRealPrice(): ?float
+    {
+
+        if ($this->price === null) {
+            return null;
+        }
+
+        //% en prio
+        if ($this->getPercentageDiscount()) {
+            return round($this->price * (1 - $this->getPercentageDiscount() / 100), 2);
+        }
+
+        if ($this->getFlatDiscount()) {
+            return ($this->price - $this->getFlatDiscount());
+        }
+
+        return $this->getPrice();
     }
 
     public function __toString(): string

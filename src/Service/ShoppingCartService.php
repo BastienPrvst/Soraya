@@ -139,8 +139,7 @@ class ShoppingCartService extends AbstractType
                 continue;
             }
 
-            $price = $product->getPrice();
-            $totalKart += $quantity * $price;
+            $totalKart += $quantity * $product->getRealPrice();
         }
 
         return $totalKart;
@@ -192,7 +191,8 @@ class ShoppingCartService extends AbstractType
                 'name' => $product->getName(),
                 'quantity' => $quantity,
                 'price' => $product->getPrice(),
-                'totalPrice' => $product->getPrice() * $quantity,
+                'realPrice' => $product->getRealPrice(),
+                'totalPrice' => $product->getRealPrice() * $quantity,
                 'product' => $product,
                 'image' => $product->getMainImage()
             ];

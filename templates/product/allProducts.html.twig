@@ -47,7 +47,14 @@
                                 <p class="pb-2">{{ product.name|capitalize }}</p>
                                 <div class="flex justify-between">
                                     <p>{{ product.capacity }}</p>
-                                    <p>{{ product.price }}€</p>
+                                    <p>
+                                        {% if product.flatDiscount or product.percentageDiscount %}
+                                            <span class="line-through decoration-[var(--dark)]">{{ product.price }}€</span>
+                                            {{ product.realPrice }}€
+                                        {% else %}
+                                            {{ product.price }}€
+                                        {% endif %}
+                                    </p>
                                 </div>
                             </div>
 

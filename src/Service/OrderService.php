@@ -121,7 +121,7 @@ readonly class OrderService
             ->setUser($user)
             ->setFirstname($user?->getFirstname())
             ->setLastname($user?->getLastname())
-            ->setPhoneNumber(null)
+            ->setPhoneNumber($user?->getPhoneNumber())
             ->setCreationDate(new DateTime())
             ->setDelivery(true)
             ->setEmail($user?->getEmail())
@@ -137,13 +137,13 @@ readonly class OrderService
         );
 
         if ($user) {
-            $address = $this->entityManager->getRepository(Address::class)->findOneBy([
-                'user' => $user,
-                'isActive' => true
+            $defaultAddress = $this->entityManager->getRepository(Address::class)->findOneBy([
+                'user' => $user->getId(),
+                'isActive' => true,
             ]);
 
-            if ($address) {
-                $order->setDeliveryAddress($address);
+            if ($defaultAddress) {
+                $order->setDeliveryAddress(clone $defaultAddress);
             }
         }
 
@@ -338,8 +338,8 @@ readonly class OrderService
                 ->setProduct($product)
                 ->setQuantity($quantity)
                 ->setOrder($order)
-                ->setUnitPrice($product->getPrice())
-                ->setTotal($product->getPrice() * $quantity)
+                ->setUnitPrice($product->getRealPrice())
+                ->setTotal($product->getRealPrice() * $quantity)
             ;
 
             $order->addOrderItem($orderItem);
