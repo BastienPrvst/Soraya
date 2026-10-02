@@ -45,7 +45,7 @@ class ChangeUserInformationsType extends AbstractType
                 'mapped' => false,
                 'required' => false,
                 'help' =>
-                    '<p class="text-[var(--dark)]">
+                    '<div class="text-[var(--dark)]">
                         Le mot de passe doit contenir : <br>
                          <ul class="text-[var(--dark)]">
                             <li class="text-[var(--dark)]">8 caractères minimum</li>
@@ -53,7 +53,7 @@ class ChangeUserInformationsType extends AbstractType
                             <li class="text-[var(--dark)]">Un chiffre</li>
                             <li class="text-[var(--dark)]">Un caractère spécial</li>
                          </ul>
-                     </p>
+                     </div>
                     ',
                 'help_html' => true,
                 'attr' => [

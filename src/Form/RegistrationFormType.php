@@ -44,15 +44,15 @@ class RegistrationFormType extends AbstractType
                     'label' => 'Mot de passe',
                     'mapped' => false,
                     'help' =>
-                        '<p class="text-[var(--dark)]">
-                        Le mot de passe doit contenir : <br>
-                         <ul class="text-[var(--dark)]">
-                            <li class="text-[var(--dark)]">8 caractères minimum</li>
-                            <li class="text-[var(--dark)]">Une majuscule et une minuscule</li>
-                            <li class="text-[var(--dark)]">Un chiffre</li>
-                            <li class="text-[var(--dark)]">Un caractère spécial</li>
-                         </ul>
-                     </p>
+                        '<div class="text-[var(--dark)]">
+                            Le mot de passe doit contenir : <br>
+                             <ul class="text-[var(--dark)]">
+                                <li class="text-[var(--dark)]">8 caractères minimum</li>
+                                <li class="text-[var(--dark)]">Une majuscule et une minuscule</li>
+                                <li class="text-[var(--dark)]">Un chiffre</li>
+                                <li class="text-[var(--dark)]">Un caractère spécial</li>
+                             </ul>
+                        </div>
                     ',
                     'help_html' => true,
                     'attr' => [

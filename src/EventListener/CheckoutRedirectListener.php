@@ -13,6 +13,8 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
+
+//Redirige l'utilsateur vers la page ou il est sencé etre en fonction du statut de sa commande
 final readonly class CheckoutRedirectListener
 {
     public function __construct(

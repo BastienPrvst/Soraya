@@ -7,6 +7,7 @@ use Symfony\Component\HttpKernel\Event\ResponseEvent;
 
 final class CheckoutRequestListener
 {
+    //Permet de revalider les routes pour recharger entierement leurs contenu meme avec un refresh ou un retour arriere
     #[AsEventListener]
     public function onResponseEvent(ResponseEvent $event): void
     {
