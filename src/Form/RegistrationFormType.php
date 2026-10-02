@@ -44,8 +44,21 @@ class RegistrationFormType extends AbstractType
                     'label' => 'Mot de passe',
                     'mapped' => false,
                     'help' =>
-                        'Le mot de passe doit contenir 8 caractères dont une majuscule,
-                         une minuscule, un chiffre et un caractère spécial.',
+                        '<p class="text-[var(--dark)]">
+                        Le mot de passe doit contenir : <br>
+                         <ul class="text-[var(--dark)]">
+                            <li class="text-[var(--dark)]">8 caractères minimum</li>
+                            <li class="text-[var(--dark)]">Une majuscule et une minuscule</li>
+                            <li class="text-[var(--dark)]">Un chiffre</li>
+                            <li class="text-[var(--dark)]">Un caractère spécial</li>
+                         </ul>
+                     </p>
+                    ',
+                    'help_html' => true,
+                    'attr' => [
+                        'autocomplete' => 'new-password',
+                        'data-password-visibility-target' => 'input',
+                    ],
                 ],
                 'second_options' => [
                     'label' => 'Confirmation mot de passe',

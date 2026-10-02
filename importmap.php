@@ -80,5 +80,8 @@ return [
     ],
     'collapse' => [
         'path' => './assets/js/collapse.js',
-    ]
+    ],
+    '@stimulus-components/password-visibility' => [
+        'version' => '3.0.0',
+    ],
 ];
