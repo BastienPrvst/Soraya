@@ -1,0 +1,114 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Politique de Confidentialité - Lévédène
+{% endblock %}
+
+{% set header_text = 'var(--light)' %}
+{% set header_text_scrolled = 'var(--light)' %}
+{% set header_bg = 'var(--dark)' %}
+{% set header_bg_scrolled = 'var(--dark)' %}
+{% set header_logo = 'light' %}
+{% set header_logo_scrolled = 'light' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
+
+{% set sections = [
+    {
+        num: '01',
+        title: 'Responsable du traitement',
+        text: 'Identité et coordonnées de LÉVÉDÈNE en tant que responsable du traitement des données personnelles.'
+    },
+    {
+        num: '02',
+        title: 'Données personnelles collectées',
+        text: 'Présentation des données susceptibles d’être collectées : identité, coordonnées, adresse de livraison, informations de compte, données relatives aux commandes, etc.'
+    },
+    {
+        num: '03',
+        title: 'Finalités de la collecte',
+        text: 'Utilisation des données pour notamment : Création et gestion du compte client ; Traitement et suivi des commandes ; Paiement et facturation ; Livraison ; Service client et demandes de contact ; Amélioration du site et des services ; Communications commerciales, si applicable.'
+    },
+    {
+        num: '04',
+        title: 'Bases légales',
+        text: 'Préciser, pour chaque traitement, le fondement juridique applicable : exécution du contrat, obligation légale, consentement ou intérêt légitime selon les cas.'
+    },
+    {
+        num: '05',
+        title: 'Destinataires des données',
+        text: 'Préciser les personnes ou catégories de destinataires pouvant accéder aux données : LÉVÉDÈNE et prestataires nécessaires au fonctionnement du site, au paiement, à la livraison, etc.'
+    },
+    {
+        num: '06',
+        title: 'Durée de conservation',
+        text: 'Indiquer les durées ou critères de conservation applicables aux différentes catégories de données.'
+    },
+    {
+        num: '07',
+        title: 'Sécurité des données',
+        text: 'Informations sur les mesures mises en place pour protéger les données personnelles.'
+    },
+    {
+        num: '08',
+        title: 'Droits des utilisateurs',
+        text: 'Présenter les droits applicables : accès, rectification, effacement, opposition, limitation et, lorsque applicable, portabilité. Indiquer également comment exercer ces droits.'
+    },
+    {
+        num: '09',
+        title: 'Transferts de données',
+        text: 'Préciser si certaines données sont transférées hors de l’Union européenne et, le cas échéant, les garanties mises en place.'
+    },
+    {
+        num: '10',
+        title: 'Réclamation auprès de la CNIL',
+        text: 'Informer les utilisateurs de leur possibilité d’introduire une réclamation auprès de la CNIL.'
+    },
+    {
+        num: '11',
+        title: 'Contact',
+        text: 'Adresse e-mail à utiliser pour toute question ou demande concernant les données personnelles.'
+    },
+    {
+        num: '12',
+        title: 'Mise à jour de la politique',
+        text: 'Prévoir une indication concernant la mise à jour éventuelle de la politique de confidentialité.'
+    },
+] %}
+
+{% block body %}
+
+    <main class="min-h-screen bg-[var(--light)] text-[var(--dark)]">
+
+        {# Bandeau titre #}
+        <div class="bg-[var(--dark)] px-6 pb-6 pt-[20%] md:pt-[7%] text-center">
+            <h1 class="text-2xl tracking-wide text-[var(--light)]">
+                Politique de confidentialité
+            </h1>
+        </div>
+
+        {# Sections #}
+        <div class="mx-auto max-w-5xl px-[var(--padX)] pb-16 pt-8 sm:px-8 sm:pt-12">
+            {% for section in sections %}
+                <section class="flex items-start gap-4 border-b border-[#3b2a1e]/30 py-6 last:border-b-0 md:gap-10 md:py-8">
+
+                    {# Numéro + titre #}
+                    <div class="flex w-[42%] shrink-0 items-baseline gap-2 md:w-[40%] md:gap-4">
+                        <span class="shrink-0 text-base font-bold sm:text-xl">{{ section.num }}/</span>
+                        <h2 class="min-w-0 break-words text-base leading-snug sm:text-xl">
+                            {{ section.title }}
+                        </h2>
+                    </div>
+
+                    {# Texte #}
+                    <p class="min-w-0 flex-1 break-words text-sm leading-relaxed text-[#3b2a1e]/90 sm:text-base">
+                        {{ section.text }}
+                    </p>
+                </section>
+            {% endfor %}
+        </div>
+    </main>
+
+{% endblock %}
+
+

@@ -65,4 +65,24 @@ final class MainController extends AbstractController
             'form' => $form->createView(),
         ]);
     }
+
+    #[Route(path: '/mentions-légales', name: 'app_legal_notice')]
+    public function legal(): Response
+    {
+        return $this->render('main/legal_notices.html.twig');
+    }
+
+    #[Route(path: '/CGV', name: 'app_business_conditions')]
+    public function businessConditions(): Response
+    {
+        return $this->render('main/business_conditions.html.twig');
+    }
+
+    #[Route(path: '/politique-de-confidentialité', name: 'app_confidentiality_policy')]
+    public function confidentiality(): Response
+    {
+        return $this->render('main/confidentiality.html.twig');
+    }
+
+
 }

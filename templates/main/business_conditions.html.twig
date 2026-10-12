@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Conditions Générales de Vente - Lévédène
+{% endblock %}
+
+{% set header_text = 'var(--light)' %}
+{% set header_text_scrolled = 'var(--light)' %}
+{% set header_bg = 'var(--dark)' %}
+{% set header_bg_scrolled = 'var(--dark)' %}
+{% set header_logo = 'light' %}
+{% set header_logo_scrolled = 'light' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
+
+{% set sections = [
+    {
+        num: '01',
+        title: 'Objet et champ d’application',
+        text: 'Présentation des CGV et des conditions applicables aux commandes effectuées sur le site LÉVÉDÈNE.'
+    },
+    {
+        num: '02',
+        title: 'Produits',
+        text: 'Présentation des produits proposés à la vente et informations essentielles les concernant.'
+    },
+    {
+        num: '03',
+        title: 'Prix',
+        text: 'Prix des produits, taxes applicables et éventuels frais supplémentaires.'
+    },
+    {
+        num: '04',
+        title: 'Commande',
+        text: 'Étapes de la commande, validation et confirmation de commande.'
+    },
+    {
+        num: '05',
+        title: 'Paiement',
+        text: 'Modalités et moyens de paiement acceptés.'
+    },
+    {
+        num: '06',
+        title: 'Livraison',
+        text: 'Zones de livraison, modes de livraison, délais et frais de livraison.'
+    },
+    {
+        num: '07',
+        title: 'Droit de rétractation',
+        text: 'Conditions, délai et modalités d’exercice du droit de rétractation, ainsi que les éventuelles exceptions applicables aux produits vendus.'
+    },
+    {
+        num: '08',
+        title: 'Retours et remboursements',
+        text: 'Modalités de retour, conditions de remboursement et délais.'
+    },
+    {
+        num: '09',
+        title: 'Garanties légales',
+        text: 'Informations relatives aux garanties légales applicables aux produits.'
+    },
+    {
+        num: '10',
+        title: 'Responsabilité',
+        text: 'Conditions et limites de responsabilité de LÉVÉDÈNE.'
+    },
+    {
+        num: '11',
+        title: 'Données personnelles',
+        text: 'Renvoi vers la Politique de confidentialité.'
+    },
+    {
+        num: '12',
+        title: 'Médiation de la consommation',
+        text: 'Informations concernant le médiateur de la consommation désigné par LÉVÉDÈNE.'
+    },
+    {
+        num: '13',
+        title: 'Droit applicable et règlement des litiges',
+        text: 'Droit applicable et modalités de règlement des éventuels litiges.'
+    },
+] %}
+
+{% block body %}
+
+    <main class="min-h-screen bg-[var(--light)] text-[var(--dark)]">
+
+        {# Bandeau titre #}
+        <div class="bg-[var(--dark)] px-6 pb-6 pt-[20%] md:pt-[7%] text-center">
+            <h1 class="text-2xl tracking-wide text-[var(--light)]">
+                Conditions générales de vente (CGV)
+            </h1>
+        </div>
+
+        {# Sections #}
+        <div class="mx-auto max-w-5xl px-[var(--padX)] pb-16 pt-8 sm:px-8 sm:pt-12">
+            {% for section in sections %}
+                <section class="flex items-start gap-4 border-b border-[#3b2a1e]/30 py-6 last:border-b-0 md:gap-10 md:py-8">
+
+                    {# Numéro + titre #}
+                    <div class="flex w-[42%] shrink-0 items-baseline gap-2 md:w-[40%] md:gap-4">
+                        <span class="shrink-0 text-base font-bold sm:text-xl">{{ section.num }}/</span>
+                        <h2 class="min-w-0 break-words text-base leading-snug sm:text-xl">
+                            {{ section.title }}
+                        </h2>
+                    </div>
+
+                    {# Texte #}
+                    <p class="min-w-0 flex-1 break-words text-sm leading-relaxed text-[#3b2a1e]/90 sm:text-base">
+                        {{ section.text }}
+                    </p>
+                </section>
+            {% endfor %}
+        </div>
+    </main>
+
+{% endblock %}

@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+    Mentions Légales - Lévédène
+{% endblock %}
+
+{% set header_text = 'var(--light)' %}
+{% set header_text_scrolled = 'var(--light)' %}
+{% set header_bg = 'var(--dark)' %}
+{% set header_bg_scrolled = 'var(--dark)' %}
+{% set header_logo = 'light' %}
+{% set header_logo_scrolled = 'light' %}
+{% set footer_bg = 'var(--dark)' %}
+{% set footer_text = 'var(--light)' %}
+
+{% set sections = [
+    {
+        num: '01',
+        title: 'éditeur du site',
+        text: 'LÉVÉDÈNE \n
+                Société par actions simplifiée (SASU) au capital de 1 000 €
+                SIREN : 108 855 420
+                RCS Paris : 108 855 420
+                SIRET : 108 855 420 00015
+                Siège social : 47 rue Vivienne, 75002 Paris.'
+    },
+    {
+        num: '02',
+        title: 'Directrice de la publication',
+        text: 'Soraya Penel Orlane'
+    },
+    {
+        num: '03',
+        title: 'Hébergement',
+        text: '(Nom de l’hébergeur)
+                (Adresse)
+                (Téléphone)'
+    },
+    {
+        num: '04',
+        title: 'Propriété intellectuelle',
+        text: '(Prévoir une rubrique concernant la protection des contenus du site : textes, photographies, visuels, logo et éléments graphiques. )'
+    },
+    {
+        num: '05',
+        title: 'Médiation de la consommation ',
+        text: '(Nom du médiateur, coordonnées et modalités pour le contacter)'
+    },
+    {
+        num: '06',
+        title: 'Contact',
+        text: '(Adresse e-mail professionnelle)
+                (Numéro de téléphone)'
+    }
+] %}
+
+{% block body %}
+
+    <main class="min-h-screen bg-[var(--light)] text-[var(--dark)]">
+
+        {# Bandeau titre #}
+        <div class="bg-[var(--dark)] px-6 pb-6 pt-[20%] md:pt-[7%] text-center">
+            <h1 class="text-2xl tracking-wide text-[var(--light)]">
+                Mentions Légales
+            </h1>
+        </div>
+
+        {# Sections #}
+        <div class="mx-auto max-w-5xl px-[var(--padX)] pb-16 pt-8 sm:px-8 sm:pt-12">
+            {% for section in sections %}
+                <section class="flex items-start gap-4 border-b border-[#3b2a1e]/30 py-6 last:border-b-0 md:gap-10 md:py-8">
+
+                    {# Numéro + titre #}
+                    <div class="flex w-[42%] shrink-0 items-baseline gap-2 md:w-[40%] md:gap-4">
+                        <span class="shrink-0 text-base font-bold sm:text-xl">{{ section.num }}/</span>
+                        <h2 class="min-w-0 break-words text-base leading-snug sm:text-xl">
+                            {{ section.title }}
+                        </h2>
+                    </div>
+
+                    {# Texte #}
+                    <p class="min-w-0 flex-1 break-words text-sm leading-relaxed text-[#3b2a1e]/90 sm:text-base">
+                        {{ section.text|nl2br }}
+                    </p>
+                </section>
+            {% endfor %}
+        </div>
+    </main>
+
+{% endblock %}
+
+
+
+
