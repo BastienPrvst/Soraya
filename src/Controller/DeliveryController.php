@@ -56,7 +56,7 @@ class DeliveryController extends AbstractController
             $this->workflowService->applyTransition($order, 'to_delivery_choice');
         }
 
-        $result = $this->orderIntegrityManager->manage($order, $request);
+        $result = $this->orderIntegrityManager->manage($order);
         foreach ($result->errors as $error) {
             $this->addFlash('error', $error);
         }
@@ -92,7 +92,7 @@ class DeliveryController extends AbstractController
         DeliveryService $deliveryService,
     ): Response {
 
-        $result = $this->orderIntegrityManager->manage($order, $request);
+        $result = $this->orderIntegrityManager->manage($order);
         foreach ($result->errors as $error) {
             $this->addFlash('error', $error);
         }
@@ -104,13 +104,15 @@ class DeliveryController extends AbstractController
         $deliveryService->switchRelayToDeliver($order, $this->getUser());
         $this->entityManager->flush();
 
+        $session = $request->getSession();
+
         $form = $this->createForm(DeliveryOrderType::class, $order, [
-            'CGU' => $request->getSession()->get(SessionElements::CGU->value) ?? false,
+            'CGU' => $session->get(SessionElements::CGU->value) ?? false,
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $request->getSession()->set(SessionElements::CGU->value, true);
+            $session->set(SessionElements::CGU->value, true);
 
             $order->setDeliveryMode(DeliveryMode::HOME);
             $this->entityManager->persist($order);
@@ -142,7 +144,7 @@ class DeliveryController extends AbstractController
         Request $request,
     ): Response {
 
-        $result = $this->orderIntegrityManager->manage($order, $request);
+        $result = $this->orderIntegrityManager->manage($order);
         foreach ($result->errors as $error) {
             $this->addFlash('error', $error);
         }

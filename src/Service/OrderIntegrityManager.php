@@ -5,21 +5,22 @@ namespace App\Service;
 use App\DTO\OrderIntegrityResult;
 use App\Entity\Order;
 use App\Enum\SessionElements;
-use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 readonly class OrderIntegrityManager
 {
     public function __construct(
-        private OrderService $orderService
+        private OrderService $orderService,
+        private RequestStack $requestStack,
     ) {
     }
 
     /**
      * @throws \Exception
      */
-    public function manage(Order $order, Request $request): OrderIntegrityResult
+    public function manage(Order $order): OrderIntegrityResult
     {
-        $session = $request->getSession();
+        $session = $this->requestStack->getSession();
         $cartProducts = $session->get(SessionElements::SHOPPING_CART->value);
         $token = $session->get(SessionElements::ORDER_TOKEN->value);
         $sessionKey = $session->get(SessionElements::SESSION_KEY->value);

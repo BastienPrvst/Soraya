@@ -58,7 +58,7 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $result = $this->orderIntegrityManager->manage($order, $request);
+        $result = $this->orderIntegrityManager->manage($order);
         foreach ($result->errors as $error) {
             $this->addFlash('error', $error);
         }
@@ -94,7 +94,7 @@ final class PaymentController extends AbstractController
             throw new TooManyRequestsHttpException();
         }
 
-        $result = $this->orderIntegrityManager->manage($order, $request);
+        $result = $this->orderIntegrityManager->manage($order);
         foreach ($result->errors as $error) {
             $this->addFlash('error', $error);
         }
