@@ -2,21 +2,33 @@
 
 namespace App\Service;
 
+use App\Entity\Order;
 use Psr\Log\LoggerInterface;
 use SoapClient;
 use SoapFault;
-use Symfony\Component\Console\Logger;
-use function PHPUnit\Framework\throwException;
 
 class MondialRelayService
 {
-
     private const string API_URL = 'https://api.mondialrelay.com/Web_Services.asmx?WSDL';
-    private const string ENSEIGNE = 'TTNTWSDB';
-    private const string PRIVATE_KEY = 'PrivateK';
+    private const string SHIPPING_REQUEST_URL = '
+    https://www.mondialrelay.fr/media/51911/Mondial-Relay-Shipment-API-.Request.1.0.xsd';
 
     public function __construct(
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private readonly string $mrEnseigne,
+        private readonly string $mrPrivateKey,
+        private readonly string $mrBrandCode,
+        private readonly string $mrApiId,
+        private readonly string $mrApiPassword,
+        private readonly string $senderName,
+        private readonly string $senderStreet,
+        private readonly string $senderZipcode,
+        private readonly string $senderCity,
+        private readonly string $senderCountry,
+        private readonly string $senderPhone,
+        private readonly string $senderEmail,
+        private readonly HttpClientInterface $httpClient,
+        private readonly string $projectDir,
     ) {
     }
 
@@ -33,11 +45,11 @@ class MondialRelayService
             ['trace' => true]
         );
 
-        $security = strtoupper(md5(self::ENSEIGNE.$num.$country.self::PRIVATE_KEY));
+        $security = strtoupper(md5($this->mrEnseigne.$num.$country.$this->mrPrivateKey));
 
         try {
             $result = $client->WSI4_PointRelais_Recherche([
-                'Enseigne' => self::ENSEIGNE,
+                'Enseigne' => $this->mrEnseigne,
                 'Pays' => $country,
                 'NumPointRelais' => $num,
                 'Ville' => null,
@@ -83,5 +95,24 @@ class MondialRelayService
             $this->logger->error($e->getMessage());
             return [];
         }
+    }
+//
+//    public function shippingCreation(Order $order): array
+//    {
+//    }
+
+    private function getTotalWeight(Order $order): int
+    {
+        $weight = 0;
+
+        foreach ($order->getOrderItems() as $item) {
+            $weight += $item->getProduct()?->getWeight() * $item->getQuantity();
+        }
+
+        if ($weight < 10) {
+            throw new \RuntimeException('Le poids du colis doit être supérieur ou égal à 10 grammes.');
+        }
+
+        return $weight;
     }
 }

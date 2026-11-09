@@ -12,6 +12,18 @@ parameters:
     stripe.webhook_secret_key: '%env(STRIPE_WEBHOOK_SECRET)%'
     stripe.dashboard.url: '%env(STRIPE_DASHBOARD_URL)%'
     google.api.key: '%env(GOOGLE_MAP_API_KEY)%'
+    mr_enseigne: '%env(MONDIAL_RELAY_ENSEIGNE)%'
+    mr_private_key: '%env(MONDIAL_RELAY_PRIVATE_KEY)%'
+    mr_brand_code: '%env(MONDIAL_RELAY_BRAND_CODE)%'
+    mr_api_id: '%env(MONDIAL_RELAY_API_ID)%'
+    mr_api_password: '%env(MONDIAL_RELAY_API_PASSWORD)%'
+    $senderName: '%env(MONDIAL_RELAY_SENDER_NAME)%'
+    $senderStreet: '%env(MONDIAL_RELAY_SENDER_STREET)%'
+    $senderZipcode: '%env(MONDIAL_RELAY_SENDER_ZIPCODE)%'
+    $senderCity: '%env(MONDIAL_RELAY_SENDER_CITY)%'
+    $senderCountry: '%env(MONDIAL_RELAY_SENDER_COUNTRY)%'
+    $senderPhone: '%env(MONDIAL_RELAY_SENDER_PHONE)%'
+    $senderEmail: '%env(MONDIAL_RELAY_SENDER_EMAIL)%'
 services:
     # default configuration for services in *this* file
     _defaults:
