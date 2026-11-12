@@ -1,41 +1,42 @@
+
 # yaml-language-server: $schema=../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 
 # This file is the entry point to configure your own services.
 # Files in the packages/ subdirectory configure your dependencies.
-# See also https://symfony.com/doc/current/service_container/import.html
 
-# Put parameters here that don't need to change on each machine where the app is deployed
-# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
     stripe.public_key: '%env(STRIPE_PUBLIC_KEY)%'
     stripe.secret_key: '%env(STRIPE_SECRET_KEY)%'
     stripe.webhook_secret_key: '%env(STRIPE_WEBHOOK_SECRET)%'
     stripe.dashboard.url: '%env(STRIPE_DASHBOARD_URL)%'
     google.api.key: '%env(GOOGLE_MAP_API_KEY)%'
-    mr_enseigne: '%env(MONDIAL_RELAY_ENSEIGNE)%'
-    mr_private_key: '%env(MONDIAL_RELAY_PRIVATE_KEY)%'
-    mr_brand_code: '%env(MONDIAL_RELAY_BRAND_CODE)%'
-    mr_api_id: '%env(MONDIAL_RELAY_API_ID)%'
-    mr_api_password: '%env(MONDIAL_RELAY_API_PASSWORD)%'
-    $senderName: '%env(MONDIAL_RELAY_SENDER_NAME)%'
-    $senderStreet: '%env(MONDIAL_RELAY_SENDER_STREET)%'
-    $senderZipcode: '%env(MONDIAL_RELAY_SENDER_ZIPCODE)%'
-    $senderCity: '%env(MONDIAL_RELAY_SENDER_CITY)%'
-    $senderCountry: '%env(MONDIAL_RELAY_SENDER_COUNTRY)%'
-    $senderPhone: '%env(MONDIAL_RELAY_SENDER_PHONE)%'
-    $senderEmail: '%env(MONDIAL_RELAY_SENDER_EMAIL)%'
-services:
-    # default configuration for services in *this* file
-    _defaults:
-        autowire: true      # Automatically injects dependencies in your services.
-        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
 
-    # makes classes in src/ available to be used as services
-    # this creates a service per class whose id is the fully-qualified class name
+services:
+    # Default configuration for services in this file
+    _defaults:
+        autowire: true
+        autoconfigure: true
+
+    # Automatically register classes in src/ as services
     App\:
         resource: '../src/'
+
     App\Service\StripePaymentService:
         arguments:
             $stripeSecretKey: '%stripe.secret_key%'
-    # add more service definitions when explicit configuration is needed
-    # please note that last definitions always *replace* previous ones
+
+    App\Service\MondialRelayService:
+        arguments:
+            $mrEnseigne: '%env(MONDIAL_RELAY_ENSEIGNE)%'
+            $mrPrivateKey: '%env(MONDIAL_RELAY_PRIVATE_KEY)%'
+            $mrBrandCode: '%env(MONDIAL_RELAY_BRAND_CODE)%'
+            $mrApiUrl: '%env(MONDIAL_RELAY_API_V2_URL)%'
+            $mrApiId: '%env(MONDIAL_RELAY_API_V2_ID)%'
+            $mrApiPassword: '%env(MONDIAL_RELAY_API_V2_PASSWORD)%'
+            $senderName: '%env(MONDIAL_RELAY_SENDER_NAME)%'
+            $senderStreet: '%env(MONDIAL_RELAY_SENDER_STREET)%'
+            $senderZipcode: '%env(MONDIAL_RELAY_SENDER_ZIPCODE)%'
+            $senderCity: '%env(MONDIAL_RELAY_SENDER_CITY)%'
+            $senderCountry: '%env(MONDIAL_RELAY_SENDER_COUNTRY)%'
+            $senderPhone: '%env(MONDIAL_RELAY_SENDER_PHONE)%'
+            $senderEmail: '%env(MONDIAL_RELAY_SENDER_EMAIL)%'

@@ -7,6 +7,7 @@ use App\Form\ContactFormType;
 use App\Repository\OrderRepository;
 use App\Repository\UserRepository;
 use App\Service\MailerService;
+use App\Service\MondialRelayService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -83,6 +84,19 @@ final class MainController extends AbstractController
     {
         return $this->render('main/confidentiality.html.twig');
     }
+
+    #[Route(path: '/test/mr', name: 'app_test_mr')]
+    public function testMr(
+        MondialRelayService $mondialRelayService,
+        OrderRepository $orderRepository,
+    ): Response
+    {
+        $order = $orderRepository->findOneBy(['id' => '2493']);
+        $result = $mondialRelayService->shippingCreation($order);
+
+        return $this->redirect($result['labelUrl']);
+    }
+
 
 
 }
