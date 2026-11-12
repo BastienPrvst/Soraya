@@ -101,9 +101,6 @@ class DeliveryController extends AbstractController
             return $this->redirectToRoute('app_main');
         }
 
-        $deliveryService->switchRelayToDeliver($order, $this->getUser());
-        $this->entityManager->flush();
-
         $session = $request->getSession();
 
         $form = $this->createForm(DeliveryOrderType::class, $order, [
@@ -113,6 +110,7 @@ class DeliveryController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $session->set(SessionElements::CGU->value, true);
+            $deliveryService->switchRelayToDeliver($order, $this->getUser());
 
             $order->setDeliveryMode(DeliveryMode::HOME);
             $this->entityManager->persist($order);
