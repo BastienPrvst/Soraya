@@ -15,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
 #[UniqueEntity(fields: ['email'], message: 'Cette adresse mail est déjà utilisée')]
-class User implements UserInterface
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
