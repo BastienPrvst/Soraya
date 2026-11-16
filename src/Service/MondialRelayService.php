@@ -97,71 +97,114 @@ class MondialRelayService
             return [];
         }
     }
+
+    /**
+     * @param Order $order
+     * @return array [
+     *     'shipmentNumber'
+     *     'labelUrl'
+     *     'barcodes'
+     *  ]
+     */
     public function shippingCreation(Order $order): array
     {
         $xml = $this->buildShipmentXml($order);
 
         try {
             $response = $this->httpClient->request('POST', $this->mrApiUrl, [
-            'headers' => [
-                'Content-Type' => 'text/xml',
-                'Accept' => 'application/xml',
-            ],
-            'body' => $xml,
-            'timeout' => 20,
+                'headers' => [
+                    'Content-Type' => 'text/xml',
+                    'Accept' => 'application/xml',
+                ],
+                'body' => $xml,
+                'timeout' => 20,
             ]);
             $content = $response->getContent();
         } catch (HttpExceptionInterface $e) {
             $this->logger->error('Mondial Relay v2 : erreur HTTP', ['message' => $e->getMessage()]);
-            throw new \RuntimeException('Mondial Relay est injoignable.', 0, $e);
+            throw new \RuntimeException('Mondial Relay a renvoyé une erreur HTTP.', 0, $e);
         } catch (TransportExceptionInterface $e) {
+            $this->logger->error('Mondial Relay v2 : erreur transport', ['message' => $e->getMessage()]);
+            throw new \RuntimeException('Mondial Relay est injoignable.', 0, $e);
         }
 
+        $previous = libxml_use_internal_errors(true);
         $result = simplexml_load_string($content);
+        libxml_clear_errors();
+        libxml_use_internal_errors($previous);
+
         if (false === $result) {
             $this->logger->error('Mondial Relay v2 : réponse XML invalide', ['body' => $content]);
             throw new \RuntimeException('Réponse Mondial Relay illisible.');
         }
 
-        // Une erreur est signalée par la présence de <Status> dans <StatusList>
-        if (isset($result->StatusList->Status) && count($result->StatusList->Status) > 0) {
-            $messages = [];
-            foreach ($result->StatusList->Status as $status) {
-                $messages[] = sprintf(
-                    '[%s] %s',
-                    (string) $status['Code'],
-                    (string) $status['Message']
-                );
+        // Gestion des statuts : seuls les codes ≠ 0 sont de vraies erreurs
+        $errors = [];
+        $infos = [];
+        foreach ($result->StatusList->Status ?? [] as $status) {
+            $code = (string) $status['Code'];
+            $line = sprintf('[%s] %s', $code, (string) $status['Message']);
+
+            if ('0' === $code) {
+                $infos[] = $line;
+            } else {
+                $errors[] = $line;
             }
-            $this->logger->error('Mondial Relay v2 : création refusée', [
-            'order' => $order->getId(),
-            'errors' => $messages,
-            ]);
-            throw new \RuntimeException('Mondial Relay : '.implode(' | ', $messages));
         }
 
-        $shipment = $result->ShipmentsList->Shipment[0] ?? null;
-        $label = $shipment?->LabelList->Label[0] ?? null;
-        if (null === $label) {
+        if ($infos) {
+            $this->logger->warning('Mondial Relay v2 : message informatif', [
+                'order' => $order->getId(),
+                'infos' => $infos,
+            ]);
+        }
+
+        if ($errors) {
+            $this->logger->error('Mondial Relay v2 : création refusée', [
+                'order' => $order->getId(),
+                'errors' => $errors,
+            ]);
+            throw new \RuntimeException('Mondial Relay : '.implode(' | ', $errors));
+        }
+
+        if (!isset($result->ShipmentsList->Shipment[0])) {
+            $this->logger->error('Mondial Relay v2 : aucun envoi dans la réponse', ['body' => $content]);
+            throw new \RuntimeException('Mondial Relay : aucun envoi dans la réponse.');
+        }
+        $shipment = $result->ShipmentsList->Shipment[0];
+
+        if (!isset($shipment->LabelList->Label[0])) {
+            $this->logger->error('Mondial Relay v2 : aucune étiquette dans la réponse', ['body' => $content]);
             throw new \RuntimeException('Mondial Relay : aucune étiquette dans la réponse.');
         }
+        $label = $shipment->LabelList->Label[0];
+        $labelUrl = (string) $label->Output;
 
         $shipmentNumber = '';
-        foreach ($label->RawContent->LabelValues as $value) {
+        foreach ($label->RawContent->LabelValues ?? [] as $value) {
             if ('MR.Expedition.NumeroExpedition' === (string) $value['Key']) {
                 $shipmentNumber = (string) $value['Value'];
+                break;
             }
+        }
+
+        if (!ctype_digit($shipmentNumber)) {
+            parse_str((string) parse_url($labelUrl, PHP_URL_QUERY), $query);
+            $shipmentNumber = (string) ($query['expedition'] ?? $shipmentNumber);
         }
 
         $barcodes = [];
-        foreach ($shipment->LabelList->Barcodes as $cab) {
-            $barcodes[] = (string) $cab->Barcodes->Barcode['Value'];
+        foreach ($shipment->xpath('.//*[local-name()="Barcode"]') ?: [] as $barcode) {
+            $value = (string) $barcode['Value'];
+            if ('' !== $value) {
+                $barcodes[] = $value;
+            }
         }
 
         return [
-        'shipmentNumber' => $shipmentNumber,
-        'labelUrl' => (string) $label->Output,
-        'barcodes' => $barcodes,
+            'shipmentNumber' => $shipmentNumber,
+            'labelUrl' => $labelUrl,
+            'barcodes' => $barcodes,
         ];
     }
 
@@ -195,7 +238,7 @@ class MondialRelayService
         $shipment->appendChild($this->el($doc, 'ParcelCount', '1'));
         $shipment->appendChild($this->el($doc, 'DeliveryInstruction', ''));
 
-        // Livraison en point relais (24R) ; dépôt/collecte chez l'expéditeur (CCC)
+        // Livraison en point relais (24R) ; collecte chez l'expéditeur (CCC)
         $delivery = $this->el($doc, 'DeliveryMode');
         $delivery->setAttribute('Mode', '24R');
         $delivery->setAttribute('Location', $order->getRelayId());
@@ -294,7 +337,7 @@ class MondialRelayService
             throw new \RuntimeException('Le poids du colis doit être supérieur ou égal à 10 grammes.');
         }
 
-        return $weight;
+        return (int) round($weight);
     }
 
     private function buildTrackingLink(string $shipmentNumber): string
