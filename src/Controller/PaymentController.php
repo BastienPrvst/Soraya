@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Entity\Order;
-use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Enum\SessionElements;
 use App\Service\MailerService;
@@ -164,6 +163,8 @@ final class PaymentController extends AbstractController
     public function index(
         #[MapEntity(mapping: ['token' => 'token'])] ?Order $order,
         Request $request,
+        MailerService $mailerService,
+        StockService $stockService,
     ): Response {
 
         if (!$order) {

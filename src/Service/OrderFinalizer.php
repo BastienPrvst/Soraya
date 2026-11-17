@@ -29,12 +29,8 @@ final readonly class OrderFinalizer
             return; // déjà finalisée ou pas payée
         }
 
-        $this->logger->debug('Statut commande', [
-            'status' => $order->getStatus()?->value,
-        ]);
-
-        if ($this->workflowService->canTransition($order, 'to_pending_delivery')) {
-            $this->workflowService->applyTransition($order, 'to_pending_delivery');
+        if ($this->workflowService->canTransition($order, 'to_prepare')) {
+            $this->workflowService->applyTransition($order, 'to_prepare');
         } else {
             return;
         }
