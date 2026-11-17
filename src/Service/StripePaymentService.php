@@ -130,10 +130,13 @@ readonly class StripePaymentService
         return $stripeSession->client_secret;
     }
 
-    public function handleEvent(Event $event): void
+    /**
+     * @throws \Throwable
+     */
+    public function handleEvent(Event $event): ?Order
     {
         if ($event->type !== 'checkout.session.completed') {
-            return;
+            return null;
         }
 
         $session = $event->data->object;
@@ -141,17 +144,17 @@ readonly class StripePaymentService
         $orderToken = $session->metadata->order_token ?? null;
 
         if (!$orderToken) {
-            return;
+            return null;
         }
 
         $order = $this->orderRepository->findOneBy(['token' => $orderToken]);
 
         if (!$order) {
-            return;
+            return null;
         }
 
         if ($order->getStatus() === OrderStatus::PAID) {
-            return;
+            return $order;
         }
 
         $workflow = $this->workflowRegistry->get($order, 'order_completing');
@@ -163,7 +166,9 @@ readonly class StripePaymentService
             }
         } catch (\Throwable $exception) {
             $this->logger->error($exception->getMessage());
-            return;
+            throw $exception;
         }
+
+        return $order;
     }
 }

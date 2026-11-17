@@ -2,22 +2,30 @@
 
 namespace App\Controller;
 
+use App\Service\OrderFinalizer;
 use App\Service\StripePaymentService;
 use Psr\Log\LoggerInterface;
 use Stripe\Webhook;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 final class StripeWebHookController extends AbstractController
 {
     public function __construct(
         readonly private StripePaymentService $stripePaymentService,
         readonly private LoggerInterface $logger,
+        readonly private OrderFinalizer $orderFinalizer,
+        readonly private EventDispatcherInterface $dispatcher,
     ) {
     }
 
+    /**
+     * @throws \Throwable
+     */
     #[Route('/webhook', name: 'stripe_webhook')]
     public function webhook(Request $request): Response
     {
@@ -37,7 +45,24 @@ final class StripeWebHookController extends AbstractController
             return new Response('Invalid signature', 400);
         }
 
-        $this->stripePaymentService->handleEvent($event);
+        $order = $this->stripePaymentService->handleEvent($event);
+
+        if (null !== $order) {
+            $this->dispatcher->addListener(
+                KernelEvents::TERMINATE,
+                function () use ($order) {
+                    try {
+                        $this->orderFinalizer->finalize($order);
+                    } catch (\Throwable $e) {
+                        $this->logger->error('Finalisation commande échouée', [
+                            'order' => $order->getId(),
+                            'exception' => $e,
+                        ]);
+                    }
+                }
+            );
+        }
+
         return new Response('OK', 200);
     }
 }

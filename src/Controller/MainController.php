@@ -94,7 +94,7 @@ final class MainController extends AbstractController
         $order = $orderRepository->findOneBy(['id' => '2493']);
         $result = $mondialRelayService->shippingCreation($order);
 
-        dd($result);
+        dd($result['shipmentNumber']);
 
         return $this->redirect($result['labelUrl']);
     }

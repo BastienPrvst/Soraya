@@ -94,6 +94,9 @@ class Order
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $ShipmentNumber = null;
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -391,6 +394,18 @@ class Order
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getShipmentNumber(): ?string
+    {
+        return $this->ShipmentNumber;
+    }
+
+    public function setShipmentNumber(?string $ShipmentNumber): static
+    {
+        $this->ShipmentNumber = $ShipmentNumber;
 
         return $this;
     }
