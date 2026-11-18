@@ -47,7 +47,7 @@ final class StripeWebHookController extends AbstractController
 
         $order = $this->stripePaymentService->handleEvent($event);
 
-        if (null !== $order) {
+        if ($order !== null) {
             $this->dispatcher->addListener(
                 KernelEvents::TERMINATE,
                 function () use ($order) {

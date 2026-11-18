@@ -28,7 +28,7 @@ readonly class StripePaymentService
         private LoggerInterface        $logger,
         private OrderRepository        $orderRepository,
         private EntityManagerInterface $entityManager,
-        private Registry               $workflowRegistry,
+        private WorkflowService        $workflowService,
         private UrlGeneratorInterface  $urlGenerator,
     ) {
     }
@@ -157,17 +157,16 @@ readonly class StripePaymentService
             return $order;
         }
 
-        $workflow = $this->workflowRegistry->get($order, 'order_completing');
-        try {
-            if ($workflow->can($order, 'pay')) {
-                $order->getPayment()?->setStatus(PaymentStatus::SUCCESS);
-                $workflow->apply($order, 'pay');
-                $this->entityManager->flush();
-            }
-        } catch (\Throwable $exception) {
-            $this->logger->error($exception->getMessage());
-            throw $exception;
+        if (!$this->workflowService->canTransition($order, 'pay')) {
+            $this->logger->error('Stripe : transition pay impossible', [
+                'order' => $order->getId(),
+                'status' => $order->getStatus()?->value,
+            ]);
+            throw new \LogicException('Transition pay impossible pour la commande ' . $order->getId());
         }
+
+        $order->getPayment()?->setStatus(PaymentStatus::SUCCESS);
+        $this->workflowService->applyTransition($order, 'pay');
 
         return $order;
     }

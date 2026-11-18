@@ -163,8 +163,6 @@ final class PaymentController extends AbstractController
     public function index(
         #[MapEntity(mapping: ['token' => 'token'])] ?Order $order,
         Request $request,
-        MailerService $mailerService,
-        StockService $stockService,
     ): Response {
 
         if (!$order) {
@@ -207,7 +205,7 @@ final class PaymentController extends AbstractController
         }
 
         return $this->json([
-            'status' => $order->getStatus()
+            'status' => $order->getStatus()->value
         ]);
     }
 }

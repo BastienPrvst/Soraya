@@ -48,7 +48,7 @@
             const response = await fetch('{{ pollUrl }}');
             const data = await response.json();
 
-            if (data.status === 'paid') {
+            if (data.status === 'to_prepare') {
                 window.location.reload();
             } else {
                 setTimeout(checkStatus, POLL_INTERVAL_MS);

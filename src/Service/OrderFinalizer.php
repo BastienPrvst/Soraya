@@ -29,9 +29,19 @@ final readonly class OrderFinalizer
             return; // déjà finalisée ou pas payée
         }
 
-        if ($this->workflowService->canTransition($order, 'to_prepare')) {
+        // 1. Étape critique : statut + stock, tout ou rien
+        $transitioned = $this->em->wrapInTransaction(function () use ($order): bool {
+            if (!$this->workflowService->canTransition($order, 'to_prepare')) {
+                return false;
+            }
+
             $this->workflowService->applyTransition($order, 'to_prepare');
-        } else {
+            $this->stockService->removeByOrder($order);
+
+            return true;
+        });
+
+        if (!$transitioned) {
             return;
         }
 
@@ -44,10 +54,9 @@ final readonly class OrderFinalizer
             $this->safely($order, 'étiquette', function () use ($order) {
                 $result = $this->mondialRelay->shippingCreation($order);
                 $order->setShipmentNumber($result['shipmentNumber']);
+                $this->em->flush();
             });
         }
-
-        $this->em->flush();
     }
 
     private function safely(Order $order, string $step, callable $fn): void

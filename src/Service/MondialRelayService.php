@@ -88,7 +88,8 @@ class MondialRelayService
             return [
                 'NumPointRelais' => $result->Num,
                 'Country' => trim($country),
-                'Street' => $address,
+                'Name' => trim($result->LgAdr1),
+                'Street' => trim($result->LgAdr3),
                 'ZipCode' => trim($result->CP),
                 'City' => trim($result->Ville),
             ];
@@ -273,13 +274,16 @@ class MondialRelayService
         'email' => $this->senderEmail,
         ]));
 
+        $relay = $order->getRelayAddress();
+
         $shipment->appendChild($this->addressNode($doc, 'Recipient', [
         'firstname' => $order->getFirstname(),
         'lastname' => $order->getLastname(),
-        'street' => $order->getRelayAddress()?->getStreet1(),
-        'zip' => $order->getRelayAddress()?->getZipcode(),
-        'city' => $order->getRelayAddress()?->getCity(),
-        'country' => $order->getRelayAddress()?->getCountry(),
+        'street' => $relay?->getStreet1(),
+        'street2' => $relay?->getStreet2(),
+        'zip' => $relay?->getZipcode(),
+        'city' => $relay?->getCity(),
+        'country' => $relay?->getCountry(),
         'phone' => $order->getPhoneNumber(),
         'email' => $order->getEmail(),
         ]));
@@ -298,14 +302,12 @@ class MondialRelayService
         $address->appendChild($this->el($doc, 'Title'));
         $address->appendChild($this->el($doc, 'Firstname', $a['firstname'] ?? ''));
         $address->appendChild($this->el($doc, 'Lastname', $a['lastname'] ?? ''));
-        $address->appendChild($this->el($doc, 'Streetname', $a['street'] ?? ''));
+        $address->appendChild($this->el($doc, 'Streetname', $this->truncate($a['street'] ?? '', 40)));
+        $address->appendChild($this->el($doc, 'AddressAdd1', $this->truncate($a['street2'] ?? '', 40)));
         $address->appendChild($this->el($doc, 'HouseNo'));
         $address->appendChild($this->el($doc, 'CountryCode', $a['country'] ?? 'FR'));
         $address->appendChild($this->el($doc, 'PostCode', $a['zip'] ?? ''));
         $address->appendChild($this->el($doc, 'City', $a['city'] ?? ''));
-        $address->appendChild($this->el($doc, 'AddressAdd1'));
-        $address->appendChild($this->el($doc, 'AddressAdd2'));
-        $address->appendChild($this->el($doc, 'AddressAdd3'));
         $address->appendChild($this->el($doc, 'PhoneNo', $a['phone'] ?? ''));
         $address->appendChild($this->el($doc, 'MobileNo'));
         $address->appendChild($this->el($doc, 'Email', $a['email'] ?? ''));
@@ -338,6 +340,11 @@ class MondialRelayService
         }
 
         return (int) round($weight);
+    }
+
+    private function truncate(string $text, int $limit): string
+    {
+        return mb_substr($text, 0, $limit);
     }
 
     private function buildTrackingLink(string $shipmentNumber): string

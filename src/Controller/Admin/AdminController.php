@@ -70,9 +70,8 @@ class AdminController extends AbstractController
         EmailVerifier $emailVerifier,
         Request $request
     )
-    : Response
-    {
-        if (!$user->isActive()){
+    : Response {
+        if (!$user->isActive()) {
             $emailVerifier->sendEmailConfirmation(
                 'app_verify_email',
                 $user,
@@ -83,7 +82,7 @@ class AdminController extends AbstractController
                     ->subject('Confirmer votre mail - Levedène')
                     ->htmlTemplate('mail/register_email.mjml.twig')
             );
-        }else{
+        } else {
             $this->addFlash('error', 'Le compte de cet utilisateur est déjà activé.');
         }
 
