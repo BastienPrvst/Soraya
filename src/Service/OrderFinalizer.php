@@ -29,7 +29,7 @@ final readonly class OrderFinalizer
             return; // déjà finalisée ou pas payée
         }
 
-        // 1. Étape critique : statut + stock, tout ou rien
+        // 1. Critical
         $transitioned = $this->em->wrapInTransaction(function () use ($order): bool {
             if (!$this->workflowService->canTransition($order, 'to_prepare')) {
                 return false;
@@ -45,7 +45,7 @@ final readonly class OrderFinalizer
             return;
         }
 
-        // 2. Étapes non critiques : chacune isolée, aucune ne bloque l'autre
+        // 2. Non-Critical
         $this->safely($order, 'email', function () use ($order) {
             $this->mailer->sendOrderConfirmationEmail($order);
         });

@@ -327,7 +327,14 @@ class OrderCrudController extends AbstractCrudController
                 ->setLabel('Date')
                 ->setFormat('dd/MM/YYYY')
                 ->setTimezone('Europe/Paris')
-                ->setColumns(6),
+                ->setColumns(4),
+            TextField::new('shipmentNumber')
+                ->setLabel('Numéro d\'étiquette')
+                ->formatValue(static function ($value) {
+                    return $value ?: '<span class="text-danger">Non renseigné</span>';
+                })
+                ->setDisabled()
+                ->setColumns(4),
             ChoiceField::new('status')
                 ->setLabel('Statut')
                 ->setChoices(
@@ -419,5 +426,4 @@ class OrderCrudController extends AbstractCrudController
                 ->generateUrl()
         );
     }
-
 }

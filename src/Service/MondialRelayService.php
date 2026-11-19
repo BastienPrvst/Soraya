@@ -265,27 +265,27 @@ class MondialRelayService
         $shipment->appendChild($parcels);
 
         $shipment->appendChild($this->addressNode($doc, 'Sender', [
-        'firstname' => $this->senderName,
-        'street' => $this->senderStreet,
-        'zip' => $this->senderZipcode,
-        'city' => $this->senderCity,
-        'country' => $this->senderCountry,
-        'phone' => $this->senderPhone,
-        'email' => $this->senderEmail,
+            'firstname' => $this->senderName,
+            'street' => $this->senderStreet,
+            'zip' => $this->senderZipcode,
+            'city' => $this->senderCity,
+            'country' => $this->senderCountry,
+            'phone' => $this->senderPhone,
+            'email' => $this->senderEmail,
         ]));
 
         $relay = $order->getRelayAddress();
 
         $shipment->appendChild($this->addressNode($doc, 'Recipient', [
-        'firstname' => $order->getFirstname(),
-        'lastname' => $order->getLastname(),
-        'street' => $relay?->getStreet1(),
-        'street2' => $relay?->getStreet2(),
-        'zip' => $relay?->getZipcode(),
-        'city' => $relay?->getCity(),
-        'country' => $relay?->getCountry(),
-        'phone' => $order->getPhoneNumber(),
-        'email' => $order->getEmail(),
+            'firstname' => $order->getFirstname(),
+            'lastname' => $order->getLastname(),
+            'street' => $relay?->getStreet1(),
+            'street2' => $relay?->getStreet2(),
+            'zip' => $relay?->getZipcode(),
+            'city' => $relay?->getCity(),
+            'country' => $relay?->getCountry(),
+            'phone' => $order->getPhoneNumber(),
+            'email' => $order->getEmail(),
         ]));
 
         $list->appendChild($shipment);
