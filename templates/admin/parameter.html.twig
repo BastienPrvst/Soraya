@@ -19,6 +19,14 @@
                     {{ form_row(form.criticalStock, {'attr': {'class': 'd-flex flex colum align-item-center'}}) }}
                 </div>
 
+                <div class="stock-field">
+                    {{ form_row(form.relayDeliveryPrice, {'attr': {'class': 'd-flex flex colum align-item-center'}}) }}
+                </div>
+
+                <div class="stock-field">
+                    {{ form_row(form.homeDeliveryPrice, {'attr': {'class': 'd-flex flex colum align-item-center'}}) }}
+                </div>
+
                 {{ form_row(form.submit) }}
 
                 {{ form_end(form) }}

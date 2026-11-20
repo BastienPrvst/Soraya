@@ -73,6 +73,10 @@
 
                         <span>Stock critique : {{ parameter.criticalStock }}</span>
 
+                        <span>Prix livraison en relay : {{ parameter.relayDeliveryPrice }}€</span>
+
+                        <span>Prix livraison à domicile : {{ parameter.homeDeliveryPrice }}€</span>
+
                         <a href="{{ path('admin_parameters', { parameter: parameter.id }) }}"><i class="fa-solid fa-gear"></i></a>
 
                     </div>

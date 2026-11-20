@@ -19,6 +19,12 @@ class Parameter
     #[ORM\Column(nullable: true)]
     private ?int $criticalStock = 40;
 
+    #[ORM\Column(nullable: true)]
+    private ?float $relayDeliveryPrice = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?float $homeDeliveryPrice = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -44,6 +50,30 @@ class Parameter
     public function setCriticalStock(int $criticalStock = 40): static
     {
         $this->criticalStock = $criticalStock;
+
+        return $this;
+    }
+
+    public function getRelayDeliveryPrice(): ?float
+    {
+        return $this->relayDeliveryPrice;
+    }
+
+    public function setRelayDeliveryPrice(?float $relayDeliveryPrice): static
+    {
+        $this->relayDeliveryPrice = $relayDeliveryPrice;
+
+        return $this;
+    }
+
+    public function getHomeDeliveryPrice(): ?float
+    {
+        return $this->homeDeliveryPrice;
+    }
+
+    public function setHomeDeliveryPrice(?float $homeDeliveryPrice): static
+    {
+        $this->homeDeliveryPrice = $homeDeliveryPrice;
 
         return $this;
     }
