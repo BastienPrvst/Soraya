@@ -149,7 +149,10 @@ class OrderCrudController extends AbstractCrudController
                     'livraison',
                     'Imprimer l\'etiquette'
                 )
-                    ->linkToRoute('admin_delivery')
+                    ->linkToRoute('admin_delivery_print', function ($order) {
+                        return ['token' => $order->getToken()];
+                    })
+                    ->setHtmlAttributes(['target' => '_blank'])
                     ->renderAsButton()
                     ->displayIf(static function (Order $order) {
                         return (
@@ -159,7 +162,7 @@ class OrderCrudController extends AbstractCrudController
             )
             ->addAction(
                 Action::new(
-                    'livraison_shipped',
+                    'shipping_delivery',
                     'Marquer comme expédiée'
                 )
                     ->linkToRoute('admin_package_shipped', function ($order) {
@@ -168,6 +171,21 @@ class OrderCrudController extends AbstractCrudController
                     ->renderAsButton()
                     ->displayIf(static function (Order $order) {
                         return $order->getStatus() === OrderStatus::PENDING_SHIPPING;
+                    })
+            )
+            ->addAction(
+                Action::new(
+                    'regen_delivery',
+                    'Générer une étiquette'
+                )
+                    ->linkToRoute('admin_regen_shipment', function ($order) {
+                        return ['order' => $order->getId()];
+                    })
+                    ->renderAsButton()
+                    ->displayIf(static function (Order $order) {
+                        return $order->getShipmentNumber() === null &&
+                            $order->getStatus() !== OrderStatus::CANCELLED &&
+                            $order->getStatus()?->isAtLeast(OrderStatus::TO_PREPARE);
                     })
             );
 
@@ -293,6 +311,23 @@ class OrderCrudController extends AbstractCrudController
             TextField::new('deliveryModeLabel')
                 ->setLabel('Livraison')
                 ->setSortable(true),
+            TextField::new('shipmentNumber', 'N° Étiquette')
+                ->onlyOnIndex()
+                ->renderAsHtml()
+                ->formatValue(static function (?string $value, Order $order): string {
+                    if ($value === null &&
+                        $order->getStatus() !== OrderStatus::CANCELLED &&
+                        $order->getStatus()?->isAtLeast(OrderStatus::TO_PREPARE)
+                    ) {
+                        return '<span class="text-danger fw-bold">⚠️ Aucun</span>';
+                    }
+
+                    if ($value === null) {
+                        return '<span class="text-muted">Aucun</span>';
+                    }
+
+                    return htmlspecialchars($value, ENT_QUOTES);
+                }),
             NumberField::new('totalQuantity')
                 ->setLabel('Nbr de produits')
                 ->setTextAlign('center'),

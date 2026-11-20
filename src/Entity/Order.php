@@ -97,6 +97,9 @@ class Order
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $ShipmentNumber = null;
 
+    #[ORM\Column(length: 510, nullable: true)]
+    private ?string $shipmentLabelUrl = null;
+
     public function __construct()
     {
         $this->orderItems = new ArrayCollection();
@@ -406,6 +409,18 @@ class Order
     public function setShipmentNumber(?string $ShipmentNumber): static
     {
         $this->ShipmentNumber = $ShipmentNumber;
+
+        return $this;
+    }
+
+    public function getShipmentLabelUrl(): ?string
+    {
+        return $this->shipmentLabelUrl;
+    }
+
+    public function setShipmentLabelUrl(?string $shipmentLabelUrl): static
+    {
+        $this->shipmentLabelUrl = $shipmentLabelUrl;
 
         return $this;
     }

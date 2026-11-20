@@ -33,7 +33,7 @@
                         <br>
 
                         <div class="w-100 d-flex justify-content-center mt-3">
-                            <a href="#"
+                            <a href="{{ path('admin_delivery_print', { token: order.token }) }}"
                                target="_blank"
                                class="btn btn-primary">
                                 <i class="fa fa-print me-2 mx-auto"></i>Imprimer l'étiquette

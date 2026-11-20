@@ -54,6 +54,7 @@ final readonly class OrderFinalizer
             $this->safely($order, 'étiquette', function () use ($order) {
                 $result = $this->mondialRelay->shippingCreation($order);
                 $order->setShipmentNumber($result['shipmentNumber']);
+                $order->setShipmentLabelUrl($result['labelUrl']);
                 $this->em->flush();
             });
         }

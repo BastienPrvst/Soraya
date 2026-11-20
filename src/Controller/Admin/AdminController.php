@@ -8,6 +8,7 @@ use App\Entity\Order;
 use App\Entity\Parameter;
 use App\Entity\Product;
 use App\Entity\User;
+use App\Enum\DeliveryMode;
 use App\Enum\OrderStatus;
 use App\Form\Admin\PackageType;
 use App\Form\ParameterType;
@@ -15,6 +16,7 @@ use App\Repository\OrderRepository;
 use App\Repository\ParameterRepository;
 use App\Security\EmailVerifier;
 use App\Service\MailerService;
+use App\Service\MondialRelayService;
 use App\Service\StockService;
 use App\Service\WorkflowService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -35,6 +37,7 @@ use Symfony\Component\Messenger\Exception\ExceptionInterface;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class AdminController extends AbstractController
 {
@@ -89,14 +92,56 @@ class AdminController extends AbstractController
         return $this->redirect($request->headers->get('referer'));
     }
 
+    #[Route(path: '/admin/regenerer-etiquette/{order}', name: 'admin_regen_shipment')]
+    public function regenShipment(
+        Order $order,
+        Request $request,
+        MondialRelayService $mondialRelayService,
+        EntityManagerInterface $entityManager,
+    ): Response {
 
-    #[Route(path: '/admin/imprimer-etiquette/{token}', name: 'admin_delivery_sticker')]
+        if ($order->getDeliveryMode() === DeliveryMode::RELAY) {
+            try {
+                $result = $mondialRelayService->shippingCreation($order);
+                $order->setShipmentNumber($result['shipmentNumber']);
+                $order->setShipmentLabelUrl($result['labelUrl']);
+                $entityManager->flush();
+                $this->addFlash('success', 'L\'étiquette a bien été générée');
+            } catch (\Throwable $e) {
+                $this->addFlash('error', $e->getMessage());
+            }
+        } else {
+            //TODO A completer collisimo
+        }
+
+
+
+        return $this->redirect($request->headers->get('referer'));
+    }
+
+
+    #[Route(path: '/admin/imprimer-etiquette/{token}', name: 'admin_delivery_print')]
     public function printDelivery(
         #[MapEntity(mapping: ['token' => 'token'])] Order $order,
-        Request $request
+        Request $request,
+        HttpClientInterface $httpClient,
     ): Response {
-        //TODO: Faire la logique d'impression etiquette colissimo ou mondial relay
-        return $this->redirect($request->headers->get('referer'));
+        $url = $order->getShipmentLabelUrl();
+
+        if ($url === null) {
+            $this->addFlash('danger', 'Aucune étiquette disponible pour cette commande. (Pas d\'url) ');
+
+            return $this->redirect($request->headers->get('referer') ?? '/admin');
+        }
+
+        return new Response(
+            $httpClient->request('GET', $url)->getContent(),
+            Response::HTTP_OK,
+            [
+                'Content-Type'        => 'application/pdf',
+                'Content-Disposition' => sprintf('inline; filename="etiquette-%s.pdf"', $order->getShipmentNumber()),
+            ]
+        );
     }
 
     #[Route(path: '/admin/package/{token}', name: 'admin_package_order')]

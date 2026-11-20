@@ -346,19 +346,4 @@ class MondialRelayService
     {
         return mb_substr($text, 0, $limit);
     }
-
-    private function buildTrackingLink(string $shipmentNumber): string
-    {
-        // Selon leur classe : code enseigne + BrandId (2 chiffres). Si votre
-        // mrEnseigne contient déjà les 2 chiffres, supprimez la concaténation.
-        $ens = trim($this->mrEnseigne).$this->mrBrandCode;
-        $crc = strtoupper(md5('<'.$ens.'>'.$shipmentNumber.'<'.$this->mrPrivateKey.'>'));
-
-        return sprintf(
-            'https://www.mondialrelay.fr/public/permanent/tracking.aspx?ens=%s&exp=%s&pays=fr&language=fr&crc=%s',
-            $ens,
-            $shipmentNumber,
-            $crc
-        );
-    }
 }
